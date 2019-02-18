@@ -28,6 +28,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution-items", "solution-
 		common.props = common.props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GemstarPaymentCore", "samples\GemstarPaymentCore\GemstarPaymentCore.csproj", "{EDFBB41A-ADDA-475F-B37C-F2ED6E4082B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GemstarPaymentCore.Business", "src\GemstarPaymentCore.Business\GemstarPaymentCore.Business.csproj", "{B22D8B07-78DF-4BAB-A897-5583756CC29B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +70,14 @@ Global
 		{A57153DC-67DE-4141-A13C-216CE6C5129C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A57153DC-67DE-4141-A13C-216CE6C5129C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A57153DC-67DE-4141-A13C-216CE6C5129C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDFBB41A-ADDA-475F-B37C-F2ED6E4082B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDFBB41A-ADDA-475F-B37C-F2ED6E4082B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDFBB41A-ADDA-475F-B37C-F2ED6E4082B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDFBB41A-ADDA-475F-B37C-F2ED6E4082B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B22D8B07-78DF-4BAB-A897-5583756CC29B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B22D8B07-78DF-4BAB-A897-5583756CC29B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B22D8B07-78DF-4BAB-A897-5583756CC29B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B22D8B07-78DF-4BAB-A897-5583756CC29B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,6 +91,8 @@ Global
 		{66655C56-A98C-4F67-9F41-FECF0AFFA28E} = {D3871E61-CA47-4BD0-8BF9-B64A42B2200D}
 		{16843D79-807F-4973-AF26-66FF7141BAAD} = {D3871E61-CA47-4BD0-8BF9-B64A42B2200D}
 		{A57153DC-67DE-4141-A13C-216CE6C5129C} = {D3871E61-CA47-4BD0-8BF9-B64A42B2200D}
+		{EDFBB41A-ADDA-475F-B37C-F2ED6E4082B9} = {DD8CC860-F3E3-40F4-8A8F-20BF66EA051C}
+		{B22D8B07-78DF-4BAB-A897-5583756CC29B} = {D3871E61-CA47-4BD0-8BF9-B64A42B2200D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C5BE9B18-CD29-4490-84EA-68EDEEF75428}
