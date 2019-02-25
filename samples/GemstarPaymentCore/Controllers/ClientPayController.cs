@@ -31,7 +31,7 @@ namespace GemstarPaymentCore.Controllers
                     return Content(result.ResultStr);
                 } else
                 {
-                    var result = HandleResult.Fail("请指定payStr参数内容");
+                    var result = HandleResult.Fail("请指定payStr参数内容。看到此信息则表示接口地址已经正确，可以直接复制浏览器地址栏中的地址（注意，不能使用localhost/127.0.0.1之类的本地地址）填写到业务系统中");
                     return Content(result.ResultStr);
                 }
             } catch (Exception ex)

@@ -1,0 +1,43 @@
+﻿@model LcswPaySignViewModel
+@{
+    ViewData["Title"] = "利楚商务扫呗设备注册";
+}
+
+<h2>@ViewData["Title"]</h2>
+<form asp-controller="Home" asp-action="LcswPaySign" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="form-group">
+        <label asp-for="MerchantNo"></label>
+        <input type="text" class="form-control" asp-for="MerchantNo" />
+    </div>
+    <div class="form-group">
+        <label asp-for="TerminalId"></label>
+        <input type="text" class="form-control" asp-for="TerminalId" />
+    </div>
+    <div class="form-group">
+        <label asp-for="TerminalTime"></label>
+        <input type="text" class="form-control" asp-for="TerminalTime" />
+    </div>
+    <div class="form-group">
+        <label asp-for="TerminalTrace"></label>
+        <input type="text" class="form-control" asp-for="TerminalTrace" />
+    </div>
+    <button type="submit" class="btn btn-primary">提交请求</button>
+</form>
+<hr />
+<form class="form-horizontal">
+    <div class="form-group">
+        <label>访问令牌:</label>
+        <input type="text" class="form-control" value="@ViewData["token"]"/>
+    </div>
+    <div class="form-group">
+        <label>返回内容:</label>
+        <textarea class="form-control" rows="5">@ViewData["response"]</textarea>
+    </div>
+    <p>
+        如果提示注册成功，正确返回访问令牌，则需要记下访问令牌，并且妥善保管，以后会一直使用到访问令牌。<br />
+        如果提示&quot;该机器号已被注册!&quot;，则表示指定的终端id已经注册过了。不需要重新注册。可以直接使用上次注册成功后返回的访问令牌进行访问。<br />
+        如果之前的令牌已经找不到，则只能通知运营小组，让其与扫呗联系，重置此设备的注册信息后再进行注册。<span style="color:red">注：重置后，原来的令牌将失效，无法使用</span>
+    </p>
+</form>
+

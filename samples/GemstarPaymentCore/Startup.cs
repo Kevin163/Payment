@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using Essensoft.AspNetCore.Payment.LcswPay;
 using Essensoft.AspNetCore.Payment.WeChatPay;
 using GemstarPaymentCore.Business;
 using GemstarPaymentCore.Business.BusinessHandlers;
@@ -32,6 +33,8 @@ namespace GemstarPaymentCore
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+            services.Configure<LcswPayOption>(Configuration.GetSection("LcswPay"));
+            services.AddLcswPay();
 
             services.AddHttpClient();
             services.AddHttpClient(ConfigHelper.WxPayCertificateName).ConfigurePrimaryHttpMessageHandler(() =>
