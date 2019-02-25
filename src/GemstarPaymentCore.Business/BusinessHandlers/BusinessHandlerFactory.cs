@@ -1,4 +1,5 @@
-﻿using GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider;
+﻿using GemstarPaymentCore.Business.BusinessHandlers.LcswPay;
+using GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -208,7 +209,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             //    return new GRGBookingOrderCheckUdpContentHandler(contentWithoutFlag, log);
             //}
             #endregion
-            
+
             #region 自我游
             //flagStr = "QueryOrderViaZWY|";
             //if (content.StartsWith(flagStr)) {
@@ -220,6 +221,16 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             //    var contentWithoutFlag = content.Substring(flagStr.Length);
             //    return new ZWYOrderCheckUdpContentHandler(contentWithoutFlag, log);
             //} 
+            #endregion
+            #region 利楚商务扫呗支付
+            flagStr = "LcswPayPrepay|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<LcswPayPrepayHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            } 
             #endregion
             //http请求转发
             //flagStr = "HttpSwitch|";
