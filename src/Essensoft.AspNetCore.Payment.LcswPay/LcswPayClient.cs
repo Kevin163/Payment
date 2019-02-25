@@ -43,7 +43,7 @@ namespace Essensoft.AspNetCore.Payment.LcswPay
             return await ExecuteAsync(request, option);
         }
 
-        private async Task<T> ExecuteAsync<T>(ILcswPayResquest<T> request, LcswPayOption option) where T : LcswPayResponse
+        public async Task<T> ExecuteAsync<T>(ILcswPayResquest<T> request, LcswPayOption option) where T : LcswPayResponse
         {
             //赋值通用参数
             if (string.IsNullOrEmpty(request.PayVersion) && !string.IsNullOrEmpty(option.Version))
