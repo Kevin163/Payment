@@ -174,11 +174,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 //    return new WxProviderRefundViaJavaHandler(contentWithoutFlag, log, javaUrl);
                 //}
             }
-            //flagStr = "WxProviderRefundQuery|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new WxProviderRefundQueryHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "WxProviderRefundQuery|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<WxProviderPayRefundQueryHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             #endregion
 
             #region 票付通
