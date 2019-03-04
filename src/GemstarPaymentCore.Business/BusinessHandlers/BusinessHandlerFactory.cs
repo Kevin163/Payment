@@ -139,11 +139,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }
-            //flagStr = "WxProviderCloseOrder|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new WxProviderCloseOrderHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "WxProviderCloseOrder|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<WxProviderPayCloseOrderHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             flagStr = "WxProviderQrcodePay|";
             if (content.StartsWith(flagStr)) {
                 var contentWithoutFlag = content.Substring(flagStr.Length);
