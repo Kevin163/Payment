@@ -131,11 +131,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             #endregion
 
             #region 微信服务商支付
-            //flagStr = "WxProviderBarcodePay|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new WxProviderBarcodePayHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "WxProviderBarcodePay|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<WxProviderPayBarcodePayHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             //flagStr = "WxProviderCloseOrder|";
             //if (content.StartsWith(flagStr)) {
             //    var contentWithoutFlag = content.Substring(flagStr.Length);
@@ -144,7 +147,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             flagStr = "WxProviderQrcodePay|";
             if (content.StartsWith(flagStr)) {
                 var contentWithoutFlag = content.Substring(flagStr.Length);
-                var handler = serviceProvider.GetService<WxProviderQrcodePayHandler>();
+                var handler = serviceProvider.GetService<WxProviderPayQrcodePayHandler>();
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }

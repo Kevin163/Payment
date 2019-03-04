@@ -33,9 +33,12 @@ namespace GemstarPaymentCore
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+            //引入业务参数
+            services.Configure<BusinessOption>(Configuration.GetSection("Business"));
+            //引入利楚商务扫呗支付
             services.Configure<LcswPayOption>(Configuration.GetSection("LcswPay"));
             services.AddLcswPay();
-
+            //引入微信服务商证书
             services.AddHttpClient();
             services.AddHttpClient(ConfigHelper.WxPayCertificateName).ConfigurePrimaryHttpMessageHandler(() =>
             {
@@ -62,7 +65,7 @@ namespace GemstarPaymentCore
             }
             var notifyUrl = Configuration.GetValue<string>("WechatPay:NotifyUrl");
 
-            services.AddWeChatPay(opt=> { opt.AppId = "wx4cea1ae3f21c72e8";opt.MchId = "1345752201"; opt.Key = "ShenZhenJieXinDa4007755123364567"; opt.CreateIP = localIp;opt.NotifyUrl = notifyUrl; });
+            services.AddWeChatPay(opt=> { opt.AppId = ConfigHelper.WxProviderAppId;opt.MchId = ConfigHelper.WxProviderMchId; opt.Key = ConfigHelper.WxProviderKey; opt.CreateIP = localIp;opt.NotifyUrl = notifyUrl; });
             services.AddBusinessHandlers();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
