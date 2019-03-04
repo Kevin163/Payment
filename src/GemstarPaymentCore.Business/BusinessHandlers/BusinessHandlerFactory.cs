@@ -151,11 +151,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }
-            //flagStr = "WxProviderQuery|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new WxProviderQueryHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "WxProviderQuery|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<WxProviderPayQueryHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             //flagStr = "WxProviderRefund|";
             //if (content.StartsWith(flagStr)) {
             //    var contentWithoutFlag = content.Substring(flagStr.Length);
