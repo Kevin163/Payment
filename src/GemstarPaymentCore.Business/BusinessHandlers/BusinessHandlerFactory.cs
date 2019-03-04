@@ -159,17 +159,21 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }
-            //flagStr = "WxProviderRefund|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    if (string.IsNullOrWhiteSpace(javaUrl))
-            //    {
-            //        return new WxProviderRefundHandler(contentWithoutFlag, log);
-            //    } else
-            //    {
-            //        return new WxProviderRefundViaJavaHandler(contentWithoutFlag, log, javaUrl);
-            //    }
-            //}
+            flagStr = "WxProviderRefund|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<WxProviderPayRefundHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+                //if (string.IsNullOrWhiteSpace(javaUrl))
+                //{
+                //    return new WxProviderRefundHandler(contentWithoutFlag, log);
+                //} else
+                //{
+                //    return new WxProviderRefundViaJavaHandler(contentWithoutFlag, log, javaUrl);
+                //}
+            }
             //flagStr = "WxProviderRefundQuery|";
             //if (content.StartsWith(flagStr)) {
             //    var contentWithoutFlag = content.Substring(flagStr.Length);
