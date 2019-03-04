@@ -1,4 +1,5 @@
-﻿using GemstarPaymentCore.Business.BusinessHandlers.LcswPay;
+﻿using GemstarPaymentCore.Business.BusinessHandlers.Alipay;
+using GemstarPaymentCore.Business.BusinessHandlers.LcswPay;
 using GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -64,11 +65,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             //    var contentWithoutFlag = content.Substring(flagStr.Length);
             //    return new AlipayCloseOrderHandler(contentWithoutFlag, log);
             //}
-            //flagStr = "AlipayQrcodePay|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new AlipayQrcodePayHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "AlipayQrcodePay|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<AlipayQrcodePayHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             //flagStr = "AlipayQuery|";
             //if (content.StartsWith(flagStr)) {
             //    var contentWithoutFlag = content.Substring(flagStr.Length);

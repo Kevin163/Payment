@@ -16,9 +16,21 @@ namespace Essensoft.AspNetCore.Payment.Alipay
         private string rsaPublicKey;
 
         /// <summary>
-        /// 应用ID
+        /// 支付宝账户签约的应用ID，此处需要设置正确的值，以便查询支付宝扫码支付的支付结果，请前往各业务系统中设置，保留此设置项只是为了保持兼容性
         /// </summary>
         public string AppId { get; set; }
+        /// <summary>
+        /// 支付宝合作伙伴ID，请前往各业务系统中设置，保留此设置项只是为了保持兼容性
+        /// </summary>
+        public string PId { get; set; }
+        /// <summary>
+        /// 支付宝系统接入商合作伙伴ID，既捷信达与支付宝签约的合作伙伴ID，一般不需要修改
+        /// </summary>
+        public string SysServiceProviderId { get; set; }
+        /// <summary>
+        /// 支付宝回调地址，一般不需要修改
+        /// </summary>
+        public string NotifyUrl { get; set; }
 
         /// <summary>
         /// 支付宝公钥

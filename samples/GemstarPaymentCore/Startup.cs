@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using Essensoft.AspNetCore.Payment.Alipay;
 using Essensoft.AspNetCore.Payment.LcswPay;
 using Essensoft.AspNetCore.Payment.WeChatPay;
 using GemstarPaymentCore.Business;
@@ -66,6 +67,10 @@ namespace GemstarPaymentCore
             var notifyUrl = Configuration.GetValue<string>("WechatPay:NotifyUrl");
 
             services.AddWeChatPay(opt=> { opt.AppId = ConfigHelper.WxProviderAppId;opt.MchId = ConfigHelper.WxProviderMchId; opt.Key = ConfigHelper.WxProviderKey; opt.CreateIP = localIp;opt.NotifyUrl = notifyUrl; });
+            //引入支付宝
+            services.AddAlipay();
+            services.Configure<AlipayOptions>(Configuration.GetSection("Alipay"));
+            //引入业务处理类
             services.AddBusinessHandlers();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
