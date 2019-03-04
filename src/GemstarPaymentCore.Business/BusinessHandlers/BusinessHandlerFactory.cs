@@ -247,13 +247,24 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             } 
+            flagStr = "LcswPayRefund|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<LcswPayRefundHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             #endregion
             //http请求转发
-            //flagStr = "HttpSwitch|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new HttpSwitchHandler(contentWithoutFlag, log);
-            //} 
+            flagStr = "HttpSwitch|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<HttpSwitchHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
 
             //没有任何特殊标记的，则认为是易宝支付，直接返回易宝支付的处理类
             //return new YeePayUdpContentHandler(content);
