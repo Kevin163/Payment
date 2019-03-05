@@ -80,7 +80,9 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 req.SetBizModel(model);
                 req.SetNotifyUrl(_options.NotifyUrl);
 
-                var response = await _client.ExecuteAsync(req);
+                _options.AppId = AppId;
+                _options.PId = PID;
+                var response = await _client.ExecuteAsync(req,_options);
                 if (response.IsSuccessCode())
                 {
                     return HandleResult.Success(response.QrCode);

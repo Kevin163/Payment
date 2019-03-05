@@ -23,6 +23,14 @@ namespace Essensoft.AspNetCore.Payment.Alipay
         /// <param name="optionsName">配置选项名称</param>
         /// <returns>领域对象</returns>
         Task<T> ExecuteAsync<T>(IAlipayRequest<T> request, string optionsName) where T : AlipayResponse;
+        /// <summary>
+        /// 执行Alipay公开API请求。
+        /// </summary>
+        /// <typeparam name="T">领域对象</typeparam>
+        /// <param name="request">具体的Alipay API请求</param>
+        /// <param name="options">配置选项实例</param>
+        /// <returns>领域对象</returns>
+        Task<T> ExecuteAsync<T>(IAlipayRequest<T> request, AlipayOptions options) where T : AlipayResponse;
 
         /// <summary>
         /// 执行Alipay公开API请求。
@@ -44,7 +52,16 @@ namespace Essensoft.AspNetCore.Payment.Alipay
         /// <param name="appAuthToken">应用授权码</param>
         /// <returns>领域对象</returns>
         Task<T> ExecuteAsync<T>(IAlipayRequest<T> request, string optionsName, string session, string appAuthToken) where T : AlipayResponse;
-
+        /// <summary>
+        /// 执行Alipay公开API请求。
+        /// </summary>
+        /// <typeparam name="T">领域对象</typeparam>
+        /// <param name="request">具体的Alipay API请求</param>
+        /// <param name="accessToken">用户会话码</param>
+        /// <param name="appAuthToken">应用授权码</param>
+        /// <param name="options">配置选项实例</param>
+        /// <returns>领域对象</returns>
+        Task<T> ExecuteAsync<T>(IAlipayRequest<T> request, string accessToken, string appAuthToken, AlipayOptions options) where T : AlipayResponse;
         /// <summary>
         /// 执行Alipay公开API请求。
         /// </summary>

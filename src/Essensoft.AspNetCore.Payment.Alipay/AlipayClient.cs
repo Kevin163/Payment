@@ -163,22 +163,31 @@ namespace Essensoft.AspNetCore.Payment.Alipay
 
         public async Task<T> ExecuteAsync<T>(IAlipayRequest<T> request) where T : AlipayResponse
         {
-            return await ExecuteAsync(request, null);
+            return await ExecuteAsync(request, (string)null);
         }
 
         public async Task<T> ExecuteAsync<T>(IAlipayRequest<T> request, string optionsName) where T : AlipayResponse
         {
-            return await ExecuteAsync(request, optionsName, null, null);
+            return await ExecuteAsync(request, optionsName, null, (string)null);
+        }
+        public async Task<T> ExecuteAsync<T>(IAlipayRequest<T> request, AlipayOptions options) where T : AlipayResponse
+        {
+            return await ExecuteAsync(request, null, null,options);
         }
 
         public async Task<T> ExecuteAsync<T>(IAlipayRequest<T> request, string optionsName, string accessToken) where T : AlipayResponse
         {
-            return await ExecuteAsync(request, optionsName, accessToken, null);
+            return await ExecuteAsync(request, optionsName, accessToken, (string)null);
         }
 
         public async Task<T> ExecuteAsync<T>(IAlipayRequest<T> request, string optionsName, string accessToken, string appAuthToken) where T : AlipayResponse
         {
             var options = _optionsSnapshotAccessor.Get(optionsName);
+            return await ExecuteAsync(request, accessToken, appAuthToken, options);
+        }
+
+        public async Task<T> ExecuteAsync<T>(IAlipayRequest<T> request, string accessToken, string appAuthToken, AlipayOptions options) where T : AlipayResponse
+        {
             var apiVersion = string.IsNullOrEmpty(request.GetApiVersion()) ? options.Version : request.GetApiVersion();
 
             // 添加协议级请求参数
@@ -251,8 +260,7 @@ namespace Essensoft.AspNetCore.Payment.Alipay
                     var fileParams = AlipayUtility.CleanupDictionary(uRequest.GetFileParameters());
 
                     body = await client.DoPostAsync(options.ServerUrl, txtParams, fileParams);
-                }
-                else
+                } else
                 {
                     body = await client.DoPostAsync(options.ServerUrl, query);
                 }
@@ -266,8 +274,7 @@ namespace Essensoft.AspNetCore.Payment.Alipay
             {
                 parser = new AlipayXmlParser<T>();
                 rsp = parser.Parse(body);
-            }
-            else
+            } else
             {
                 parser = new AlipayJsonParser<T>();
                 rsp = parser.Parse(body);

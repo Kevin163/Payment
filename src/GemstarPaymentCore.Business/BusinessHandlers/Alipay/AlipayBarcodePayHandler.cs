@@ -78,6 +78,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 };
                 var request = new AlipayTradePayRequest();
                 request.SetBizModel(model);
+
 #if MOCK
                 //如果定义了模拟编译变量，则直接根据金额来返回一个固定的结果，金额小于5则返回失败，金额大于等于5则直接返回支付成功
                 if (Convert.ToDecimal(builder.total_amount) < 5)
@@ -89,7 +90,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                     return HandleResult.Success("mocktransno|19000101000000|" + builder.total_amount);
                 }
 #endif
-                var response = await _client.ExecuteAsync(request);
+                _options.AppId = AppId;
+                var response = await _client.ExecuteAsync(request,_options);
 
                 if (response.IsSuccessCode())
                 {
