@@ -22,11 +22,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             var flagStr = "";
 
             #region 支付宝预授权
-            //flagStr = "AlipayAuthCancel|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new AlipayAuthCancelHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "AlipayAuthCancel|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<AlipayAuthCancelHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             //flagStr = "AlipayAuthFinish|";
             //if (content.StartsWith(flagStr)) {
             //    var contentWithoutFlag = content.Substring(flagStr.Length);
