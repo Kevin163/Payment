@@ -95,11 +95,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }
-            //flagStr = "AlipayRefundQuery|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new AlipayRefundQueryHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "AlipayRefundQuery|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<AlipayRefundQueryHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             #endregion
             #region 微信服务商押金支付
             flagStr = "WxProviderDepositMicropay|";
