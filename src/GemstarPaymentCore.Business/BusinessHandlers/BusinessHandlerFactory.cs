@@ -30,11 +30,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }
-            //flagStr = "AlipayAuthFinish|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new AlipayAuthFinishHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "AlipayAuthFinish|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<AlipayAuthFinishHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             flagStr = "AlipayAuthFreeze|";
             if (content.StartsWith(flagStr))
             {
