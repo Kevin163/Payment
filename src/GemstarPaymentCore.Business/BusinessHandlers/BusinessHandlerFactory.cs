@@ -87,11 +87,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }
-            //flagStr = "AlipayRefund|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new AlipayRefundHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "AlipayRefund|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<AlipayRefundHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             //flagStr = "AlipayRefundQuery|";
             //if (content.StartsWith(flagStr)) {
             //    var contentWithoutFlag = content.Substring(flagStr.Length);
