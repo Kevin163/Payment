@@ -54,11 +54,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }
-            //flagStr = "AlipayAuthUnfreeze|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new AlipayAuthUnFreezeHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "AlipayAuthUnfreeze|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<AlipayAuthUnFreezeHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             flagStr = "AlipayAuthQrcode|";
             if (content.StartsWith(flagStr))
             {
