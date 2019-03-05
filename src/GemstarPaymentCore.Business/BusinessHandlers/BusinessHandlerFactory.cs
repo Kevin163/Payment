@@ -50,11 +50,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             //    var contentWithoutFlag = content.Substring(flagStr.Length);
             //    return new AlipayAuthUnFreezeHandler(contentWithoutFlag, log);
             //}
-            //flagStr = "AlipayAuthQrcode|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new AlipayAuthQrcodeHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "AlipayAuthQrcode|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<AlipayAuthQrcodeHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             #endregion
 
             #region 支付宝支付
