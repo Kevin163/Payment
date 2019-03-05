@@ -1,4 +1,5 @@
 ﻿using Essensoft.AspNetCore.Payment.Alipay;
+using Essensoft.AspNetCore.Payment.Alipay.Response;
 
 namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
 {
@@ -14,7 +15,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
         /// <returns>是否是成功响应</returns>
         public static bool IsSuccessCode(this AlipayResponse response)
         {
-            return response != null && response.Code == "10000";
+            return response != null && response.Code == ResultCode.SUCCESS;
         }
         /// <summary>
         /// 返回响应的错误信息结果
@@ -26,6 +27,11 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
             if (response == null)
             {
                 return HandleResult.Fail("未知错误，可能是网络不通或者密钥不正确导致无法解析结果");
+            }
+            var queryResponse = response as AlipayTradeQueryResponse;
+            if(queryResponse != null)
+            {
+                return HandleResult.Fail($"状态：{queryResponse.TradeStatus},失败原因:{queryResponse.SubMsg}");
             }
             return HandleResult.Fail(response.SubMsg);
         }

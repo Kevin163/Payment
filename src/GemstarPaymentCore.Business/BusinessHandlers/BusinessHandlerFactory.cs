@@ -55,11 +55,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             #endregion
 
             #region 支付宝支付
-            //flagStr = "AlipayBarcodePay|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new AlipayBarcodePayHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "AlipayBarcodePay|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<AlipayBarcodePayHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             //flagStr = "AlipayCloseOrder|";
             //if (content.StartsWith(flagStr)) {
             //    var contentWithoutFlag = content.Substring(flagStr.Length);
@@ -74,9 +77,12 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 return handler;
             }
             //flagStr = "AlipayQuery|";
-            //if (content.StartsWith(flagStr)) {
+            //if (content.StartsWith(flagStr))
+            //{
             //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new AlipayPayQueryHandler(contentWithoutFlag, log);
+            //    var handler = serviceProvider.GetService<AlipayPayQueryHandler>();
+            //    handler.SetBusinessContent(contentWithoutFlag);
+            //    return handler;
             //}
             //flagStr = "AlipayRefund|";
             //if (content.StartsWith(flagStr)) {
