@@ -63,11 +63,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }
-            //flagStr = "AlipayCloseOrder|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new AlipayCloseOrderHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "AlipayCloseOrder|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<AlipayCloseOrderHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             flagStr = "AlipayQrcodePay|";
             if (content.StartsWith(flagStr))
             {
