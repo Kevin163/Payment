@@ -18,6 +18,10 @@ namespace GemstarPaymentCore.Business
         /// </summary>
         public string PFTSwitchUrl { get; set; }
         /// <summary>
+        /// 自我游接口地址
+        /// </summary>
+        public string ZWYAPIUrl { get; set; }
+        /// <summary>
         /// 业务系统信息
         /// </summary>
         public List<BusinessSystemInfo> Systems { get; set; }

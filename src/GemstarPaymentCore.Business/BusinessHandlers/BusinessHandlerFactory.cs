@@ -2,6 +2,7 @@
 using GemstarPaymentCore.Business.BusinessHandlers.LcswPay;
 using GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider;
 using GemstarPaymentCore.Business.BusinessHandlers.TicketsPFT;
+using GemstarPaymentCore.Business.BusinessHandlers.TicketsZhiWoYou;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -271,16 +272,22 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             #endregion
 
             #region 自我游
-            //flagStr = "QueryOrderViaZWY|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new ZWYOrderQueryUdpContentHandler(contentWithoutFlag, log);
-            //}
-            //flagStr = "CheckTicketViaZWY|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new ZWYOrderCheckUdpContentHandler(contentWithoutFlag, log);
-            //} 
+            flagStr = "QueryOrderViaZWY|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<ZWYOrderQueryUdpContentHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "CheckTicketViaZWY|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<ZWYOrderCheckUdpContentHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             #endregion
             #region 利楚商务扫呗支付
             flagStr = "LcswPayPrepay|";
