@@ -4,6 +4,7 @@ using GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider;
 using GemstarPaymentCore.Business.BusinessHandlers.TicketsGRGBooking;
 using GemstarPaymentCore.Business.BusinessHandlers.TicketsPFT;
 using GemstarPaymentCore.Business.BusinessHandlers.TicketsZhiWoYou;
+using GemstarPaymentCore.Business.BusinessHandlers.TicketsZhiYouBao;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -247,16 +248,22 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             #endregion
 
             #region 智游宝
-            //flagStr = "QueryOrderViaZYB|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new ZYBOrderQueryUdpContentHandler(contentWithoutFlag, log);
-            //}
-            //flagStr = "CheckTicketViaZYB|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new ZYBOrderCheckUdpContentHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "QueryOrderViaZYB|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<ZYBOrderQueryUdpContentHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "CheckTicketViaZYB|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<ZYBOrderCheckUdpContentHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             #endregion
 
             #region 广电运通
