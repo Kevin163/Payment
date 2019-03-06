@@ -22,6 +22,10 @@ namespace GemstarPaymentCore.Business
         /// </summary>
         public string ZWYAPIUrl { get; set; }
         /// <summary>
+        /// 广电运通接口地址，只需要设置到页面上一级，因为几个接口的页面地址不相同，但前面部分是相同的
+        /// </summary>
+        public string GRGBookingAPIUrl { get; set; }
+        /// <summary>
         /// 业务系统信息
         /// </summary>
         public List<BusinessSystemInfo> Systems { get; set; }

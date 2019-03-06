@@ -1,6 +1,7 @@
 ﻿using GemstarPaymentCore.Business.BusinessHandlers.Alipay;
 using GemstarPaymentCore.Business.BusinessHandlers.LcswPay;
 using GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider;
+using GemstarPaymentCore.Business.BusinessHandlers.TicketsGRGBooking;
 using GemstarPaymentCore.Business.BusinessHandlers.TicketsPFT;
 using GemstarPaymentCore.Business.BusinessHandlers.TicketsZhiWoYou;
 using Microsoft.Extensions.DependencyInjection;
@@ -259,16 +260,22 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             #endregion
 
             #region 广电运通
-            //flagStr = "QueryOrderViaGRG|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new GRGBookingOrderQueryUdpContentHandler(contentWithoutFlag, log);
-            //}
-            //flagStr = "CheckTicketViaGRG|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new GRGBookingOrderCheckUdpContentHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "QueryOrderViaGRG|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<GRGBookingOrderQueryUdpContentHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "CheckTicketViaGRG|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<GRGBookingOrderCheckUdpContentHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             #endregion
 
             #region 自我游
