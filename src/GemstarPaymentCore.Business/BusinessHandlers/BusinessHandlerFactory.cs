@@ -1,6 +1,7 @@
 ﻿using GemstarPaymentCore.Business.BusinessHandlers.Alipay;
 using GemstarPaymentCore.Business.BusinessHandlers.LcswPay;
 using GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider;
+using GemstarPaymentCore.Business.BusinessHandlers.TicketsPFT;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -225,16 +226,22 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             #endregion
 
             #region 票付通
-            //flagStr = "QueryOrderViaPFT|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new PFTQueryOrderUdpContentHandler(contentWithoutFlag, log);
-            //}
-            //flagStr = "CheckTicketViaPFT|";
-            //if (content.StartsWith(flagStr)) {
-            //    var contentWithoutFlag = content.Substring(flagStr.Length);
-            //    return new PFTCheckTicketUdpContentHandler(contentWithoutFlag, log);
-            //}
+            flagStr = "QueryOrderViaPFT|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<PFTQueryOrderUdpContentHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "CheckTicketViaPFT|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<PFTCheckTicketUdpContentHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             #endregion
 
             #region 智游宝

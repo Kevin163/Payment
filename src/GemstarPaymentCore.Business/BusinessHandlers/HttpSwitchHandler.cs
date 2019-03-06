@@ -3,6 +3,7 @@ using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using GemstarPaymentCore.Business.Utility;
 
 namespace GemstarPaymentCore.Business.BusinessHandlers
 {
@@ -53,20 +54,15 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             {
                 var data = Encoding.UTF8.GetBytes(body ?? "");
                 if (string.IsNullOrWhiteSpace(contentType))
-                    {
-                        contentType = "application/x-www-form-urlencoded";
-                    }
-               
+                {
+                    contentType = "application/x-www-form-urlencoded";
+                }
+
                 using (var client = _clientFactory.CreateClient())
                 {
-                    using (var requestContent = new StringContent(body, Encoding.UTF8, contentType))
-                    using (var response = await client.PostAsync(url, requestContent))
-                    using (var responseContent = response.Content)
-                    {
-                        var result = await responseContent.ReadAsStringAsync();
-                        return HandleResult.Success(result);
-                    }
-                }                
+                    var result = await client.DoPostAsync(url, body, contentType);
+                    return HandleResult.Success(result);
+                }
             } catch (Exception ex)
             {
                 return HandleResult.Fail(ex);
