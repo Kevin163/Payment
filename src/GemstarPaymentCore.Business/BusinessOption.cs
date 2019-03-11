@@ -14,6 +14,14 @@ namespace GemstarPaymentCore.Business
         /// </summary>
         public int BarcodePayTimeout { get; set; }
         /// <summary>
+        /// 只处理多少时间以内的数据,超过这个值的数据不再进行同步和处理，单位为分钟
+        /// </summary>
+        public int LastMinute { get; set; }
+        /// <summary>
+        /// 间隔多少时间查询一次是否有记录需要进行支付结果查询，单位为秒
+        /// </summary>
+        public int QueryInterval { get; set; }
+        /// <summary>
         /// 票付通接口中转地址
         /// </summary>
         public string PFTSwitchUrl { get; set; }

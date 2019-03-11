@@ -5,9 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.1.8" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />
+    <PackageReference Include="Quartz" Version="3.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Essensoft.AspNetCore.Payment.Alipay\Essensoft.AspNetCore.Payment.Alipay.csproj" />
     <ProjectReference Include="..\Essensoft.AspNetCore.Payment.LcswPay\Essensoft.AspNetCore.Payment.LcswPay.csproj" />
     <ProjectReference Include="..\Essensoft.AspNetCore.Payment.WeChatPay\Essensoft.AspNetCore.Payment.WeChatPay.csproj" />
+    <ProjectReference Include="..\GemstarPaymentCore.Data\GemstarPaymentCore.Data.csproj" />
   </ItemGroup>
 
   <ItemGroup>

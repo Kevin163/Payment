@@ -34,6 +34,7 @@ namespace GemstarPaymentCore
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+            services.AddOptions();
             //引入业务参数
             services.Configure<BusinessOption>(Configuration.GetSection("Business"));
             //引入利楚商务扫呗支付
@@ -97,5 +98,6 @@ namespace GemstarPaymentCore
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
+
     }
 }

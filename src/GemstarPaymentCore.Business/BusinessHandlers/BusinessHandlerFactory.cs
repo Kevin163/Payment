@@ -126,6 +126,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 return handler;
             }
             #endregion
+
             #region 微信服务商押金支付
             flagStr = "WxProviderDepositMicropay|";
             if (content.StartsWith(flagStr)) {
@@ -303,6 +304,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 return handler;
             }
             #endregion
+
             #region 利楚商务扫呗支付
             flagStr = "LcswPayPrepay|";
             if (content.StartsWith(flagStr))
