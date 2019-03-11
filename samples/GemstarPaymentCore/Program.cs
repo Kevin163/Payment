@@ -59,17 +59,30 @@ namespace GemstarPaymentCore
                         _scheduler = await schedulerFactory.GetScheduler();
                         _scheduler.Context.Put(JobParaName.ParaServiceProviderName, serviceProvider);
                     }
-                    var job = JobBuilder.Create<WxProviderQueryJob>()
+                    var jobWxquery = JobBuilder.Create<WxProviderQueryJob>()
                         .WithIdentity($"wxquery{system.Name}", "wxquery")
                         .Build();
-                    job.JobDataMap.Put(JobParaName.ParaSystemName, system.Name);
-                    job.JobDataMap.Put(JobParaName.ParaConnStrName, system.ConnStr);
+                    jobWxquery.JobDataMap.Put(JobParaName.ParaSystemName, system.Name);
+                    jobWxquery.JobDataMap.Put(JobParaName.ParaConnStrName, system.ConnStr);
 
-                    var trigger = TriggerBuilder.Create()                        
+
+                    var triggerWxquery = TriggerBuilder.Create()                        
                         .WithIdentity($"wxquery{system.Name}", "wxquery")
                         .WithSimpleSchedule(s=>s.WithIntervalInSeconds(businessOption.QueryInterval).RepeatForever())
                         .Build();
-                    await _scheduler.ScheduleJob(job, trigger);
+                    await _scheduler.ScheduleJob(jobWxquery, triggerWxquery);
+
+                    var jobAliquery = JobBuilder.Create<AlipayQueryJob>()
+                        .WithIdentity($"aliquery{system.Name}", "aliquery")
+                        .Build();
+                    jobAliquery.JobDataMap.Put(JobParaName.ParaSystemName, system.Name);
+                    jobAliquery.JobDataMap.Put(JobParaName.ParaConnStrName, system.ConnStr);
+
+                    var triggerAliquery = TriggerBuilder.Create()
+                        .WithIdentity($"aliquery{system.Name}", "aliquery")
+                        .WithSimpleSchedule(s=>s.WithIntervalInSeconds(businessOption.QueryInterval).RepeatForever())
+                        .Build();
+                    await _scheduler.ScheduleJob(jobAliquery,triggerAliquery);
 
                     hasJob = true;
                 }
