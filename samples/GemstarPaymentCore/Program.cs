@@ -8,6 +8,10 @@ using GemstarPaymentCore.Business;
 using GemstarPaymentCore.Business.BusinessQuery;
 using Quartz;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
+using System.Linq;
+using System.IO;
+using Microsoft.AspNetCore.Hosting.WindowsServices;
 
 namespace GemstarPaymentCore
 {
@@ -15,12 +19,34 @@ namespace GemstarPaymentCore
     {
         public static void Main(string[] args)
         {
-            var host = CreateWebHostBuilder(args).Build();
+            var isService = !(Debugger.IsAttached || args.Contains("--console"));
+
+            if (isService)
+            {
+                var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
+                var pathToContentRoot = Path.GetDirectoryName(pathToExe);
+                Directory.SetCurrentDirectory(pathToContentRoot);
+            }
+
+            var builder = CreateWebHostBuilder(
+                args.Where(arg => arg != "--console").ToArray());
+
+            var host = builder.Build();
 
             //开始业务扫描
             var serviceProvider = host.Services.GetService<IServiceProvider>();
             StartBusinessScanJobs(serviceProvider);
-            host.Run();
+            if (isService)
+            {
+                // To run the app without the CustomWebHostService change the
+                // next line to host.RunAsService();
+                host.RunAsService();
+            }
+            else
+            {
+                host.Run();
+            }
+
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>

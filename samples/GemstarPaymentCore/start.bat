@@ -1,0 +1,1 @@
+dotnet GemstarPaymentCore.dll --console
