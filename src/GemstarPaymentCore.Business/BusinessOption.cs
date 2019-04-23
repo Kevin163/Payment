@@ -38,6 +38,10 @@ namespace GemstarPaymentCore.Business
         /// </summary>
         public string GRGBookingAPIUrl { get; set; }
         /// <summary>
+        /// 捷信达线上支付地址，用于线下押金支付时发起真实的请求，线下接口收到后，将请求转给线上的接口
+        /// </summary>
+        public string JxdPaymentUrl { get; set; }
+        /// <summary>
         /// 业务系统信息
         /// </summary>
         public List<BusinessSystemInfo> Systems { get; set; }

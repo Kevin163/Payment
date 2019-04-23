@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using GemstarPaymentCore.Business;
 using GemstarPaymentCore.Business.BusinessHandlers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using System.Text;
+using Microsoft.Extensions.Options;
 
 namespace GemstarPaymentCore.Controllers
 {
@@ -17,7 +21,7 @@ namespace GemstarPaymentCore.Controllers
             _logger = logger;
             _serviceProvider = serviceProvider;
         }
-        public async Task<IActionResult> Index(string payStr)
+        public async Task<IActionResult> Index(string payStr,int? redirect=0)
         {
             try
             {
@@ -25,6 +29,25 @@ namespace GemstarPaymentCore.Controllers
                 {
                     _logger.LogInformation(_eventId,$"接收到的业务字符串：{payStr}");
 
+                    if(redirect == 1)
+                    {
+                        //将求转发给线上地址进行处理
+                        var httpClientFactory = _serviceProvider.GetService<IHttpClientFactory>();
+                        var httpClient = httpClientFactory.CreateClient();
+                        var businessOption = _serviceProvider.GetService<IOptions<BusinessOption>>().Value;
+                        if (string.IsNullOrWhiteSpace(businessOption.JxdPaymentUrl))
+                        {
+                            var error = HandleResult.Fail("指定redirect=1时，必须先设置JxdPaymentUrl地址");
+                            return Content(error.ResultStr);
+                        }
+                        using (var requestContent = new StringContent($"payStr={payStr}", Encoding.UTF8, "application/x-www-form-urlencoded"))
+                        using (var response = await httpClient.PostAsync(businessOption.JxdPaymentUrl, requestContent))
+                        using (var responseContent = response.Content)
+                        {
+                            var resultStr = await responseContent.ReadAsStringAsync();
+                            return Content(resultStr);
+                        }
+                    }
                     var handler = BusinessHandlerFactory.GetHandler(payStr,_serviceProvider);
                     var result = await handler.HandleBusinessContentAsync();
                     _logger.LogInformation(_eventId,$"返回的业务字符串：{result.ResultStr}");
