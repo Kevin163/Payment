@@ -5,6 +5,7 @@ using Essensoft.AspNetCore.Payment.Alipay.Domain;
 using Essensoft.AspNetCore.Payment.Alipay.Request;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
 {
@@ -72,6 +73,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 return HandleResult.Success("mocktransno|19000101000000|" + builder.total_amount);
             }
 #endif
+                var extraParam = new { category = "HOTEL" };
                 var model = new AlipayFundAuthOrderVoucherCreateModel
                 {
                     OutOrderNo = orderNo,
@@ -79,7 +81,9 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                     OrderTitle = content,
                     Amount = orderAmount,
                     PayeeUserId = PId,
-                    PayTimeout = payTimeOut
+                    PayTimeout = payTimeOut,
+                    ProductCode = "PRE_AUTH",
+                    ExtraParam = JsonConvert.SerializeObject(extraParam)
                 };
                 var request = new AlipayFundAuthOrderVoucherCreateRequest();
                 request.SetBizModel(model);
