@@ -1,5 +1,6 @@
 ﻿using Essensoft.AspNetCore.Payment.WeChatPay;
 using Essensoft.AspNetCore.Payment.WeChatPay.Request;
+using Essensoft.AspNetCore.Payment.WeChatPay.Response;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -17,12 +18,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
         private const char splitChar = '|';
         private readonly IWeChatPayClient _client;
         private readonly WeChatPayOptions _options;
+        private readonly BusinessOption _businessOption;
         private string _businessContent;
-        public WxProviderDepositReverseHandler(ILogger<WxProviderDepositReverseHandler> log, IWeChatPayClient client, IOptionsSnapshot<WeChatPayOptions> options)
+        public WxProviderDepositReverseHandler(ILogger<WxProviderDepositReverseHandler> log, IWeChatPayClient client, IOptionsSnapshot<WeChatPayOptions> options,IOptionsSnapshot<BusinessOption> businessOption)
         {
             _log = log;
             _client = client;
             _options = options.Value;
+            _businessOption = businessOption.Value;
         }
 
 
@@ -68,28 +71,34 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
                     //SYSTEMERROR 系统超时 请立即调用被扫订单结果查询API，查询当前订单状态，并根据订单的状态决定下一步的操作
                     if(response.ErrCode == "SYSTEMERROR")
                     {
-                        //开始查询
-                        var queryRequest = new WeChatPayDepositOrderQueryRequest
+                        WeChatPayDepositOrderQueryResponse queryResponse = null;
+                        var timeout = _businessOption.BarcodePayTimeout;
+                        var endDate = DateTime.Now.AddSeconds(timeout);
+                        var queryDate = DateTime.Now.AddSeconds(2);
+                        while (DateTime.Now < endDate)
                         {
-                            SubAppId = subAppId,
-                            SubMchId = subMchId,
-                            OutTradeNo = outTradeNo
-                        };
-                        var queryResponse = await _client.ExecuteAsync(queryRequest);
-                        if (queryResponse.ReturnCode != "SUCCESS")
-                        {
-                            return HandleResult.Fail(queryResponse.ReturnMsg);
+                            if (DateTime.Now < queryDate)
+                            {
+                                continue;
+                            }
+                            queryDate = DateTime.Now.AddSeconds(2);
+                            //开始查询
+                            var queryRequest = new WeChatPayDepositOrderQueryRequest
+                            {
+                                SubAppId = subAppId,
+                                SubMchId = subMchId,
+                                OutTradeNo = outTradeNo
+                            };
+                            queryResponse = await _client.ExecuteAsync(queryRequest);
+                            if (queryResponse.ReturnCode == "SUCCESS" && queryResponse.ResultCode == "SUCCESS" && queryResponse.TradeState == "REVOKED")
+                            {
+                                return HandleResult.Success("");
+                            }
                         }
-                        if (queryResponse.ResultCode != "SUCCESS")
+                        if(queryResponse != null)
                         {
                             return HandleResult.Fail($"错误代码{queryResponse.ErrCode};错误描述:{queryResponse.ErrCodeDes}");
                         }
-                        if(queryResponse.TradeState == "REVOKED")
-                        {
-                            return HandleResult.Success("");
-                        }
-
-                        return HandleResult.Success($"错误代码{queryResponse.ErrCode};错误描述:{queryResponse.ErrCodeDes}");
                     }
                     return HandleResult.Fail($"错误代码{response.ErrCode};错误描述:{response.ErrCodeDes}");
                 }

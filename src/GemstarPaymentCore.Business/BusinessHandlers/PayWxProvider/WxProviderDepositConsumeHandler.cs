@@ -1,6 +1,6 @@
 ﻿using Essensoft.AspNetCore.Payment.WeChatPay;
 using Essensoft.AspNetCore.Payment.WeChatPay.Request;
-using Microsoft.Extensions.Logging;
+using Essensoft.AspNetCore.Payment.WeChatPay.Response;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
@@ -12,15 +12,13 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
     /// </summary>
     public class WxProviderDepositConsumeHandler : IBusinessHandler
     {
-        private ILogger _log;
         private const string contentFormat = "subAppid|subMchId|outTradeNo|totalFee|consumeFee";
         private const char splitChar = '|';
         private readonly IWeChatPayClient _client;
-        private readonly WeChatPayOptions _options;
+        private readonly BusinessOption _options;
         private string _businessContent;
-        public WxProviderDepositConsumeHandler(ILogger<WxProviderDepositConsumeHandler> log, IWeChatPayClient client, IOptionsSnapshot<WeChatPayOptions> options)
+        public WxProviderDepositConsumeHandler(IWeChatPayClient client, IOptionsSnapshot<BusinessOption> options)
         {
-            _log = log;
             _client = client;
             _options = options.Value;
         }
@@ -73,24 +71,36 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
                     //SETTLING 押金消费已受理 押金消费已受理，请稍后查询订单订单状态确认最终结果
                     if(response.ErrCode == "SETTLING")
                     {
-                        //开始查询
-                        var queryRequest = new WeChatPayDepositOrderQueryRequest
+                        WeChatPayDepositOrderQueryResponse queryResponse = null;
+                        var timeout = _options.BarcodePayTimeout;
+                        var endDate = DateTime.Now.AddSeconds(timeout);
+                        var queryDate = DateTime.Now.AddSeconds(2);
+                        while (DateTime.Now < endDate)
                         {
-                            SubAppId = subAppId,
-                            SubMchId = subMchId,
-                            OutTradeNo = outTradeNo
-                        };
-                        var queryResponse = await _client.ExecuteAsync(queryRequest);
-                        if (queryResponse.ReturnCode != "SUCCESS")
-                        {
-                            return HandleResult.Fail(queryResponse.ReturnMsg);
+                            if (DateTime.Now < queryDate)
+                            {
+                                continue;
+                            }
+                            queryDate = DateTime.Now.AddSeconds(2);
+                            //开始查询
+                            var queryRequest = new WeChatPayDepositOrderQueryRequest
+                            {
+                                SubAppId = subAppId,
+                                SubMchId = subMchId,
+                                OutTradeNo = outTradeNo
+                            };
+                            queryResponse = await _client.ExecuteAsync(queryRequest);
+                            if (queryResponse.ReturnCode == "SUCCESS" && queryResponse.ResultCode == "SUCCESS")
+                            {
+                                var queryResultStr = $"{queryResponse.TransactionId}|{queryResponse.TotalFee}|{queryResponse.ConsumeFee}";
+                                return HandleResult.Success(queryResultStr);
+                            }
                         }
-                        if (queryResponse.ResultCode != "SUCCESS")
+                        if (queryResponse != null)
                         {
                             return HandleResult.Fail($"错误代码{queryResponse.ErrCode};错误描述:{queryResponse.ErrCodeDes}");
                         }
-                        var queryResultStr = $"{queryResponse.TransactionId}|{queryResponse.TotalFee}|{queryResponse.ConsumeFee}";
-                        return HandleResult.Success(queryResultStr);
+                       
                     }
                     return HandleResult.Fail($"错误代码{response.ErrCode};错误描述:{response.ErrCodeDes}");
                 }
