@@ -85,6 +85,7 @@ namespace GemstarPaymentCore
                         _scheduler = await schedulerFactory.GetScheduler();
                         _scheduler.Context.Put(JobParaName.ParaServiceProviderName, serviceProvider);
                     }
+                    //启动微信服务商扫码结果查询
                     var jobWxquery = JobBuilder.Create<WxProviderQueryJob>()
                         .WithIdentity($"wxquery{system.Name}", "wxquery")
                         .Build();
@@ -97,7 +98,7 @@ namespace GemstarPaymentCore
                         .WithSimpleSchedule(s=>s.WithIntervalInSeconds(businessOption.QueryInterval).RepeatForever())
                         .Build();
                     await _scheduler.ScheduleJob(jobWxquery, triggerWxquery);
-
+                    //启动支付宝扫码支付结果查询
                     var jobAliquery = JobBuilder.Create<AlipayQueryJob>()
                         .WithIdentity($"aliquery{system.Name}", "aliquery")
                         .Build();
@@ -109,6 +110,19 @@ namespace GemstarPaymentCore
                         .WithSimpleSchedule(s=>s.WithIntervalInSeconds(businessOption.QueryInterval).RepeatForever())
                         .Build();
                     await _scheduler.ScheduleJob(jobAliquery,triggerAliquery);
+                    //启动扫呗支付扫码支付结果查询
+                    var jobLcswPayQuery = JobBuilder.Create<LcswPayQueryJob>()
+                       .WithIdentity($"lcswpayquery{system.Name}", "lcswpayquery")
+                       .Build();
+                    jobLcswPayQuery.JobDataMap.Put(JobParaName.ParaSystemName, system.Name);
+                    jobLcswPayQuery.JobDataMap.Put(JobParaName.ParaConnStrName, system.ConnStr);
+
+                    var triggerlcswpayquery = TriggerBuilder.Create()
+                        .WithIdentity($"lcswpayquery{system.Name}", "lcswpayquery")
+                        .WithSimpleSchedule(s => s.WithIntervalInSeconds(businessOption.QueryInterval).RepeatForever())
+                        .Build();
+                    await _scheduler.ScheduleJob(jobLcswPayQuery, triggerlcswpayquery);
+
 
                     hasJob = true;
                 }

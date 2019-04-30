@@ -129,5 +129,64 @@ namespace GemstarPaymentCore.Business.BusinessQuery
             payDB.SaveChanges();
         }
         #endregion
+
+        #region 查询利楚商务扫呗支付状态
+        /// <summary>
+        /// 获取当前分店的利楚商务扫呗支付信息中，第一条需要查询支付状态的信息，同时将此信息的处理标志加1
+        /// </summary>
+        /// <param name="payDB">当前分店的营业数据库实例</param>
+        /// <returns>微信支付信息实例或null（当没有需要上传的信息时）</returns>
+        public static List<WxPayInfo> GetLcswPayOrderNeedStatus(WxPayDB payDB, BusinessOption option)
+        {
+            var lastDate = DateTime.Now.AddMinutes(-option.LastMinute);
+            var payInfos = payDB.WxPayInfos.Where(w => (w.Status == WxPayInfoStatus.NewForLcswPay) && w.BuildDate >= lastDate && w.TotalAmount > 0)
+                    .OrderBy(w => new { w.TransFlag, w.BuildDate })
+                    .ToList();
+            if (payInfos.Count > 0)
+            {
+                foreach (var payInfo in payInfos)
+                {
+                    payInfo.TransFlag = (payInfo.TransFlag ?? 0) + 1;
+                    payDB.Entry(payInfo).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                }
+                payDB.SaveChanges();
+            }
+            return payInfos;
+        }
+        /// <summary>
+        /// 利楚商务扫呗支付查询状态，确认指定订单已经支付成功
+        /// </summary>
+        /// <param name="payDB">当前分店的营业数据库实例</param>
+        /// <param name="payInfo">已经支付成功的订单实例</param>
+        /// <param name="transactionId">微信支付订单号</param>
+        /// <param name="paidTime">支付完成时间</param>
+        /// <param name="amount">支付金额</param>
+        public static void LcswPayPaidSuccess(WxPayDB payDB, WxPayInfo payInfo, string transactionId, DateTime paidTime, int amount)
+        {
+            var updateInfo = payDB.WxPayInfos.FirstOrDefault(w => w.ID == payInfo.ID && w.Status == WxPayInfoStatus.NewForLcswPay);
+            if (updateInfo != null)
+            {
+                updateInfo.PrePayID = transactionId;
+                updateInfo.PayDate = paidTime;
+                updateInfo.WxPaidAmount = Convert.ToDecimal(amount / 100.0);
+                updateInfo.Status = WxPayInfoStatus.PaidSuccess;
+                payDB.Entry(updateInfo).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                payDB.SaveChanges();
+            }
+        }
+        /// <summary>
+        /// 利楚商务扫呗支付查询状态，确认订单已经支付失败
+        /// </summary>
+        /// <param name="payDB">当前分店的营业数据库实例</param>
+        /// <param name="payInfo">确认支付失败的订单实例</param>
+        /// <param name="errMsg">支付失败原因</param>
+        public static void LcswPayPaidFail(WxPayDB payDB, WxPayInfo payInfo, string errMsg)
+        {
+            payInfo.ErrMsg = errMsg;
+            payInfo.Status = WxPayInfoStatus.PaidFailure;
+            payDB.Entry(payInfo).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            payDB.SaveChanges();
+        }
+        #endregion
     }
 }

@@ -62,7 +62,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                         return HandleResult.Fail($"没指定订单号参数时，必须同时指定支付终端流水号和支付终端交易时间参数");
                     }
                 } 
-                //调用条码支付接口
+                //调用查询接口
                 var request = new LcswPayQueryRequest
                 {
                     PayType = payType,

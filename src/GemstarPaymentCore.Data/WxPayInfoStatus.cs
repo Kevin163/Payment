@@ -48,6 +48,10 @@
         /// <summary>
         /// 微信服务商支付的新单，不需要上传到云端，只需要直接从微信服务器上查询支付状态即可
         /// </summary>
-        NewForWxProviderPay = 30
+        NewForWxProviderPay = 30,
+        /// <summary>
+        /// 利楚商务扫呗支付的新单
+        /// </summary>
+        NewForLcswPay = 40
     }
 }
