@@ -19,7 +19,8 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         public async Task Execute(IJobExecutionContext context)
         {
             //获取参数
-            var serviceProvider = context.Scheduler.Context.Get(JobParaName.ParaServiceProviderName) as IServiceProvider;
+            var serviceProviderRoot = context.Scheduler.Context.Get(JobParaName.ParaServiceProviderName) as IServiceProvider;
+            var serviceProvider = serviceProviderRoot.CreateScope().ServiceProvider;
             var jobDataMap = context.JobDetail.JobDataMap;
             var systemName = jobDataMap.GetString(JobParaName.ParaSystemName);
             var connStr = jobDataMap.GetString(JobParaName.ParaConnStrName);
@@ -36,7 +37,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                         var businessOption = serviceProvider.GetService<IOptions<BusinessOption>>().Value;
                         var options = serviceProvider.GetService<IOptions<LcswPayOption>>().Value;
                         var client = serviceProvider.GetService<ILcswPayClient>();
-                        var records = WxPayInfoHelper.GetWxProviderOrderNeedStatus(payDB, businessOption);
+                        var records = WxPayInfoHelper.GetLcswPayOrderNeedStatus(payDB, businessOption);
                         if (records.Count > 0)
                         {
                             foreach (var record in records)

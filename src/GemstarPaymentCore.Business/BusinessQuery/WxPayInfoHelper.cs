@@ -20,7 +20,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         {
             var lastDate = DateTime.Now.AddMinutes(-option.LastMinute);
             var payInfos = payDB.WxPayInfos.Where(w => (w.Status == WxPayInfoStatus.New || w.Status == WxPayInfoStatus.NewForYeePay) && w.BuildDate >= lastDate)
-                    .OrderBy(w => new { w.TransFlag, w.BuildDate })
+                    .OrderBy(w=>w.TransFlag).ThenBy(w=>w.BuildDate)
                     .ToList();
 
             if (payInfos.Count > 0)
@@ -81,7 +81,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         {
             var lastDate = DateTime.Now.AddMinutes(-option.LastMinute);
             var payInfos = payDB.WxPayInfos.Where(w => (w.Status == WxPayInfoStatus.NewForWxProviderPay) && w.BuildDate >= lastDate && w.TotalAmount > 0)
-                    .OrderBy(w => new { w.TransFlag, w.BuildDate })
+                    .OrderBy(w=>w.TransFlag).ThenBy(w=>w.BuildDate)
                     .ToList();
             if (payInfos.Count > 0)
             {
@@ -140,7 +140,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         {
             var lastDate = DateTime.Now.AddMinutes(-option.LastMinute);
             var payInfos = payDB.WxPayInfos.Where(w => (w.Status == WxPayInfoStatus.NewForLcswPay) && w.BuildDate >= lastDate && w.TotalAmount > 0)
-                    .OrderBy(w => new { w.TransFlag, w.BuildDate })
+                    .OrderBy(w=>w.TransFlag).ThenBy(w=>w.BuildDate)
                     .ToList();
             if (payInfos.Count > 0)
             {
