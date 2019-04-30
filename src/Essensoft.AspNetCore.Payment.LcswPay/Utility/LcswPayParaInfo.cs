@@ -11,7 +11,7 @@
         /// <param name="name">参数名称</param>
         /// <param name="value">参数值</param>
         /// <param name="required">是否必传参数</param>
-        public LcswPayParaInfo(string name,string value,bool required = true)
+        public LcswPayParaInfo(string name, string value, bool required = true)
         {
             ParaName = name;
             ParaValue = value;
