@@ -75,7 +75,7 @@ namespace Essensoft.AspNetCore.Payment.LcswPay
 
                 if (request.IsCheckResponseSign())
                 {
-                    response.CheckSign();
+                    response.CheckSign(option.Token);
                 }
                 return response;
             }

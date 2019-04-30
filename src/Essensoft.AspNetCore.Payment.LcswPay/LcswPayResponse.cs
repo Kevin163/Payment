@@ -38,10 +38,11 @@ namespace Essensoft.AspNetCore.Payment.LcswPay
         /// 获取所有参与签名计算的参数列表
         /// </summary>
         public abstract void AddSignedParasWhenReturnCodeSuccess(List<LcswPayParaInfo> signedParas);
+        public virtual bool CalcSignNeedToken => false;
         /// <summary>
         /// 是否签名正确
         /// </summary>
-        public void CheckSign()
+        public void CheckSign(string token)
         {
             if (IsReturnCodeSuccess)
             {
@@ -49,8 +50,15 @@ namespace Essensoft.AspNetCore.Payment.LcswPay
                 signedParas.Add(new LcswPayParaInfo("return_code", ReturnCode));
                 signedParas.Add( new LcswPayParaInfo("return_msg", ReturnMsg));
                 AddSignedParasWhenReturnCodeSuccess(signedParas);
-
-                var sign = LcswPaySignature.CalcSignWithAllRequiredPara(signedParas);
+                string sign;
+                if (CalcSignNeedToken)
+                {
+                    sign = LcswPaySignature.CalcSignWithAllRequiredParaAndToken(signedParas,token);
+                }
+                else
+                {
+                    sign = LcswPaySignature.CalcSignWithAllRequiredPara(signedParas);
+                }
 
                 if (!sign.Equals(KeySign, System.StringComparison.OrdinalIgnoreCase))
                 {

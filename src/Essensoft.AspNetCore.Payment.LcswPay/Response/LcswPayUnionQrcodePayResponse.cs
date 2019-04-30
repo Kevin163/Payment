@@ -50,6 +50,7 @@ namespace Essensoft.AspNetCore.Payment.LcswPay.Response
         [JsonProperty("qr_url")]
         public string QrCode { get; set; }
 
+        public override bool CalcSignNeedToken => true;
         public override void AddSignedParasWhenReturnCodeSuccess(List<LcswPayParaInfo> signedParas)
         {
             //这一个是按字典序，所以这里需要先把参数提成好序,并且清空原来父类中加入的元素，在子类中一起来重新加入
@@ -62,8 +63,8 @@ namespace Essensoft.AspNetCore.Payment.LcswPay.Response
                 new LcswPayParaInfo("return_code", ReturnCode),
                 new LcswPayParaInfo("return_msg", ReturnMsg),
                 new LcswPayParaInfo("terminal_id",TerminalId),
-                new LcswPayParaInfo("terminal_trace",TerminalTrace),
                 new LcswPayParaInfo("terminal_time",TerminalTime),
+                new LcswPayParaInfo("terminal_trace",TerminalTrace),
                 new LcswPayParaInfo("total_fee",TotalFee)
             });
         }

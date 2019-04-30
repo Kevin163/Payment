@@ -346,6 +346,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }
+            flagStr = "LcswPayUnionQrcodePay|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<LcswPayUnionQrcodePayHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             #endregion
             //http请求转发
             flagStr = "HttpSwitch|";
