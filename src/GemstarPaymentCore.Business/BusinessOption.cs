@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace GemstarPaymentCore.Business
 {
@@ -21,6 +19,14 @@ namespace GemstarPaymentCore.Business
         /// 间隔多少时间查询一次是否有记录需要进行支付结果查询，单位为秒
         /// </summary>
         public int QueryInterval { get; set; }
+        /// <summary>
+        /// 本地接口的外网访问地址，用于外网回调通知
+        /// </summary>
+        public string InternetUrl { get; set; }
+        /// <summary>
+        /// 本地会员接口的外网访问地址，用于外网调用会员接口
+        /// </summary>
+        public string InternetMemberUrl { get; set; }
         /// <summary>
         /// 票付通接口中转地址
         /// </summary>

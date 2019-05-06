@@ -1,4 +1,5 @@
 ﻿using GemstarPaymentCore.Business.BusinessHandlers.Alipay;
+using GemstarPaymentCore.Business.BusinessHandlers.Gemstar;
 using GemstarPaymentCore.Business.BusinessHandlers.LcswPay;
 using GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider;
 using GemstarPaymentCore.Business.BusinessHandlers.TicketsGRGBooking;
@@ -19,9 +20,10 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
         /// 根据请求内容返回相应的请求处理类
         /// </summary>
         /// <param name="content">请求字符串</param>
+        /// <param name="para">处理参数实例</param>
         /// <param name="serviceProvider">服务提供者实例</param>
         /// <returns>请求处理类实例</returns>
-        public static IBusinessHandler GetHandler(string content,IServiceProvider serviceProvider)
+        public static IBusinessHandler GetHandler(string content,BusinessHandlerParameter para,IServiceProvider serviceProvider)
         {
             var flagStr = "";
 
@@ -352,6 +354,17 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 var contentWithoutFlag = content.Substring(flagStr.Length);
                 var handler = serviceProvider.GetService<LcswPayUnionQrcodePayHandler>();
                 handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            #endregion
+            #region 捷信达聚合支付
+            flagStr = "JxdUnionLcswPay|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<JxdUnionLcswPayHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                handler.SetBusiessHandlerParameter(para);
                 return handler;
             }
             #endregion

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using Microsoft.Extensions.Options;
+using System.Net;
 
 namespace GemstarPaymentCore.Controllers
 {
@@ -21,7 +22,7 @@ namespace GemstarPaymentCore.Controllers
             _logger = logger;
             _serviceProvider = serviceProvider;
         }
-        public async Task<IActionResult> Index(string payStr,int? redirect=0)
+        public async Task<IActionResult> Index(string payStr,string callbackUrl,string memberUrl,int? redirect=0,int? isFromRedirect = 0)
         {
             using (var scope = _logger.BeginScope(this))
             {
@@ -42,7 +43,7 @@ namespace GemstarPaymentCore.Controllers
                                 var error = HandleResult.Fail("指定redirect=1时，必须先设置JxdPaymentUrl地址");
                                 return Content(error.ResultStr);
                             }
-                            using (var requestContent = new StringContent($"payStr={payStr}", Encoding.UTF8, "application/x-www-form-urlencoded"))
+                            using (var requestContent = new StringContent($"payStr={WebUtility.UrlEncode(payStr)}&callbackUrl={WebUtility.UrlEncode(businessOption.InternetUrl)}&memberUrl={WebUtility.UrlEncode(businessOption.InternetMemberUrl)}&isFromRedirect=1", Encoding.UTF8, "application/x-www-form-UrlEncoder"))
                             using (var response = await httpClient.PostAsync(businessOption.JxdPaymentUrl, requestContent))
                             using (var responseContent = response.Content)
                             {
@@ -50,7 +51,13 @@ namespace GemstarPaymentCore.Controllers
                                 return Content(resultStr);
                             }
                         }
-                        var handler = BusinessHandlerFactory.GetHandler(payStr, _serviceProvider);
+                        var para = new BusinessHandlerParameter
+                        {
+                            CallbackUrl = callbackUrl,
+                            MemberUrl = memberUrl,
+                            IsFromRedirect = isFromRedirect == 1
+                        };
+                        var handler = BusinessHandlerFactory.GetHandler(payStr,para, _serviceProvider);
                         var result = await handler.HandleBusinessContentAsync();
                         _logger.LogInformation(_eventId, $"返回的业务字符串：{result.ResultStr}");
                         return Content(result.ResultStr);

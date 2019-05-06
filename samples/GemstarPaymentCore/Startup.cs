@@ -7,6 +7,7 @@ using Essensoft.AspNetCore.Payment.LcswPay;
 using Essensoft.AspNetCore.Payment.WeChatPay;
 using GemstarPaymentCore.Business;
 using GemstarPaymentCore.Business.BusinessHandlers;
+using GemstarPaymentCore.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -73,6 +74,7 @@ namespace GemstarPaymentCore
             services.Configure<AlipayOptions>(Configuration.GetSection("Alipay"));
             //引入业务处理类
             services.AddBusinessHandlers();
+            services.AddScoped<IWxPayDBFactory, WxPayDBFactory>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }

@@ -52,7 +52,6 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                 updateInfo.PayDate = paidTime;
                 updateInfo.WxPaidAmount = Convert.ToDecimal(amount);
                 updateInfo.Status = WxPayInfoStatus.PaidSuccess;
-                payDB.Entry(updateInfo).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 payDB.SaveChanges();
             }
         }
@@ -66,7 +65,6 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         {
             payInfo.ErrMsg = errMsg;
             payInfo.Status = WxPayInfoStatus.PaidFailure;
-            payDB.Entry(payInfo).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
             payDB.SaveChanges();
         }
         #endregion
@@ -88,7 +86,6 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                 foreach (var payInfo in payInfos)
                 {
                     payInfo.TransFlag = (payInfo.TransFlag ?? 0) + 1;
-                    payDB.Entry(payInfo).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 }
                 payDB.SaveChanges();
             }
@@ -111,7 +108,6 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                 updateInfo.PayDate = paidTime;
                 updateInfo.WxPaidAmount = Convert.ToDecimal(amount / 100.0);
                 updateInfo.Status = WxPayInfoStatus.PaidSuccess;
-                payDB.Entry(updateInfo).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 payDB.SaveChanges();
             }
         }
@@ -125,7 +121,6 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         {
             payInfo.ErrMsg = errMsg;
             payInfo.Status = WxPayInfoStatus.PaidFailure;
-            payDB.Entry(payInfo).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
             payDB.SaveChanges();
         }
         #endregion
@@ -147,7 +142,6 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                 foreach (var payInfo in payInfos)
                 {
                     payInfo.TransFlag = (payInfo.TransFlag ?? 0) + 1;
-                    payDB.Entry(payInfo).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 }
                 payDB.SaveChanges();
             }
@@ -170,7 +164,6 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                 updateInfo.PayDate = paidTime;
                 updateInfo.WxPaidAmount = Convert.ToDecimal(amount / 100.0);
                 updateInfo.Status = WxPayInfoStatus.PaidSuccess;
-                payDB.Entry(updateInfo).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 payDB.SaveChanges();
             }
         }
@@ -184,7 +177,6 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         {
             payInfo.ErrMsg = errMsg;
             payInfo.Status = WxPayInfoStatus.PaidFailure;
-            payDB.Entry(payInfo).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
             payDB.SaveChanges();
         }
         #endregion
