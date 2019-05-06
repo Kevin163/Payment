@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GemstarPaymentCore.Data
@@ -12,6 +13,7 @@ namespace GemstarPaymentCore.Data
         /// <summary>
         /// 终端流水号，填写商户系统的订单号
         /// </summary>
+        [Key]
         public string TerminalTrace { get; set; }
         /// <summary>
         /// 终端交易时间，yyyyMMddHHmmss

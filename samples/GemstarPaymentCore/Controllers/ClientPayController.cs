@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using Microsoft.Extensions.Options;
 using System.Net;
+using System.Collections.Generic;
 
 namespace GemstarPaymentCore.Controllers
 {
@@ -37,13 +38,19 @@ namespace GemstarPaymentCore.Controllers
                             //将求转发给线上地址进行处理
                             var httpClientFactory = _serviceProvider.GetService<IHttpClientFactory>();
                             var httpClient = httpClientFactory.CreateClient();
-                            var businessOption = _serviceProvider.GetService<IOptions<BusinessOption>>().Value;
+                            var businessOption = _serviceProvider.GetService<IOptionsSnapshot<BusinessOption>>().Value;
                             if (string.IsNullOrWhiteSpace(businessOption.JxdPaymentUrl))
                             {
                                 var error = HandleResult.Fail("指定redirect=1时，必须先设置JxdPaymentUrl地址");
                                 return Content(error.ResultStr);
                             }
-                            using (var requestContent = new StringContent($"payStr={WebUtility.UrlEncode(payStr)}&callbackUrl={WebUtility.UrlEncode(businessOption.InternetUrl)}&memberUrl={WebUtility.UrlEncode(businessOption.InternetMemberUrl)}&isFromRedirect=1", Encoding.UTF8, "application/x-www-form-UrlEncoder"))
+                            using (var requestContent = new FormUrlEncodedContent(
+                                new List<KeyValuePair<string, string>>{
+                                KeyValuePair.Create("payStr",payStr)
+                                ,KeyValuePair.Create("callbackUrl",businessOption.InternetUrl)
+                                ,KeyValuePair.Create("memberUrl",businessOption.InternetMemberUrl)
+                                ,KeyValuePair.Create("isFromRedirect","1") }
+                            ))
                             using (var response = await httpClient.PostAsync(businessOption.JxdPaymentUrl, requestContent))
                             using (var responseContent = response.Content)
                             {
