@@ -7,6 +7,7 @@ using Essensoft.AspNetCore.Payment.LcswPay;
 using Essensoft.AspNetCore.Payment.WeChatPay;
 using GemstarPaymentCore.Business;
 using GemstarPaymentCore.Business.BusinessHandlers;
+using GemstarPaymentCore.Business.MemberHandlers;
 using GemstarPaymentCore.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -75,6 +76,7 @@ namespace GemstarPaymentCore
             //引入业务处理类
             services.AddBusinessHandlers();
             services.AddScoped<IWxPayDBFactory, WxPayDBFactory>();
+            services.AddScoped<IMemberHandlerFactory, MemberHandlerFactory>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }

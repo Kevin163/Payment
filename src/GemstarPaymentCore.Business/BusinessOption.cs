@@ -28,6 +28,10 @@ namespace GemstarPaymentCore.Business
         /// </summary>
         public string InternetMemberUrl { get; set; }
         /// <summary>
+        /// 对接的会员版本,gsclub：老的cs会员,webgscrm：原来的bs会员,bspms：捷云会员
+        /// </summary>
+        public string MemberVersion { get; set; }
+        /// <summary>
         /// 票付通接口中转地址
         /// </summary>
         public string PFTSwitchUrl { get; set; }

@@ -4,6 +4,7 @@ using GemstarPaymentCore.Data;
 using Microsoft.Extensions.Options;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -14,7 +15,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
     /// </summary>
     public class JxdUnionLcswPayHandler : IBusinessHandler
     {
-        private const string contentFormat = "merchantNo|terminalId|accessToken|terminalTrace|terminalTime|totalFee|orderBody|attach";
+        private const string contentFormat = "merchantNo|terminalId|accessToken|terminalTrace|terminalTime|outletCode|totalFee|orderBody|attach|appId|appSecret";
         private const char splitChar = '|';
         private readonly ILcswPayClient _client;
         private readonly LcswPayOption _options;
@@ -60,9 +61,16 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                 var accessToken = infos[i++];
                 var terminalTrace = infos[i++];
                 var terminalTime = infos[i++];
+                var outletCode = infos[i++];
                 var totalFee = infos[i++];
                 var orderBody = infos[i++];
                 var attach = infos[i++];
+                var appId = infos[i++];
+                var appSecret = infos[i++];
+                //计算支付成功后的回调通知路径
+                var uriBase = new Uri(_businessOption.InternetUrl);
+                var notifyPath = $"/LcswPayNotify";
+                var notifyUri = new Uri(uriBase, notifyPath);
                 //调用扫码支付接口
                 var request = new LcswPayUnionQrcodePayRequest
                 {
@@ -73,7 +81,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                     TotalFee = Convert.ToInt32(Convert.ToDecimal(totalFee) * 100).ToString(),
                     OrderBody = orderBody,
                     Attach = attach,
-                    NotifyUrl = ""
+                    NotifyUrl = notifyUri.AbsoluteUri
                 };
                 _options.Token = accessToken;
                 var response = await _client.ExecuteAsync(request, _options);
@@ -90,28 +98,44 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                 //如果是转发来的请求，则需要保存订单支付信息
                 if (_para.IsFromRedirect)
                 {
+                    //如果有相同业务单号对应的新记录，则将原来的记录撤销
+                    var cancelEntity = _payDb.UnionPayLcsws.FirstOrDefault(w => w.TerminalTrace == terminalTrace && w.Status == WxPayInfoStatus.NewForLcswPay);
+                    if(cancelEntity != null)
+                    {
+                        cancelEntity.Status = WxPayInfoStatus.Cancel;
+                        cancelEntity.PayRemark = "业务系统重新使用相同单号重新请求支付，此订单将自动撤销";
+                    }
+                    //增加新记录
                     var payEntity = new UnionPayLcsw
                     {
+                        Id = Guid.NewGuid(),
                         AccessToken = accessToken,
                         Attach = attach,
                         CallbackUrl = _para.CallbackUrl,
                         LcswPayUnionQrcodeUrl = resultStr,
                         MemberUrl = _para.MemberUrl,
+                        MemberType = _para.MemberType,
                         MerchantNo = merchantNo,
+                        OutletCode = outletCode,
                         OrderBody = orderBody,
                         TerminalId = terminalId,
                         TerminalTime = DateTime.ParseExact(terminalTime,"yyyyMMddHHmmss",CultureInfo.InvariantCulture),
                         TerminalTrace = terminalTrace,
-                        TotalFee = Convert.ToDecimal(totalFee)
+                        TotalFee = Convert.ToDecimal(totalFee),
+                        AppId = appId,
+                        AppSecret = appSecret,
+                        Status = WxPayInfoStatus.NewForLcswPay
                     };
                     _payDb.UnionPayLcsws.Add(payEntity);
                     await _payDb.SaveChangesAsync();
+                    string id = payEntity.Id.ToString("N");
+                    //计算要返回的页面地址
+                    var uriPara = $"/JxdUnionPay?id={WebUtility.UrlEncode(id)}&type=lcsw";
+                    var uri = new Uri(uriBase, uriPara);
+                    return HandleResult.Success(uri.AbsoluteUri);
                 }
-                //计算要返回的页面地址
-                var uriBase = new Uri(_businessOption.InternetUrl);
-                var uriPara = $"/JxdUnionPay?id={WebUtility.UrlEncode(terminalTrace)}&type=lcsw";
-                var uri = new Uri(uriBase, uriPara);
-                return HandleResult.Success(uri.AbsoluteUri);
+                //如果是直接支付的，则直接返回扫呗的聚合二维码地址
+                return HandleResult.Success(resultStr);
             }
             catch (Exception ex)
             {

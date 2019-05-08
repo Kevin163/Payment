@@ -14,6 +14,10 @@
         /// </summary>
         public string MemberUrl { get; set; }
         /// <summary>
+        /// 会员类型
+        /// </summary>
+        public string MemberType { get; set; }
+        /// <summary>
         /// 是否由本地接口程序转发来的请求，有些业务需要根据此值进行不同的处理
         /// </summary>
         public bool IsFromRedirect { get; set; }

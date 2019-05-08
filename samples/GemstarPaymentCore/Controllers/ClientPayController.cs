@@ -23,7 +23,7 @@ namespace GemstarPaymentCore.Controllers
             _logger = logger;
             _serviceProvider = serviceProvider;
         }
-        public async Task<IActionResult> Index(string payStr,string callbackUrl,string memberUrl,int? redirect=0,int? isFromRedirect = 0)
+        public async Task<IActionResult> Index(string payStr,string callbackUrl,string memberUrl,string memberType,int? redirect=0,int? isFromRedirect = 0)
         {
             using (var scope = _logger.BeginScope(this))
             {
@@ -49,6 +49,7 @@ namespace GemstarPaymentCore.Controllers
                                 KeyValuePair.Create("payStr",payStr)
                                 ,KeyValuePair.Create("callbackUrl",businessOption.InternetUrl)
                                 ,KeyValuePair.Create("memberUrl",businessOption.InternetMemberUrl)
+                                ,KeyValuePair.Create("memberType",businessOption.MemberVersion)
                                 ,KeyValuePair.Create("isFromRedirect","1") }
                             ))
                             using (var response = await httpClient.PostAsync(businessOption.JxdPaymentUrl, requestContent))
@@ -62,6 +63,7 @@ namespace GemstarPaymentCore.Controllers
                         {
                             CallbackUrl = callbackUrl,
                             MemberUrl = memberUrl,
+                            MemberType = memberType,
                             IsFromRedirect = isFromRedirect == 1
                         };
                         var handler = BusinessHandlerFactory.GetHandler(payStr,para, _serviceProvider);

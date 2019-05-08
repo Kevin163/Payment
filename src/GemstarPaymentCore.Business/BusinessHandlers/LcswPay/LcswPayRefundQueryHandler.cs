@@ -77,11 +77,11 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                 }
                 if (response.ResultCode != "01")
                 {
-                    return HandleResult.Fail($"错误代码{response.ResultCode};错误描述:{response.ReturnMsg}");
+                    return HandleResult.Fail($"错误代码{response.ResultCode};错误描述:{response.ReturnMsg}|{response.TradeStatus}");
                 }
                 if(response.TradeStatus != "SUCCESS")
                 {
-                    return HandleResult.Fail($"退款请求还没有处理成功，当前状态是:{response.TradeStatus}");
+                    return HandleResult.Fail($"退款请求还没有处理成功，当前状态是:{response.TradeStatus}|{response.TradeStatus}");
                 }
                 var resultStr = $"{response.OutTradeNo}|{response.OutRefundNo}|{response.EndTime}";
                 return HandleResult.Success(resultStr);
