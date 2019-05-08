@@ -1,8 +1,10 @@
 ﻿using GemstarPaymentCore.Business;
+using GemstarPaymentCore.Business.BusinessQuery;
 using GemstarPaymentCore.Business.MemberHandlers;
 using GemstarPaymentCore.Data;
 using GemstarPaymentCore.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
@@ -20,12 +22,21 @@ namespace GemstarPaymentCore.Controllers
         private BusinessOption _businessOption;
         private IHttpClientFactory _httpClientFactory;
         private IMemberHandlerFactory _memberHandlerFactory;
-        public JxdUnionPayController(IWxPayDBFactory wxPayDBFactory,IOptionsSnapshot<BusinessOption> businessOption,IMemberHandlerFactory memberHandlerFactory)
+        public JxdUnionPayController(IWxPayDBFactory wxPayDBFactory,IOptionsSnapshot<BusinessOption> businessOption,IMemberHandlerFactory memberHandlerFactory,IHttpClientFactory httpClientFactory)
         {
             _dbFactory = wxPayDBFactory;
             _businessOption = businessOption.Value;
             _memberHandlerFactory = memberHandlerFactory;
+            _httpClientFactory = httpClientFactory;
         }
+        #region 捷信达聚合支付首页
+        /// <summary>
+        /// 捷信达聚合支付首页
+        /// 接收支付类型和支付记录id参数来进行支付
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public IActionResult Index(string id, string type)
         {
             var model = new JxdUnionPayViewModel
@@ -38,14 +49,15 @@ namespace GemstarPaymentCore.Controllers
                 var db = _dbFactory.GetFirstHavePaySystemDB();
                 var idValue = Guid.Parse(id);
                 var payEntity = db.UnionPayLcsws.FirstOrDefault(w => w.Id == idValue);
-                if(payEntity != null)
+                if (payEntity != null)
                 {
-                    if (payEntity.Status == WxPayInfoStatus.NewForLcswPay)
+                    if (payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay)
                     {
                         model.IsParaOK = true;
                         model.AppId = payEntity.AppId;
                         model.LcswPayQrcodeUrl = payEntity.LcswPayUnionQrcodeUrl;
-                    }else if(payEntity.Status == WxPayInfoStatus.PaidSuccess)
+                    }
+                    else if (payEntity.Status == WxPayInfoStatus.PaidSuccess)
                     {
                         var remark = payEntity.PayRemark;
                         if (!string.IsNullOrWhiteSpace(remark))
@@ -53,7 +65,8 @@ namespace GemstarPaymentCore.Controllers
                             remark = $"[{remark}]";
                         }
                         model.ErrorMessage = $"已经支付成功了，不需要再支付{remark}";
-                    }else if(payEntity.Status == WxPayInfoStatus.Cancel)
+                    }
+                    else if (payEntity.Status == WxPayInfoStatus.Cancel)
                     {
                         model.ErrorMessage = $"已经由业务系统撤销订单，不需要支付";
                     }
@@ -77,7 +90,8 @@ namespace GemstarPaymentCore.Controllers
                     var wxOpenIdUri = new Uri(uriBase, wxOpenIdPath);
                     var redirectPath = $"https://open.weixin.qq.com/connect/oauth2/authorize?appid={WebUtility.UrlEncode(model.AppId)}&redirect_uri={WebUtility.UrlEncode(wxOpenIdUri.AbsoluteUri)}&response_type=code&scope=snsapi_base&state={WebUtility.UrlEncode(id)}#wechat_redirect";
                     return Redirect(redirectPath);
-                }else if (IsAlipayClientEnviroment)
+                }
+                else if (IsAlipayClientEnviroment)
                 {
                     //如果是支付宝扫描的，则直接转到扫呗的聚合二维码进行支付
                     return Redirect(model.LcswPayQrcodeUrl);
@@ -91,7 +105,24 @@ namespace GemstarPaymentCore.Controllers
             }
             return View(model);
         }
-        public async Task<IActionResult> WxOpenId(string code,string state)
+        /// <summary>
+        /// 判断是否是微信浏览器环境
+        /// </summary>
+        private bool IsWeixinEnviroment => Request.Headers["User-Agent"].ToString().Contains("MicroMessenger");
+        /// <summary>
+        /// 判断是否是支付宝浏览器环境
+        /// </summary>
+        private bool IsAlipayClientEnviroment => Request.Headers["User-Agent"].ToString().Contains("AlipayClient");
+        #endregion
+
+        #region 接收获取微信openid回调
+        /// <summary>
+        /// 接收获取微信openid回调，根据接收到的参数换取openid，并且根据openid是否是有效会员决定是使用会员支付还是微信支付
+        /// </summary>
+        /// <param name="code"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> WxOpenId(string code, string state)
         {
             var model = new JxdUnionPayViewModel
             {
@@ -105,9 +136,9 @@ namespace GemstarPaymentCore.Controllers
                 var payDb = _dbFactory.GetFirstHavePaySystemDB();
                 var idValue = Guid.Parse(state);
                 var payEntity = payDb.UnionPayLcsws.FirstOrDefault(w => w.Id == idValue);
-                if (payEntity != null )
+                if (payEntity != null)
                 {
-                    if (payEntity.Status == WxPayInfoStatus.NewForLcswPay)
+                    if (payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay)
                     {
                         //这里写死一个固定的openid用于在本地进行测试，真实调用时由于code肯定会有值的，所以肯定会取真实的openid
                         string openId = "oLI_KjkAEEEMOBquaFb3Rabi-czU";
@@ -158,7 +189,8 @@ namespace GemstarPaymentCore.Controllers
                         model.ErrorMessage = $"已经由业务系统撤销订单，不需要支付";
                     }
                 }
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 model.ErrorMessage = ex.Message;
             }
@@ -169,21 +201,144 @@ namespace GemstarPaymentCore.Controllers
             }
             else
             {
-                return View(nameof(Index),model);
+                return View(nameof(Index), model);
             }
         }
-        public IActionResult MemberPay(string cardPassword,string memberId,string orderId)
-        {
-            return Json(new JsonResultData{ Success = false, Data = $"还没有实现;cardPassword:{cardPassword};memberId:{memberId};orderId:{orderId}" });
-        }
-        private bool IsWeixinEnviroment => Request.Headers["User-Agent"].ToString().Contains("MicroMessenger");
-        private bool IsAlipayClientEnviroment => Request.Headers["User-Agent"].ToString().Contains("AlipayClient");
+        #endregion
 
-        private async Task<List<MemberInfo>> QueryMember(string openId,string memberType,string memberUrl)
+        #region 会员卡支付
+        /// <summary>
+        /// 会员在页面中输入会员支付密码后继续使用会员卡支付
+        /// </summary>
+        /// <param name="cardPassword"></param>
+        /// <param name="memberId"></param>
+        /// <param name="orderId"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> MemberPay(string cardPassword, string memberId, string orderId)
+        {
+            try
+            {
+                var payDb = _dbFactory.GetFirstHavePaySystemDB();
+                var idValue = Guid.Parse(orderId);
+                var payEntity = payDb.UnionPayLcsws.FirstOrDefault(w => w.Id == idValue);
+                if (payEntity == null)
+                {
+                    return Json(JsonResultData.Failure("参数错误,未找到支付记录"));
+                }
+                if (payEntity.Status == WxPayInfoStatus.Cancel)
+                {
+                    return Json(JsonResultData.Failure($"支付记录已经撤销，不需要继续支付"));
+                }
+                if (payEntity.Status == WxPayInfoStatus.PaidSuccess)
+                {
+                    return Json(JsonResultData.Failure($"支付记录已经支付成功，不需要继续支付"));
+                }
+                if (payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay)
+                {
+                    var memberHandle = _memberHandlerFactory.GetMemberHandler(payEntity.MemberType, payEntity.MemberUrl);
+                    var payPara = new MemberPaymentParameter
+                    {
+                        Amount = payEntity.TotalFee,
+                        Id = memberId,
+                        OrigBillNo = payEntity.TerminalTrace,
+                        OutletCode = payEntity.OutletCode,
+                        Password = cardPassword,
+                        RefNo = payEntity.Id.ToString("N"),
+                        Remark = payEntity.PayRemark
+                    };
+                    var payResult = await memberHandle.MemberPayment(payPara);
+                    if (payResult.PaySuccess)
+                    {
+                        //更改记录的支付状态
+                        payEntity.Status = WxPayInfoStatus.PaidSuccess;
+                        payEntity.Paytime = DateTime.Now;
+                        payEntity.PayRemark = $"使用会员卡支付成功";
+                        var saveTask = payDb.SaveChangesAsync();
+                        //通知回调地址支付状态
+                        if (!string.IsNullOrEmpty(payEntity.CallbackUrl))
+                        {
+                            var paymentCallbackPara = new PaymentCallbackParameter
+                            {
+                                BillId = payEntity.TerminalTrace,
+                                CallbackUrl = payEntity.CallbackUrl,
+                                PaidTime = payEntity.Paytime.Value,
+                                PaidTransId = payEntity.PayTransId,
+                                PaySuccess = payEntity.Status == WxPayInfoStatus.PaidSuccess,
+                                SystemName = payEntity.SystemName,
+                                ErrorMessage = "",
+                                PaidAmount = payEntity.TotalFee
+                            };
+                            PaymentCallback.CallbackNotify(paymentCallbackPara, _httpClientFactory);
+                        }
+                        saveTask.Wait();
+                        return Json(JsonResultData.Successed("会员卡支付成功"));
+                    }
+                    else
+                    {
+                        return Json(JsonResultData.Failure(payResult.Message));
+                    }
+                }
+                return Json(JsonResultData.Failure($"支付记录状态不正确，当前状态是{payEntity.Status.ToString()}"));
+            }
+            catch (Exception ex)
+            {
+                return Json(JsonResultData.Failure(ex));
+            }
+        }
+        /// <summary>
+        /// 根据openid查询会员，并且返回会员信息
+        /// </summary>
+        /// <param name="openId">openid</param>
+        /// <param name="memberType">对接的会员系统类型</param>
+        /// <param name="memberUrl">会员接口地址</param>
+        /// <returns>openid对应的会员信息</returns>
+
+        private async Task<List<MemberInfo>> QueryMember(string openId, string memberType, string memberUrl)
         {
             var memberHandler = _memberHandlerFactory.GetMemberHandler(memberType, memberUrl);
             return await memberHandler.QueryMember(openId);
         }
+        #endregion
 
+        #region 支付成功通知
+        /// <summary>
+        /// 支付成功通知，用于线上收到支付结果后通知本地接口程序
+        /// 本地接口程序负责更改对应的业务数据的支付状态
+        /// </summary>
+        /// <param name="para"></param>
+        /// <returns></returns>
+        public void PayNotify(PaymentCallbackParameter para)
+        {
+            try
+            {
+                var systemName = para.SystemName;
+                var systemSetting = _businessOption.Systems.FirstOrDefault(w => w.Name == systemName);
+                if (systemSetting != null && systemSetting.HavePay == 1)
+                {
+                    var dbOptionFactory = new DbContextOptionsBuilder<WxPayDB>();
+                    dbOptionFactory.UseSqlServer(systemSetting.ConnStr);
+                    using (var payDb = new WxPayDB(dbOptionFactory.Options))
+                    {
+                        var payEntity = payDb.WxPayInfos.FirstOrDefault(w => w.ID == para.BillId && w.Status == WxPayInfoStatus.NewForJxdUnionPay);
+                        if(payEntity != null)
+                        {
+                            if (para.PaySuccess)
+                            {
+                                WxPayInfoHelper.JxdUnionPayPaidSuccess(payDb, payEntity, para.PaidTransId, para.PaidTime, para.PaidAmount);
+                            }
+                            else
+                            {
+                                WxPayInfoHelper.JxdUnionPayPaidFail(payDb, payEntity, para.ErrorMessage);
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+        }
+        #endregion
     }
 }

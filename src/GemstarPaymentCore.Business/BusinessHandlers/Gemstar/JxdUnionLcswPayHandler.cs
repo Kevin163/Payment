@@ -15,7 +15,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
     /// </summary>
     public class JxdUnionLcswPayHandler : IBusinessHandler
     {
-        private const string contentFormat = "merchantNo|terminalId|accessToken|terminalTrace|terminalTime|outletCode|totalFee|orderBody|attach|appId|appSecret";
+        private const string contentFormat = "merchantNo|terminalId|accessToken|terminalTrace|terminalTime|outletCode|totalFee|orderBody|attach|appId|appSecret|systemName";
         private const char splitChar = '|';
         private readonly ILcswPayClient _client;
         private readonly LcswPayOption _options;
@@ -67,6 +67,15 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                 var attach = infos[i++];
                 var appId = infos[i++];
                 var appSecret = infos[i++];
+                var systemName = infos[i++];
+                //检查参数有效性
+                if (_para.IsFromRedirect)
+                {
+                    if (string.IsNullOrEmpty(_para.CallbackUrl))
+                    {
+                        return HandleResult.Fail($"请指定支付回调地址，以便通知支付状态");
+                    }
+                }
                 //计算支付成功后的回调通知路径
                 var uriBase = new Uri(_businessOption.InternetUrl);
                 var notifyPath = $"/LcswPayNotify";
@@ -109,6 +118,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                     var payEntity = new UnionPayLcsw
                     {
                         Id = Guid.NewGuid(),
+                        SystemName = systemName,
                         AccessToken = accessToken,
                         Attach = attach,
                         CallbackUrl = _para.CallbackUrl,
@@ -124,7 +134,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                         TotalFee = Convert.ToDecimal(totalFee),
                         AppId = appId,
                         AppSecret = appSecret,
-                        Status = WxPayInfoStatus.NewForLcswPay
+                        Status = WxPayInfoStatus.NewForJxdUnionPay
                     };
                     _payDb.UnionPayLcsws.Add(payEntity);
                     await _payDb.SaveChangesAsync();

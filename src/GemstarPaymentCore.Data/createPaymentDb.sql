@@ -1,6 +1,7 @@
 ﻿drop table unionPay_lcsw
 create table unionPay_lcsw(
 		Id uniqueidentifier not null,--主键值
+		systemName varchar(20) not null,--用于记录是哪个业务系统的单据，以便回调通知时知道修改哪个业务系统中的数据
 		terminalTrace varchar(60) not null,--终端流水号，填写商户系统的订单号
 		terminalTime datetime not null,--终端交易时间，yyyyMMddHHmmss
 		merchantNo varchar(60) not null,--扫呗商户号

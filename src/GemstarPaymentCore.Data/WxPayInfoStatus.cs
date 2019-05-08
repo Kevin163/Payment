@@ -52,6 +52,10 @@
         /// <summary>
         /// 利楚商务扫呗支付的新单
         /// </summary>
-        NewForLcswPay = 40
+        NewForLcswPay = 40,
+        /// <summary>
+        /// 捷信达聚合支付的新单
+        /// </summary>
+        NewForJxdUnionPay = 50,
     }
 }

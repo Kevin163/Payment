@@ -16,6 +16,11 @@ namespace GemstarPaymentCore.Data
         [Key]
         public Guid Id { get; set; }
         /// <summary>
+        /// 业务系统
+        /// 用于记录是哪个业务系统的单据，以便回调通知时知道修改哪个业务系统中的数据
+        /// </summary>
+        public string SystemName { get; set; }
+        /// <summary>
         /// 终端流水号，填写商户系统的订单号
         /// </summary>
         public string TerminalTrace { get; set; }
