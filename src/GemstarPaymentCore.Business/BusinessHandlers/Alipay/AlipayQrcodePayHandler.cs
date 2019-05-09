@@ -73,7 +73,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                     OperatorId = operatorName,
                     ExtendParams = new ExtendParams
                     {
-                        SysServiceProviderId = _options.SysServiceProviderId
+                        SysServiceProviderId = string.IsNullOrEmpty(_options.SysServiceProviderId) ? "2088221616228734":_options.SysServiceProviderId
                     }
                 };
                 var req = new AlipayTradePrecreateRequest();
