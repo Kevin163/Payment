@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace GemstarPaymentCore.Models
@@ -37,6 +38,11 @@ namespace GemstarPaymentCore.Models
         /// 业务系统
         /// </summary>
         public string SystemName { get; set; }
+        /// <summary>
+        /// 支付说明
+        /// </summary>
+        public string PaidRemark { get; set; }
+        [JsonIgnore]
         public List<KeyValuePair<string, string>> ToKeyValuePairs=> new List<KeyValuePair<string, string>>{
             KeyValuePair.Create(nameof(BillId),BillId)
             ,KeyValuePair.Create(nameof(PaySuccess),PaySuccess?"1":"0")
@@ -45,6 +51,7 @@ namespace GemstarPaymentCore.Models
             ,KeyValuePair.Create(nameof(SystemName),SystemName)
             ,KeyValuePair.Create(nameof(PaidAmount),PaidAmount.ToString())
             ,KeyValuePair.Create(nameof(ErrorMessage),ErrorMessage)
+            ,KeyValuePair.Create(nameof(PaidRemark),PaidRemark)
         };
     }
 }
