@@ -21,5 +21,6 @@ create table unionPay_lcsw(
 		paytime datetime null,--支付时间
 		payTransId varchar(64) null,--支付流水号，用于对账
 		payRemark varchar(200) null,--支付备注
+		payType varchar(10) null,--支付方式，Member:会员卡支付,010：微信，020：支付宝，060：qq钱包，080：京东钱包，090：口碑，100：翼支付
 		CONSTRAINT pk_unionPay_lcsw PRIMARY key(id)
 )

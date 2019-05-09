@@ -132,9 +132,9 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         /// <param name="transactionId">微信支付订单号</param>
         /// <param name="paidTime">支付完成时间</param>
         /// <param name="amount">支付金额</param>
-        public static void JxdUnionPayPaidSuccess(WxPayDB payDB, WxPayInfo payInfo, string transactionId, DateTime paidTime, decimal amount)
+        public static void JxdUnionPayPaidSuccess(WxPayDB payDB, WxPayInfo payInfo, string transactionId, DateTime paidTime, decimal amount,string payType)
         {
-            PaidSuccess(payDB, payInfo.ID, transactionId, paidTime,amount, new List<WxPayInfoStatus?> { WxPayInfoStatus.NewForJxdUnionPay });
+            PaidSuccess(payDB, payInfo.ID, transactionId, paidTime,amount, new List<WxPayInfoStatus?> { WxPayInfoStatus.NewForJxdUnionPay },payType);
         }
         /// <summary>
         /// 捷信达聚合支付查询状态，确认订单已经支付失败
@@ -166,7 +166,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
             }
             return payInfos;
         }
-        private static void PaidSuccess(WxPayDB payDB, string payInfoId, string transactionId, DateTime paidTime, decimal amount,List<WxPayInfoStatus?> status)
+        private static void PaidSuccess(WxPayDB payDB, string payInfoId, string transactionId, DateTime paidTime, decimal amount,List<WxPayInfoStatus?> status,string payType = "")
         {
             var updateInfo = payDB.WxPayInfos.FirstOrDefault(w => w.ID == payInfoId && status.Contains(w.Status));
             if (updateInfo != null)
@@ -175,6 +175,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                 updateInfo.PayDate = paidTime;
                 updateInfo.WxPaidAmount = amount;
                 updateInfo.Status = WxPayInfoStatus.PaidSuccess;
+                updateInfo.ErrMsg = payType;
                 payDB.SaveChanges();
             }
         }

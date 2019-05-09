@@ -96,5 +96,9 @@ namespace GemstarPaymentCore.Data
         /// 支付说明
         /// </summary>
         public string PayRemark { get; set; }
+        /// <summary>
+        /// 支付方式，Member:会员卡支付,010：微信，020：支付宝，060：qq钱包，080：京东钱包，090：口碑，100：翼支付
+        /// </summary>
+        public string PayType {get;set;}
     }
 }

@@ -65,7 +65,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                                             var transactionId = payResult.PaidTransId;
                                             var paidAmount = payResult.PaidAmount;
 
-                                            WxPayInfoHelper.JxdUnionPayPaidSuccess(payDB, record, transactionId, paidTime, paidAmount);
+                                            WxPayInfoHelper.JxdUnionPayPaidSuccess(payDB, record, transactionId, paidTime, paidAmount,payResult.PaidType);
                                         }
                                     }
                                 }

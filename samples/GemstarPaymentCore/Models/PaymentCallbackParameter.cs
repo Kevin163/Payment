@@ -42,6 +42,10 @@ namespace GemstarPaymentCore.Models
         /// 支付说明
         /// </summary>
         public string PaidRemark { get; set; }
+        /// <summary>
+        /// 支付方式
+        /// </summary>
+        public string PaidType { get; set; }
         [JsonIgnore]
         public List<KeyValuePair<string, string>> ToKeyValuePairs=> new List<KeyValuePair<string, string>>{
             KeyValuePair.Create(nameof(BillId),BillId)
@@ -52,6 +56,7 @@ namespace GemstarPaymentCore.Models
             ,KeyValuePair.Create(nameof(PaidAmount),PaidAmount.ToString())
             ,KeyValuePair.Create(nameof(ErrorMessage),ErrorMessage)
             ,KeyValuePair.Create(nameof(PaidRemark),PaidRemark)
+            ,KeyValuePair.Create(nameof(PaidType),PaidType)
         };
     }
 }

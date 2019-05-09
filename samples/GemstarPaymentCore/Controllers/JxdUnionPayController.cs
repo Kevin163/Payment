@@ -257,6 +257,7 @@ namespace GemstarPaymentCore.Controllers
                         payEntity.Status = WxPayInfoStatus.PaidSuccess;
                         payEntity.Paytime = DateTime.Now;
                         payEntity.PayRemark = $"使用会员卡支付成功";
+                        payEntity.PayType = "Member";
                         var saveTask = payDb.SaveChangesAsync();
                         //通知回调地址支付状态
                         if (!string.IsNullOrEmpty(payEntity.CallbackUrl))
@@ -270,7 +271,8 @@ namespace GemstarPaymentCore.Controllers
                                 PaySuccess = payEntity.Status == WxPayInfoStatus.PaidSuccess,
                                 SystemName = payEntity.SystemName,
                                 ErrorMessage = "",
-                                PaidAmount = payEntity.TotalFee
+                                PaidAmount = payEntity.TotalFee,
+                                PaidType = payEntity.PayType
                             };
                             PaymentCallback.CallbackNotify(paymentCallbackPara, _httpClientFactory);
                         }
@@ -328,7 +330,7 @@ namespace GemstarPaymentCore.Controllers
                         {
                             if (para.PaySuccess)
                             {
-                                WxPayInfoHelper.JxdUnionPayPaidSuccess(payDb, payEntity, para.PaidTransId, para.PaidTime, para.PaidAmount);
+                                WxPayInfoHelper.JxdUnionPayPaidSuccess(payDb, payEntity, para.PaidTransId, para.PaidTime, para.PaidAmount,para.PaidType);
                             }
                             else
                             {
@@ -386,6 +388,7 @@ namespace GemstarPaymentCore.Controllers
                             payEntity.Status = WxPayInfoStatus.PaidSuccess;
                             payEntity.Paytime = DateTime.ParseExact(response.EndTime,"yyyyMMddHHmmss",CultureInfo.InvariantCulture);
                             payEntity.PayTransId = response.OutTradeNo;
+                            payEntity.PayType = response.PayType;
                             payEntity.PayRemark = $"使用扫呗聚合支付中的{response.PayType},支付方{response.UserId},渠道流水号{response.ChannelTradeNo}";
                             await payDb.SaveChangesAsync();
                             return PaySuccess(callPara, payEntity);
@@ -426,6 +429,7 @@ namespace GemstarPaymentCore.Controllers
             callPara.PaySuccess = true;
             callPara.SystemName = payEntity.SystemName;
             callPara.PaidRemark = payEntity.PayRemark;
+            callPara.PaidType = payEntity.PayType;
             return Json(callPara);
         }
         #endregion

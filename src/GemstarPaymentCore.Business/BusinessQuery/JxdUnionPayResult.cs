@@ -36,5 +36,9 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         /// 支付说明
         /// </summary>
         public string PaidRemark { get; set; }
+        /// <summary>
+        /// 支付方式
+        /// </summary>
+        public string PaidType { get; set; }
     }
 }
