@@ -122,6 +122,18 @@ namespace GemstarPaymentCore
                         .WithSimpleSchedule(s => s.WithIntervalInSeconds(businessOption.QueryInterval).RepeatForever())
                         .Build();
                     await _scheduler.ScheduleJob(jobLcswPayQuery, triggerlcswpayquery);
+                    //启动扫呗支付扫码支付结果查询
+                    var jobJxdUnionPayQuery = JobBuilder.Create<JxdUnionPayQueryJob>()
+                       .WithIdentity($"jxdunionpayquery{system.Name}", "jxdunionpayquery")
+                       .Build();
+                    jobJxdUnionPayQuery.JobDataMap.Put(JobParaName.ParaSystemName, system.Name);
+                    jobJxdUnionPayQuery.JobDataMap.Put(JobParaName.ParaConnStrName, system.ConnStr);
+
+                    var triggerjxdunionpayquery = TriggerBuilder.Create()
+                        .WithIdentity($"jxdunionpayquery{system.Name}", "jxdunionpayquery")
+                        .WithSimpleSchedule(s => s.WithIntervalInSeconds(businessOption.QueryInterval).RepeatForever())
+                        .Build();
+                    await _scheduler.ScheduleJob(jobJxdUnionPayQuery, triggerjxdunionpayquery);
 
 
                     hasJob = true;

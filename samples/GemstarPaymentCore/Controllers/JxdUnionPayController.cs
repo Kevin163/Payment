@@ -350,7 +350,7 @@ namespace GemstarPaymentCore.Controllers
         #region 查询支付结果
         public async Task<IActionResult> QueryPayResult(string terminalTrace)
         {
-            var callPara = new PaymentCallbackParameter();
+            var callPara = new JxdUnionPayResult();
             try
             {
                 var payDb = _dbFactory.GetFirstHavePaySystemDB();
@@ -419,7 +419,7 @@ namespace GemstarPaymentCore.Controllers
             return Json(callPara);
         }
 
-        private IActionResult PaySuccess(PaymentCallbackParameter callPara, UnionPayLcsw payEntity)
+        private IActionResult PaySuccess(JxdUnionPayResult callPara, UnionPayLcsw payEntity)
         {
             callPara.BillId = payEntity.TerminalTrace;
             callPara.PaidAmount = payEntity.TotalFee;
