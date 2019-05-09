@@ -31,6 +31,10 @@
     font-weight: 400;
     margin-bottom: .33rem;
 }
+.pay-text p{
+    flex: 1;
+    line-height: .36rem;
+}
 .pay-catalog{
     font-size: .32rem;
     color: #1F2035;
@@ -65,4 +69,10 @@
     font-weight: bold;
     border-radius: .08rem;
     margin: auto;
+}
+.wx-pay{
+    font-size: .28rem;
+    color: #333333;
+    text-align: center;
+    margin-top: .4rem;
 }
