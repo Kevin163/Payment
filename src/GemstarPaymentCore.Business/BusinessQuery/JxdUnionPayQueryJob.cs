@@ -36,7 +36,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                     using (var payDB = new WxPayDB(dbContextOption.Options))
                     {
                         var businessOption = serviceProvider.GetService<IOptions<BusinessOption>>().Value;
-                        var records = WxPayInfoHelper.GetLcswPayOrderNeedStatus(payDB, businessOption);
+                        var records = WxPayInfoHelper.GetJxdUnionPayOrderNeedStatus(payDB, businessOption);
                         if (records.Count > 0)
                         {
                             //计算捷信达线上的查询地址
