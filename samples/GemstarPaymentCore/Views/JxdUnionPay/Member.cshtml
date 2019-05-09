@@ -4,86 +4,45 @@
     ViewData["Title"] = "会员卡支付";
 }
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - GemstarPaymentCore</title>
-
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
-              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
-              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
-              crossorigin="anonymous"
-              integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE="/>
-    </environment>
-    <link rel="stylesheet" href="~/css/site.css" />
+    <meta charset="UTF-8">
+    <title>@ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="Keywords" content="">
+    <meta name="Description" content="">
+    <meta name="viewport" content="initial-scale=1.0,minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=yes">
+    <link rel="stylesheet" href="~/css/reset.css">
+    <link rel="stylesheet" href="~/css/memberpay.css">
 </head>
-<body>
-    <div class="container">
-        <main role="main" class="pb-3">
-<h2>@ViewData["Title"]</h2>
+<body class="bj">
+    <div class="pay-container">
+        <h2 class="pay-title">会员卡支付</h2>
+        @{
+            using (Html.BeginForm())
+            {
+                <div class="pay-text">
+                    <span class="pay-catalog">支付项目：</span>
+                    <p>@Model.OrderTitle</p>
+                </div>
+                <div class="pay-text">
+                    <span class="pay-catalog">待支付费用：</span>
+                    <em class="pay-price">@Model.PayFee</em>
+                </div>
+                <span class="pay-catalog">会员卡密码：</span>
+                @Html.PasswordFor(w => w.CardPassword, new { @class = "pay-password" })
+                <div class="pay-btn" id="submit">确定支付</div>
+                <div class="pay-btn" id="weixinPay" style="display:none"><a href="@Model.WxPayUrl">会员卡支付失败，使用微信继续支付</a></div>
+            }
 
-@{
-    using (Html.BeginForm())
-    {
-        <table>
-            <tr>
-                <td>支付项目：</td>
-                <td>@Model.OrderTitle</td>
-            </tr>
-            <tr>
-                <td>待支付费用</td>
-                <td>@Model.PayFee</td>
-            </tr>
-            <tr>
-                <td>会员卡支付密码：</td>
-                <td>@Html.PasswordFor(w=>w.CardPassword)</td>
-            </tr>
-            <tr>
-                <td></td>
-                <td><button id="submit">确定会员卡支付</button></td>
-            </tr>
-            <tr id="weixinPay" style="display:none">
-                <td colspan="2"><a href="@Model.WxPayUrl">会员卡支付失败，使用微信继续支付</a></td>
-            </tr>
-        </table>
-    }
+        }
 
-}
- </main>
     </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2019 - 捷信达版权所有
-        </div>
-    </footer>
-
-    <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.js"></script>
-        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
-                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
-                asp-fallback-test="window.jQuery"
-                crossorigin="anonymous"
-                integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=">
-        </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.bundle.min.js"
-                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"
-                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
-                crossorigin="anonymous"
-                integrity="sha256-E/V4cWE4qvAeO5MOhjtGtqDzPndRO1LBk8lJ/PR7CA4=">
-        </script>
-    </environment>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script type="text/javascript">
-        $(function () {
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="~/js/public.js"></script>
+    <script>
+          $(function () {
             $("#submit").click(function (e) {
                 e.preventDefault();
                 var cardPassword = $("#CardPassword").val();

@@ -1,7 +1,29 @@
 ﻿@model GemstarPaymentCore.Models.JxdUnionPayViewModel
 @{
+    Layout = null;
     ViewData["Title"] = "聚合支付";
 }
-
-<h2>@Model.ErrorMessage</h2>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>@ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="Keywords" content="">
+    <meta name="Description" content="">
+    <meta name="viewport" content="initial-scale=1.0,minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=yes">
+    <link rel="stylesheet" href="~/css/reset.css">
+    <link rel="stylesheet" href="~/css/memberpay.css">
+</head>
+<body class="bj">
+    <div class="pay-container">
+        <h2 class="pay-title">提示信息</h2>
+        <div class="pay-text">
+            <p>@Model.ErrorMessage</p>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="~/js/public.js"></script>
+</body>
+</html>

@@ -88,8 +88,6 @@ namespace GemstarPaymentCore.Controllers
                     {
                         return Redirect(model.LcswPayQrcodeUrl);
                     }
-                    //先直接跳转到会员支付页面，以便在本地测试会员支付
-                    return RedirectToAction(nameof(WxOpenId), new { state = id });
                     //有指定公众号id，则构建获取openid的链接地址，转去获取openid，示例地址：https://open.weixin.qq.com/connect/oauth2/authorize?appid=APPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&state=STATE#wechat_redirect
                     var uriBase = new Uri(_businessOption.InternetUrl);
                     var wxOpenIdPath = Url.Action(nameof(WxOpenId));

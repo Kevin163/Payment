@@ -108,8 +108,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                 if (_para.IsFromRedirect)
                 {
                     //如果有相同业务单号对应的新记录，则将原来的记录撤销
-                    var cancelEntity = _payDb.UnionPayLcsws.FirstOrDefault(w => w.TerminalTrace == terminalTrace && w.Status == WxPayInfoStatus.NewForLcswPay);
-                    if(cancelEntity != null)
+                    var cancelEntities = _payDb.UnionPayLcsws.Where(w => w.TerminalTrace == terminalTrace && w.Status == WxPayInfoStatus.NewForJxdUnionPay).ToList();
+                    foreach(var cancelEntity in cancelEntities)
                     {
                         cancelEntity.Status = WxPayInfoStatus.Cancel;
                         cancelEntity.PayRemark = "业务系统重新使用相同单号重新请求支付，此订单将自动撤销";
