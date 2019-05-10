@@ -1,22 +1,22 @@
-﻿using GemstarPaymentCore.Business;
+﻿using Essensoft.AspNetCore.Payment.LcswPay;
+using Essensoft.AspNetCore.Payment.LcswPay.Request;
+using GemstarPaymentCore.Business;
 using GemstarPaymentCore.Business.BusinessQuery;
 using GemstarPaymentCore.Business.MemberHandlers;
 using GemstarPaymentCore.Data;
 using GemstarPaymentCore.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Essensoft.AspNetCore.Payment.LcswPay;
-using Essensoft.AspNetCore.Payment.LcswPay.Request;
-using System.Globalization;
 
 namespace GemstarPaymentCore.Controllers
 {
@@ -27,7 +27,7 @@ namespace GemstarPaymentCore.Controllers
         private IHttpClientFactory _httpClientFactory;
         private IMemberHandlerFactory _memberHandlerFactory;
         private IServiceProvider _serviceProvider;
-        public JxdUnionPayController(IWxPayDBFactory wxPayDBFactory,IOptionsSnapshot<BusinessOption> businessOption,IMemberHandlerFactory memberHandlerFactory,IHttpClientFactory httpClientFactory,IServiceProvider serviceProvider)
+        public JxdUnionPayController(IWxPayDBFactory wxPayDBFactory, IOptionsSnapshot<BusinessOption> businessOption, IMemberHandlerFactory memberHandlerFactory, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
         {
             _dbFactory = wxPayDBFactory;
             _businessOption = businessOption.Value;
@@ -144,6 +144,7 @@ namespace GemstarPaymentCore.Controllers
                 {
                     if (payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay)
                     {
+                        model.IsParaOK = true;
                         //这里写死一个固定的openid用于在本地进行测试，真实调用时由于code肯定会有值的，所以肯定会取真实的openid
                         string openId = "oLI_KjkAEEEMOBquaFb3Rabi-czU";
                         if (!string.IsNullOrEmpty(code))
@@ -301,7 +302,7 @@ namespace GemstarPaymentCore.Controllers
 
         private async Task<List<MemberInfo>> QueryMember(string openId, string memberType, string memberUrl)
         {
-            if (string.IsNullOrWhiteSpace(memberUrl))
+            if (!string.IsNullOrWhiteSpace(memberUrl))
             {
                 var memberHandler = _memberHandlerFactory.GetMemberHandler(memberType, memberUrl);
                 return await memberHandler.QueryMember(openId);
@@ -330,11 +331,11 @@ namespace GemstarPaymentCore.Controllers
                     using (var payDb = new WxPayDB(dbOptionFactory.Options))
                     {
                         var payEntity = payDb.WxPayInfos.FirstOrDefault(w => w.ID == para.BillId && w.Status == WxPayInfoStatus.NewForJxdUnionPay);
-                        if(payEntity != null)
+                        if (payEntity != null)
                         {
                             if (para.PaySuccess)
                             {
-                                WxPayInfoHelper.JxdUnionPayPaidSuccess(payDb, payEntity, para.PaidTransId, para.PaidTime, para.PaidAmount,para.PaidType);
+                                WxPayInfoHelper.JxdUnionPayPaidSuccess(payDb, payEntity, para.PaidTransId, para.PaidTime, para.PaidAmount, para.PaidType);
                             }
                             else
                             {
@@ -359,7 +360,7 @@ namespace GemstarPaymentCore.Controllers
             {
                 var payDb = _dbFactory.GetFirstHavePaySystemDB();
                 var payEntity = payDb.UnionPayLcsws.FirstOrDefault(w => w.TerminalTrace == terminalTrace && w.Status != WxPayInfoStatus.Cancel);
-                if(payEntity != null)
+                if (payEntity != null)
                 {
                     //已经支付成功则直接返回
                     if (payEntity.Status == WxPayInfoStatus.PaidSuccess)
@@ -367,7 +368,7 @@ namespace GemstarPaymentCore.Controllers
                         return PaySuccess(callPara, payEntity);
                     }
                     //如果还是新建状态，则调用扫呗支付查询接口进行查询
-                    else if(payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay)
+                    else if (payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay)
                     {
                         var lcswClient = _serviceProvider.GetService<ILcswPayClient>();
                         var lcswOption = _serviceProvider.GetService<IOptionsSnapshot<LcswPayOption>>().Value;
@@ -390,7 +391,7 @@ namespace GemstarPaymentCore.Controllers
                         {
                             //支付成功，更改实体状态，并且直接返回
                             payEntity.Status = WxPayInfoStatus.PaidSuccess;
-                            payEntity.Paytime = DateTime.ParseExact(response.EndTime,"yyyyMMddHHmmss",CultureInfo.InvariantCulture);
+                            payEntity.Paytime = DateTime.ParseExact(response.EndTime, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
                             payEntity.PayTransId = response.OutTradeNo;
                             payEntity.PayType = response.PayType;
                             payEntity.PayRemark = $"使用扫呗聚合支付中的{response.PayType},支付方{response.UserId},渠道流水号{response.ChannelTradeNo}";
@@ -404,7 +405,7 @@ namespace GemstarPaymentCore.Controllers
                             {
                                 callPara.ErrorMessage += $"（支付状态:{response.TradeState}）";
                             }
-                        }                       
+                        }
                     }
                     //其他情况下，则把当前状态写到错误信息里面
                     else
@@ -417,7 +418,7 @@ namespace GemstarPaymentCore.Controllers
                     callPara.ErrorMessage = "没有对应的支付记录";
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 callPara.ErrorMessage = ex.Message;
             }
