@@ -68,18 +68,15 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                 var appId = infos[i++];
                 var appSecret = infos[i++];
                 var systemName = infos[i++];
-                //检查参数有效性
-                if (_para.IsFromRedirect)
-                {
-                    if (string.IsNullOrEmpty(_para.CallbackUrl))
-                    {
-                        return HandleResult.Fail($"请指定支付回调地址，以便通知支付状态");
-                    }
-                }
+                //检查参数有效性              
                 //计算支付成功后的回调通知路径
-                var uriBase = new Uri(_businessOption.InternetUrl);
-                var notifyPath = $"/LcswPayNotify";
-                var notifyUri = new Uri(uriBase, notifyPath);
+                var notifyUri = "";
+                if (!string.IsNullOrEmpty(_businessOption.InternetUrl))
+                {
+                    var uriBase = new Uri(_businessOption.InternetUrl);
+                    var notifyPath = $"/LcswPayNotify";
+                    notifyUri = new Uri(uriBase, notifyPath).AbsoluteUri;
+                }
                 //调用扫码支付接口
                 var request = new LcswPayUnionQrcodePayRequest
                 {
@@ -90,7 +87,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                     TotalFee = Convert.ToInt32(Convert.ToDecimal(totalFee) * 100).ToString(),
                     OrderBody = orderBody,
                     Attach = attach,
-                    NotifyUrl = notifyUri.AbsoluteUri
+                    NotifyUrl = notifyUri
                 };
                 _options.Token = accessToken;
                 var response = await _client.ExecuteAsync(request, _options);
@@ -140,6 +137,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                     await _payDb.SaveChangesAsync();
                     string id = payEntity.Id.ToString("N");
                     //计算要返回的页面地址
+                    var uriBase = new Uri(_businessOption.InternetUrl);
                     var uriPara = $"/JxdUnionPay?id={WebUtility.UrlEncode(id)}&type=lcsw";
                     var uri = new Uri(uriBase, uriPara);
                     return HandleResult.Success(uri.AbsoluteUri);

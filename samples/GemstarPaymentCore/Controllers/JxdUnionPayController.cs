@@ -301,8 +301,12 @@ namespace GemstarPaymentCore.Controllers
 
         private async Task<List<MemberInfo>> QueryMember(string openId, string memberType, string memberUrl)
         {
-            var memberHandler = _memberHandlerFactory.GetMemberHandler(memberType, memberUrl);
-            return await memberHandler.QueryMember(openId);
+            if (string.IsNullOrWhiteSpace(memberUrl))
+            {
+                var memberHandler = _memberHandlerFactory.GetMemberHandler(memberType, memberUrl);
+                return await memberHandler.QueryMember(openId);
+            }
+            return null;
         }
         #endregion
 
