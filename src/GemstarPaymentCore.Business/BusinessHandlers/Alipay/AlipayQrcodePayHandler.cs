@@ -51,15 +51,33 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var operatorName = infos[i++];
                 var orderAmount = infos[i++];
                 var content = infos[i++];
-                var AppId = _options.AppId;
-                if (infos.Length > i)
+                if (i < infos.Length)
                 {
-                    AppId = infos[i++];
+                    _options.AppId = infos[i++];
                 }
-                var PID = _options.PId;
-                if (infos.Length > i)
+                if (i < infos.Length)
                 {
-                    PID = infos[i++];
+                    _options.PId = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.RsaPublicKey = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.RsaPrivateKey = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.SignType = infos[i++];
+                }
+                if (string.IsNullOrEmpty(_options.AppId))
+                {
+                    return HandleResult.Fail("请指定支付宝收款账号信息");
+                }
+                if (string.IsNullOrEmpty(_options.RsaPublicKey) || string.IsNullOrEmpty(_options.RsaPrivateKey))
+                {
+                    return HandleResult.Fail("请指定支付宝对应的密钥信息");
                 }
 
                 orderAmount = Convert.ToDouble(orderAmount).ToString("0.00");
@@ -69,7 +87,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                     OutTradeNo = orderNo,
                     Subject = content,
                     TotalAmount = orderAmount,
-                    Body = $"支付宝验证码：{PID}",
+                    Body = $"支付宝验证码：{_options.PId}",
                     OperatorId = operatorName,
                     ExtendParams = new ExtendParams
                     {
@@ -80,8 +98,6 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 req.SetBizModel(model);
                 req.SetNotifyUrl(_options.NotifyUrl);
 
-                _options.AppId = AppId;
-                _options.PId = PID;
                 var response = await _client.ExecuteAsync(req,_options);
                 if (response.IsSuccessCode())
                 {

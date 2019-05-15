@@ -51,10 +51,33 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var refund_amount = infos[i++];
                 var refund_reason = infos[i++];
                 var out_request_no = infos[i++];
-                var AppId = _options.AppId;
-                if (infos.Length > i)
+                if (i < infos.Length)
                 {
-                    AppId = infos[i++];
+                    _options.AppId = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.PId = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.RsaPublicKey = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.RsaPrivateKey = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.SignType = infos[i++];
+                }
+                if (string.IsNullOrEmpty(_options.AppId))
+                {
+                    return HandleResult.Fail("请指定支付宝收款账号信息");
+                }
+                if (string.IsNullOrEmpty(_options.RsaPublicKey) || string.IsNullOrEmpty(_options.RsaPrivateKey))
+                {
+                    return HandleResult.Fail("请指定支付宝对应的密钥信息");
                 }
 
                 refund_amount = Convert.ToDouble(refund_amount).ToString("0.00");
@@ -79,7 +102,6 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var request = new AlipayTradeRefundRequest();
                 request.SetBizModel(model);
 
-                _options.AppId = AppId;
                 var response = await _client.ExecuteAsync(request,_options);
                 var result = response.FailResult();
                 if (response.IsSuccessCode())

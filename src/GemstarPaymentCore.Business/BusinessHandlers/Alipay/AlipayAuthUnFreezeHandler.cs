@@ -51,8 +51,34 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var outRequestNo = infos[i++];
                 var Amount = infos[i++];
                 var remark = infos[i++];
-                var AppId = infos[i++];
-                var PId = infos[i++];
+                if (i < infos.Length)
+                {
+                    _options.AppId = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.PId = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.RsaPublicKey = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.RsaPrivateKey = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.SignType = infos[i++];
+                }
+                if (string.IsNullOrEmpty(_options.AppId))
+                {
+                    return HandleResult.Fail("请指定支付宝收款账号信息");
+                }
+                if (string.IsNullOrEmpty(_options.RsaPublicKey) || string.IsNullOrEmpty(_options.RsaPrivateKey))
+                {
+                    return HandleResult.Fail("请指定支付宝对应的密钥信息");
+                }
 
                 Amount = Convert.ToDouble(Amount).ToString("0.00");
 
@@ -77,8 +103,6 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var request = new AlipayFundAuthOrderUnfreezeRequest();
                 request.SetBizModel(model);
 
-                _options.AppId = AppId;
-                _options.PId = PId;
                 var response = await _client.ExecuteAsync(request,_options);
 
                 var result = response.FailResult();

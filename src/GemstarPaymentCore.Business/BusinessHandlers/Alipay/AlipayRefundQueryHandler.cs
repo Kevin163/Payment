@@ -49,7 +49,34 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 int i = 0;
                 var trade_no = infos[i++];
                 var out_request_no = infos[i++];
-                var AppId = infos[i++];
+                if (i < infos.Length)
+                {
+                    _options.AppId = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.PId = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.RsaPublicKey = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.RsaPrivateKey = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.SignType = infos[i++];
+                }
+                if (string.IsNullOrEmpty(_options.AppId))
+                {
+                    return HandleResult.Fail("请指定支付宝收款账号信息");
+                }
+                if (string.IsNullOrEmpty(_options.RsaPublicKey) || string.IsNullOrEmpty(_options.RsaPrivateKey))
+                {
+                    return HandleResult.Fail("请指定支付宝对应的密钥信息");
+                }
 #if MOCK
             //如果定义了模拟编译变量，则直接根据金额来返回一个固定的结果，金额小于5则返回失败，金额大于等于5则直接返回支付成功
             if (para.trade_no != "mocktransno")
@@ -70,7 +97,6 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var request = new AlipayTradeFastpayRefundQueryRequest();
                 request.SetBizModel(model);
 
-                _options.AppId = AppId;
                 var response = await _client.ExecuteAsync(request,_options);
                 var result = response.FailResult();
                 if (!response.IsError && !string.IsNullOrWhiteSpace(response.RefundAmount))

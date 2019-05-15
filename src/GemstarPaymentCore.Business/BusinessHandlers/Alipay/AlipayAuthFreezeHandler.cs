@@ -56,8 +56,34 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var orderAmount = infos[i++];
                 var content = infos[i++];
                 var payTimeOut = infos[i++];
-                var AppId = infos[i++];
-                var PId = infos[i++];
+                if (i < infos.Length)
+                {
+                    _options.AppId = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.PId = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.RsaPublicKey = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.RsaPrivateKey = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.SignType = infos[i++];
+                }
+                if (string.IsNullOrEmpty(_options.AppId))
+                {
+                    return HandleResult.Fail("请指定支付宝收款账号信息");
+                }
+                if (string.IsNullOrEmpty(_options.RsaPublicKey) || string.IsNullOrEmpty(_options.RsaPrivateKey))
+                {
+                    return HandleResult.Fail("请指定支付宝对应的密钥信息");
+                }
 
                 orderAmount = Convert.ToDouble(orderAmount).ToString("0.00");
                 if (string.IsNullOrWhiteSpace(payTimeOut))
@@ -80,18 +106,19 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var model = new AlipayFundAuthOrderFreezeModel
                 {
                     AuthCode = authCode,
+                    AuthCodeType = "bar_code",
                     OutOrderNo = orderNo,
                     OutRequestNo = requestNo,
                     OrderTitle = content,
                     Amount = orderAmount,
-                    PayeeUserId = PId,
+                    PayeeUserId = _options.PId,
                     PayTimeout = payTimeOut,
+                    ProductCode = "PRE_AUTH",
                     ExtraParam = JsonConvert.SerializeObject(extraParam)
                 };
                 var request = new AlipayFundAuthOrderFreezeRequest();
                 request.SetBizModel(model);
 
-                _options.PId = PId;
                 var response =await _client.ExecuteAsync(request,_options);
 
                 var result = response.FailResult();

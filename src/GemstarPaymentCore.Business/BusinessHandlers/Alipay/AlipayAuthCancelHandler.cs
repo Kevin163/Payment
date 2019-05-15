@@ -50,8 +50,34 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var outOrderNo = infos[i++];
                 var outRequestNo = infos[i++];
                 var Remark = infos[i++];
-                var AppId = infos[i++];
-                var PId = infos[i++];
+                if (i < infos.Length)
+                {
+                    _options.AppId = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.PId = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.RsaPublicKey = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.RsaPrivateKey = infos[i++];
+                }
+                if (i < infos.Length)
+                {
+                    _options.SignType = infos[i++];
+                }
+                if (string.IsNullOrEmpty(_options.AppId))
+                {
+                    return HandleResult.Fail("请指定支付宝收款账号信息");
+                }
+                if (string.IsNullOrEmpty(_options.RsaPublicKey) || string.IsNullOrEmpty(_options.RsaPrivateKey))
+                {
+                    return HandleResult.Fail("请指定支付宝对应的密钥信息");
+                }
 
 #if MOCK
             //如果定义了模拟编译变量，则直接根据金额来返回一个固定的结果，金额小于5则返回失败，金额大于等于5则直接返回支付成功
@@ -73,8 +99,6 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var request = new AlipayFundAuthOperationCancelRequest();
                 request.SetBizModel(model);
 
-                _options.AppId = AppId;
-                _options.PId = PId;
                 var response = await _client.ExecuteAsync(request,_options);
                 
                 var result = response.FailResult();

@@ -145,8 +145,9 @@ namespace GemstarPaymentCore.Controllers
                     if (payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay)
                     {
                         model.IsParaOK = true;
+                        model.LcswPayQrcodeUrl = payEntity.LcswPayUnionQrcodeUrl;
                         //这里写死一个固定的openid用于在本地进行测试，真实调用时由于code肯定会有值的，所以肯定会取真实的openid
-                        string openId = "oLI_KjkAEEEMOBquaFb3Rabi-czU";
+                        string openId = "prefix_oLI_KjkAEEEMOBquaFb3Rabi-czU";
                         if (!string.IsNullOrEmpty(code))
                         {
                             var openIdUrl = $"https://api.weixin.qq.com/sns/oauth2/access_token?appid={WebUtility.UrlEncode(payEntity.AppId)}&secret={WebUtility.UrlEncode(payEntity.AppSecret)}&code={WebUtility.UrlEncode(code)}&grant_type=authorization_code";
@@ -197,9 +198,10 @@ namespace GemstarPaymentCore.Controllers
             }
             catch (Exception ex)
             {
+                model.IsParaOK = false;
                 model.ErrorMessage = ex.Message;
             }
-            if (model.IsParaOK)
+            if (model.IsParaOK && !string.IsNullOrEmpty(model.LcswPayQrcodeUrl))
             {
                 //取openid失败，直接转到扫呗的聚合二维码进行支付
                 return Redirect(model.LcswPayQrcodeUrl);
