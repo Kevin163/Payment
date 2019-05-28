@@ -175,7 +175,8 @@ namespace GemstarPaymentCore.Controllers
                                     OrderTitle = payEntity.OrderBody,
                                     PayFee = payEntity.TotalFee,
                                     MemberId = memberInfos[0].Id,
-                                    WxPayUrl = payEntity.LcswPayUnionQrcodeUrl
+                                    WxPayUrl = payEntity.LcswPayUnionQrcodeUrl,
+                                    MemberBalance = memberInfos[0].Balance
                                 };
                                 return View("Member", viewModel);
                             }

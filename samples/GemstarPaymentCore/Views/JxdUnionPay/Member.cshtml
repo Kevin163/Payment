@@ -30,10 +30,14 @@
                     <span class="pay-catalog">待支付费用：</span>
                     <em class="pay-price">@Model.PayFee</em>
                 </div>
+                <div class="pay-text">
+                    <span class="pay-catalog">会员卡余额：</span>
+                    <em class="pay-price">@Model.MemberBalance</em>
+                </div>
                 <span class="pay-catalog">会员卡密码：</span>
                 @Html.PasswordFor(w => w.CardPassword, new { @class = "pay-password" })
                 <div class="pay-btn" id="submit">确定支付</div>
-                <a href="@Model.WxPayUrl" class="wx-pay" id="weixinPay" style="display:none">会员卡支付失败，请使用微信支付 >></a>
+                <a href="@Model.WxPayUrl" style="display:block;margin-top:10px;" class="pay-btn">直接微信支付</a>
             }
 
         }
@@ -57,7 +61,6 @@
                     } else {
                         alert(data.data);
                         $('#submit').removeAttr("disabled");
-                        $('#weixinPay').show();
                     }
                 }, "json");
             });

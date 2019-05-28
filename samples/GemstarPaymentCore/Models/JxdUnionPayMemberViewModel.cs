@@ -29,5 +29,9 @@
         /// 微信支付链接地址
         /// </summary>
         public string WxPayUrl { get; set; }
+        /// <summary>
+        /// 会员卡余额
+        /// </summary>
+        public decimal MemberBalance { get; set; }
     }
 }
