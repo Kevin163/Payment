@@ -168,17 +168,42 @@ namespace GemstarPaymentCore.Controllers
                             var memberInfos = await QueryMember(openId, payEntity.MemberType, payEntity.MemberUrl);
                             if (memberInfos != null && memberInfos.Count > 0)
                             {
+                                //将会员卡号转换为只显示后4位
+                                foreach (var member in memberInfos)
+                                {
+                                    if (member.CardNo?.Length > 4)
+                                    {
+                                        member.CardNo = $"****{member.CardNo.Substring(member.CardNo.Length - 4, 4)}";
+                                    }
+                                }
                                 //转到会员支付界面
                                 var viewModel = new JxdUnionPayMemberViewModel
                                 {
                                     OrderId = state,
                                     OrderTitle = payEntity.OrderBody,
                                     PayFee = payEntity.TotalFee,
-                                    MemberId = memberInfos[0].Id,
                                     WxPayUrl = payEntity.LcswPayUnionQrcodeUrl,
-                                    MemberBalance = memberInfos[0].Balance
+                                    MemberId = memberInfos[0].Id,
+                                    MemberInfos = memberInfos
                                 };
                                 return View("Member", viewModel);
+                            }
+                            else
+                            {
+                                //还不是会员，如果有设置会员绑定页面地址，则转到非会员支付页面，让客人选择是进行绑定还是直接微信支付
+                                if (!string.IsNullOrEmpty(payEntity.MemberBindUrl))
+                                {
+                                    var viewModel = new JxdUnionPayGuestViewModel
+                                    {
+                                        MemberBindUrl = payEntity.MemberBindUrl,
+                                        OrderId = state,
+                                        OrderTitle = payEntity.OrderBody,
+                                        PayFee = payEntity.TotalFee,
+                                        WxPayUrl = payEntity.LcswPayUnionQrcodeUrl
+                                    };
+                                    return View("Guest", viewModel);
+
+                                }
                             }
                         }
                     }

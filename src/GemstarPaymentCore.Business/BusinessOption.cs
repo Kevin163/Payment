@@ -28,6 +28,10 @@ namespace GemstarPaymentCore.Business
         /// </summary>
         public string InternetMemberUrl { get; set; }
         /// <summary>
+        /// 会员绑定地址，要求客户使用捷信达的微信营销系统，具体地址由微信事业部根据每个客户给出，示例：http://www.gshis.net/oauth/member/index.do?comid=5771e56bd5e1ea51db566d14
+        /// </summary>
+        public string MemberBindWxUrl { get; set; }
+        /// <summary>
         /// 对接的会员版本,gsclub：老的cs会员,webgscrm：原来的bs会员,bspms：捷云会员
         /// </summary>
         public string MemberVersion { get; set; }

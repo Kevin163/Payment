@@ -131,7 +131,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                         TotalFee = Convert.ToDecimal(totalFee),
                         AppId = appId,
                         AppSecret = appSecret,
-                        Status = WxPayInfoStatus.NewForJxdUnionPay
+                        Status = WxPayInfoStatus.NewForJxdUnionPay,
+                        MemberBindUrl = _para.MemberBindUrl
                     };
                     _payDb.UnionPayLcsws.Add(payEntity);
                     await _payDb.SaveChangesAsync();

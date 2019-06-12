@@ -1,0 +1,38 @@
+﻿@model JxdUnionPayGuestViewModel  
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>确认支付</title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="Keywords" content="">
+    <meta name="Description" content="">
+    <meta name="viewport" content="initial-scale=1.0,minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=yes">
+    <link rel="stylesheet" href="~/css/reset.css">
+    <link rel="stylesheet" href="~/css/jxdUnionPay.css">
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="~/js/public.js"></script>
+</head>
+<body class="bj">
+<p class="tips">还未发现你尊贵的会员身份,请关注绑定或微信支付</p>
+<div class="content">
+    <div class="pay-header">
+        <div class="pay-order">
+            我的订单
+        </div>
+        <div class="pay-project">
+            <div class="project-name"><span>支付项目：</span><p>@Model.OrderTitle</p></div>
+            <em class="project-price"><span>￥</span>@Model.PayFee</em>
+        </div>
+    </div>
+</div>
+<div class="pay-btn">
+    <a href="@Model.MemberBindUrl">关注绑定</a>
+    <a href="@Model.WxPayUrl">微信支付</a>
+</div>
+</body>
+</html>

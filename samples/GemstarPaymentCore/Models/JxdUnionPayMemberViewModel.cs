@@ -1,4 +1,7 @@
-﻿namespace GemstarPaymentCore.Models
+﻿using GemstarPaymentCore.Business.MemberHandlers;
+using System.Collections.Generic;
+
+namespace GemstarPaymentCore.Models
 {
     /// <summary>
     /// 捷信达聚合支付的会员支付视图模型
@@ -33,5 +36,10 @@
         /// 会员卡余额
         /// </summary>
         public decimal MemberBalance { get; set; }
+        /// <summary>
+        /// 会员的所有卡信息
+        /// </summary>
+        public List<MemberInfo> MemberInfos { get; set; }
+
     }
 }
