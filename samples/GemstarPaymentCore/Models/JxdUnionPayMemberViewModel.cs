@@ -39,7 +39,49 @@ namespace GemstarPaymentCore.Models
         /// <summary>
         /// 会员的所有卡信息
         /// </summary>
-        public List<MemberInfo> MemberInfos { get; set; }
+        public List<MemberInfoDisplay> MemberInfos { get; set; }
+
+    }
+    /// <summary>
+    /// 会员显示信息
+    /// </summary>
+    public class MemberInfoDisplay
+    {
+        public MemberInfoDisplay(MemberInfo info)
+        {
+            Id = info.Id;
+            CardTypeName = info.CardTypeName;
+            CardNo = info.CardNo;
+            if (CardNo?.Length > 4)
+            {
+                CardNoDisplay = $"****{CardNo.Substring(CardNo.Length - 4, 4)}";
+            }
+            else
+            {
+                CardNoDisplay = CardNo;
+            }
+            Balance = info.Balance;
+        }
+        /// <summary>
+        /// 会员主键
+        /// </summary>
+        public string Id { get; set; }
+        /// <summary>
+        /// 会员卡类型名称
+        /// </summary>
+        public string CardTypeName { get; set; }
+        /// <summary>
+        /// 会员卡号
+        /// </summary>
+        public string CardNo { get; set; }
+        /// <summary>
+        /// 会员卡号显示
+        /// </summary>
+        public string CardNoDisplay { get; set; }
+        /// <summary>
+        /// 会员可用储值余额
+        /// </summary>
+        public decimal Balance { get; set; }
 
     }
 }

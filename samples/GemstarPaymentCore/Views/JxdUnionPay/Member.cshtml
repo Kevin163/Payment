@@ -41,20 +41,21 @@
                             <img src="~/images/code.png" alt="">
                         </div>
                         @Html.HiddenFor(m=>m.MemberId)
+                        @Html.Hidden("memberCardNo",Model.MemberInfos[0].CardNo)
                         <span class="code-name">@Model.MemberInfos[0].CardTypeName</span>
-                        <p class="code-num">@Model.MemberInfos[0].CardNo</p>
+                        <p class="code-num">@Model.MemberInfos[0].CardNoDisplay</p>
                         <em class="code-price">￥@Model.MemberInfos[0].Balance</em>
                         <b class="bottom"></b>
 
                         <div class="code-more" style="display: none;">
                             @foreach (var memberInfo in Model.MemberInfos)
                             {
-                            <div class="code-list" data-member-id="@memberInfo.Id">
+                            <div class="code-list" data-member-id="@memberInfo.Id" data-member-cardno="@memberInfo.CardNo">
                                 <div class="pay-img">
                                     <img src="~/images/code.png" alt="">
                                 </div>
                                 <span>@memberInfo.CardTypeName</span>
-                                <p>@memberInfo.CardNo</p>
+                                <p>@memberInfo.CardNoDisplay</p>
                                 <em>￥@memberInfo.Balance</em>
                             </div>
                             }
@@ -102,9 +103,11 @@
             var codeNum = $(this).find('p').text();
             var codePrice = $(this).find('em').text();
             var memberId = $(this).data("member-id");
+            var cardNo = $(this).data("member-cardno");
             $('.code-name').text(codeName);
             $('.code-num').text(codeNum);
             $('.code-price').text(codePrice);
+            $('#memberCardNo').val(cardNo);
             $('#MemberId').val(memberId);
             $("#member").prop("checked", "checked");
 
@@ -140,8 +143,9 @@
                 alert("请先选择会员卡");
                 return;
             }
+            var cardNo = $('#memberCardNo').val();
             $('#submitCardPassword').attr("disabled", "disabled");
-            $.post("@Url.Action("MemberPay")", { cardPassword: cardPassword, memberId:MemberId, orderId: "@Model.OrderId" }, function (data) {
+            $.post("@Url.Action("MemberPay")", { cardPassword: cardPassword, memberId:MemberId, orderId: "@Model.OrderId",cardNo:cardNo }, function (data) {
                 if (data.success) {
                     $('.shade').hide();
                     alert("支付成功");

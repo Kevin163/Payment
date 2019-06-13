@@ -168,14 +168,7 @@ namespace GemstarPaymentCore.Controllers
                             var memberInfos = await QueryMember(openId, payEntity.MemberType, payEntity.MemberUrl);
                             if (memberInfos != null && memberInfos.Count > 0)
                             {
-                                //将会员卡号转换为只显示后4位
-                                foreach (var member in memberInfos)
-                                {
-                                    if (member.CardNo?.Length > 4)
-                                    {
-                                        member.CardNo = $"****{member.CardNo.Substring(member.CardNo.Length - 4, 4)}";
-                                    }
-                                }
+                                var memberInfosDisplay = memberInfos.Select(w => new MemberInfoDisplay(w)).ToList();
                                 //转到会员支付界面
                                 var viewModel = new JxdUnionPayMemberViewModel
                                 {
@@ -184,7 +177,7 @@ namespace GemstarPaymentCore.Controllers
                                     PayFee = payEntity.TotalFee,
                                     WxPayUrl = payEntity.LcswPayUnionQrcodeUrl,
                                     MemberId = memberInfos[0].Id,
-                                    MemberInfos = memberInfos
+                                    MemberInfos = memberInfosDisplay
                                 };
                                 return View("Member", viewModel);
                             }
@@ -247,7 +240,7 @@ namespace GemstarPaymentCore.Controllers
         /// <param name="memberId"></param>
         /// <param name="orderId"></param>
         /// <returns></returns>
-        public async Task<IActionResult> MemberPay(string cardPassword, string memberId, string orderId)
+        public async Task<IActionResult> MemberPay(string cardPassword, string memberId, string orderId,string cardNo)
         {
             try
             {
@@ -287,6 +280,7 @@ namespace GemstarPaymentCore.Controllers
                         payEntity.Paytime = DateTime.Now;
                         payEntity.PayRemark = $"使用会员卡支付成功";
                         payEntity.PayType = "Member";
+                        payEntity.PayTransId = cardNo;
                         var saveTask = payDb.SaveChangesAsync();
                         //通知回调地址支付状态
                         if (!string.IsNullOrEmpty(payEntity.CallbackUrl))
