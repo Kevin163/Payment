@@ -266,10 +266,10 @@ namespace GemstarPaymentCore.Controllers
                     {
                         Amount = payEntity.TotalFee,
                         Id = memberId,
-                        OrigBillNo = payEntity.TerminalTrace,
+                        OrigBillNo = payEntity.Id.ToString("N"),
                         OutletCode = payEntity.OutletCode,
                         Password = cardPassword,
-                        RefNo = payEntity.Id.ToString("N"),
+                        RefNo = payEntity.TerminalTrace,
                         Remark = payEntity.PayRemark
                     };
                     var payResult = await memberHandle.MemberPayment(payPara);
