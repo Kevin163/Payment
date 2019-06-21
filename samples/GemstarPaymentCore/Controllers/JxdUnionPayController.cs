@@ -65,12 +65,12 @@ namespace GemstarPaymentCore.Controllers
                     }
                     else if (payEntity.Status == WxPayInfoStatus.PaidSuccess)
                     {
-                        var remark = payEntity.PayRemark;
-                        if (!string.IsNullOrWhiteSpace(remark))
+                        var successModel = new JxdUnionPaySuccessViewModel
                         {
-                            remark = $"[{remark}]";
-                        }
-                        model.ErrorMessage = $"已经支付成功了，不需要再支付{remark}";
+                            PaidAmount = payEntity.TotalFee.ToString("0.00"),
+                            PaidMethod = payEntity.PayRemark
+                        };
+                        return View("Success", successModel);
                     }
                     else if (payEntity.Status == WxPayInfoStatus.Cancel)
                     {
@@ -300,7 +300,7 @@ namespace GemstarPaymentCore.Controllers
                             PaymentCallback.CallbackNotify(paymentCallbackPara, _httpClientFactory);
                         }
                         saveTask.Wait();
-                        return Json(JsonResultData.Successed("会员卡支付成功"));
+                        return Json(JsonResultData.Successed(Url.Action(nameof(Index),new { type="lcsw",id=payEntity.Id.ToString("N")})));
                     }
                     else
                     {

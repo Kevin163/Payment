@@ -148,7 +148,9 @@
             $.post("@Url.Action("MemberPay")", { cardPassword: cardPassword, memberId:MemberId, orderId: "@Model.OrderId",cardNo:cardNo }, function (data) {
                 if (data.success) {
                     $('.shade').hide();
-                    alert("支付成功");
+                    if (data.data) {
+                        location.href = data.data;
+                    }
                 } else {
                     alert(data.data);
                     $('#submitCardPassword').removeAttr("disabled");

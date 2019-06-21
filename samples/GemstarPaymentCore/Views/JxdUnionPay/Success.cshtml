@@ -1,0 +1,36 @@
+﻿@model JxdUnionPaySuccessViewModel  
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>支付成功</title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="Keywords" content="">
+    <meta name="Description" content="">
+    <meta name="viewport" content="initial-scale=1.0,minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=yes">
+    <link rel="stylesheet" href="~/css/reset.css">
+    <link rel="stylesheet" href="~/css/jxdUnionPay.css">
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="~/js/public.js"></script>
+</head>
+<body class="bj">
+        <h2 class="pay-title" style="margin:1em;font-size:18pt;text-align:center;">提示信息</h2>
+<div class="content">
+    <div class="pay-header">
+        <div class="pay-project">
+            <div class="project-name"><span>支付状态：</span><p>支付成功</p></div>
+        </div>
+        <div class="pay-project">
+            <div class="project-name"><span>支付方式：</span><p>@Model.PaidMethod</p></div>
+        </div>
+        <div class="pay-project">
+            <div class="project-name"><span>支付金额：</span><p>￥@Model.PaidAmount</p></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
