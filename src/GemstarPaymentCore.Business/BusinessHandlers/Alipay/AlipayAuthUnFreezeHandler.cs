@@ -59,17 +59,30 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 {
                     _options.PId = infos[i++];
                 }
+
                 if (i < infos.Length)
                 {
-                    _options.RsaPublicKey = infos[i++];
+                    var temp = infos[i++];
+                    if (!string.IsNullOrEmpty(temp))
+                    {
+                        _options.RsaPublicKey = temp;
+                    }
                 }
                 if (i < infos.Length)
                 {
-                    _options.RsaPrivateKey = infos[i++];
+                    var temp = infos[i++];
+                    if (!string.IsNullOrEmpty(temp))
+                    {
+                        _options.RsaPrivateKey = temp;
+                    }
                 }
                 if (i < infos.Length)
                 {
-                    _options.SignType = infos[i++];
+                    var temp = infos[i++];
+                    if (!string.IsNullOrEmpty(temp))
+                    {
+                        _options.SignType = temp;
+                    }
                 }
                 if (string.IsNullOrEmpty(_options.AppId))
                 {
