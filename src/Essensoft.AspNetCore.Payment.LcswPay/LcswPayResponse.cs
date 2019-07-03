@@ -40,31 +40,59 @@ namespace Essensoft.AspNetCore.Payment.LcswPay
         public abstract void AddSignedParasWhenReturnCodeSuccess(List<LcswPayParaInfo> signedParas);
         public virtual bool CalcSignNeedToken => false;
         /// <summary>
+        /// 签名计算方式
+        /// </summary>
+        public virtual LcswPayResponseSignType SignType => LcswPayResponseSignType.CalcSpecialParasWhenReturnCodeIs01;
+        /// <summary>
         /// 是否签名正确
         /// </summary>
         public void CheckSign(string token)
         {
             if (IsReturnCodeSuccess)
             {
-                var signedParas = new List<LcswPayParaInfo>();
-                signedParas.Add(new LcswPayParaInfo("return_code", ReturnCode));
-                signedParas.Add( new LcswPayParaInfo("return_msg", ReturnMsg));
-                AddSignedParasWhenReturnCodeSuccess(signedParas);
-                string sign;
-                if (CalcSignNeedToken)
+                if (SignType == LcswPayResponseSignType.CalcSpecialParasWhenReturnCodeIs01)
                 {
-                    sign = LcswPaySignature.CalcSignWithAllRequiredParaAndToken(signedParas,token);
-                }
-                else
-                {
-                    sign = LcswPaySignature.CalcSignWithAllRequiredPara(signedParas);
-                }
+                    var signedParas = new List<LcswPayParaInfo>();
+                    signedParas.Add(new LcswPayParaInfo("return_code", ReturnCode));
+                    signedParas.Add(new LcswPayParaInfo("return_msg", ReturnMsg));
+                    AddSignedParasWhenReturnCodeSuccess(signedParas);
+                    string sign;
+                    if (CalcSignNeedToken)
+                    {
+                        sign = LcswPaySignature.CalcSignWithAllRequiredParaAndToken(signedParas, token);
+                    }
+                    else
+                    {
+                        sign = LcswPaySignature.CalcSignWithAllRequiredPara(signedParas);
+                    }
 
-                if (!sign.Equals(KeySign, System.StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new LcswPayException($"返回的签名不正确,应该是：{sign},实际是:{KeySign},原始字符串：{Body}");
+                    if (!sign.Equals(KeySign, System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new LcswPayException($"返回的签名不正确,应该是：{sign},实际是:{KeySign},原始字符串：{Body}");
+                    }
                 }
-            }           
+                else if (SignType == LcswPayResponseSignType.AllNotNullParas)
+                {
+                    var signedParas = new List<LcswPayParaInfo>();
+                    signedParas.Add(new LcswPayParaInfo("return_code", ReturnCode));
+                    signedParas.Add(new LcswPayParaInfo("return_msg", ReturnMsg));
+                    AddSignedParasWhenReturnCodeSuccess(signedParas);
+                    string sign;
+                    if (CalcSignNeedToken)
+                    {
+                        sign = LcswPaySignature.CalcSignWithAllNotNullParaAndToken(signedParas, token);
+                    }
+                    else
+                    {
+                        sign = LcswPaySignature.CalcSignWithAllNotNullPara(signedParas);
+                    }
+
+                    if (!sign.Equals(KeySign, System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new LcswPayException($"返回的签名不正确,应该是：{sign},实际是:{KeySign},原始字符串：{Body}");
+                    }
+                }
+            }
         }
 
     }

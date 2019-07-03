@@ -357,6 +357,65 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 return handler;
             }
             #endregion
+            #region 利楚商务扫呗预授权支付
+            flagStr = "LcswPayPreAuthBar|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<LcswPayPreAuthBarHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "LcswPayPreAuthQrcode|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<LcswPayPreAuthQrcodeHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "LcswPayPreAuthOrderQuery|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<LcswPayPreAuthOrderQueryHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "LcswPayPreAuthUnionQrcode|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<LcswPayPreAuthUnionQrcodeHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "LcswPayPreAuthFinish|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<LcswPayPreAuthFinishHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "LcswPayPreAuthCancel|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<LcswPayPreAuthCancelHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "LcswPayPreAuthResultQuery|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<LcswPayPreAuthResultQueryHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            #endregion
+
             #region 捷信达聚合支付
             flagStr = "JxdUnionLcswPay|";
             if (content.StartsWith(flagStr))

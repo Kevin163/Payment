@@ -13,5 +13,9 @@
         /// 计算所有必传参数和令牌
         /// </summary>
         AllRequiredParaAndToken,
+        /// <summary>
+        /// 按字典序计算所有非null参数和令牌
+        /// </summary>
+        AllNotNullParaAndToken,
     }
 }

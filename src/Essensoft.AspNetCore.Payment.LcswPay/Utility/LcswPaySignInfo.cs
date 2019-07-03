@@ -49,6 +49,9 @@ namespace Essensoft.AspNetCore.Payment.LcswPay.Utility
                 case LcswPaySignType.AllRequiredParaAndToken:
                     sign = LcswPaySignature.CalcSignWithAllRequiredParaAndToken(ParaInfos,option.Token);
                     break;
+                case LcswPaySignType.AllNotNullParaAndToken:
+                    sign = LcswPaySignature.CalcSignWithAllNotNullParaAndToken(ParaInfos, option.Token);
+                    break;
             }
             return sign;
         }
