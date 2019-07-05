@@ -42,6 +42,7 @@ namespace GemstarPaymentCore.Controllers
                             if (string.IsNullOrWhiteSpace(businessOption.JxdPaymentUrl))
                             {
                                 var error = HandleResult.Fail("指定redirect=1时，必须先设置JxdPaymentUrl地址");
+                                 _logger.LogInformation(_eventId, $"返回的业务字符串：{error.Content}");
                                 return Content(error.ResultStr);
                             }
                             using (var requestContent = new FormUrlEncodedContent(
@@ -57,6 +58,7 @@ namespace GemstarPaymentCore.Controllers
                             using (var responseContent = response.Content)
                             {
                                 var resultStr = await responseContent.ReadAsStringAsync();
+                                 _logger.LogInformation(_eventId, $"返回的业务字符串：{resultStr}");
                                 return Content(resultStr);
                             }
                         }

@@ -91,6 +91,11 @@ namespace Essensoft.AspNetCore.Payment.LcswPay.Response
         [JsonProperty("channel_order_no")]
         public string ChannelOrderNo { get; set; }
         /// <summary>
+        /// 支付人id
+        /// </summary>
+        [JsonProperty("user_id")]
+        public string UserId { get; set; }
+        /// <summary>
         /// 订单描述
         /// </summary>
         [JsonProperty("order_body")]
@@ -110,34 +115,42 @@ namespace Essensoft.AspNetCore.Payment.LcswPay.Response
         /// </summary>
         [JsonProperty("store_name")]
         public string StoreName { get; set; }
+        /// <summary>
+        /// 订单类型
+        /// </summary>
+        [JsonProperty("order_type")]
+        public string OrderType { get; set; }
 
         public override LcswPayResponseSignType SignType => LcswPayResponseSignType.AllNotNullParas;
+        public override bool CalcSignNeedToken => true;
 
 
         public override void AddSignedParasWhenReturnCodeSuccess(List<LcswPayParaInfo> signedParas)
         {
             signedParas.AddRange(new List<LcswPayParaInfo> {
-            new LcswPayParaInfo("result_code",ResultCode),
-            new LcswPayParaInfo("pay_type",PayType),
-            new LcswPayParaInfo("merchant_name",MerchantName),
-            new LcswPayParaInfo("merchant_no",MerchantNo),
-            new LcswPayParaInfo("terminal_id",TerminalId),
-            new LcswPayParaInfo("terminal_trace",TerminalTrace),
-            new LcswPayParaInfo("terminal_time",TerminalTime),
-            new LcswPayParaInfo("order_amt",OrderAmt),
-            new LcswPayParaInfo("finish_amt",FinishAmt),
-            new LcswPayParaInfo("return_amt",ReturnAmt),
-            new LcswPayParaInfo("poundage",Poundage),
-            new LcswPayParaInfo("end_time",EndTime),
-            new LcswPayParaInfo("out_trade_no",OutTradeNo),
-            new LcswPayParaInfo("orig_trade_no",OrigTradeNo),
-            new LcswPayParaInfo("channel_trade_no",ChannelTradeNo),
-            new LcswPayParaInfo("channel_order_no",ChannelOrderNo),
-            new LcswPayParaInfo("order_body",OrderBody),
-            new LcswPayParaInfo("attach",Attach),
-            new LcswPayParaInfo("store_name",StoreName),
-            new LcswPayParaInfo("pay_status_code",PayStatusCode)
-        });
+                new LcswPayParaInfo("result_code",ResultCode),
+                new LcswPayParaInfo("pay_type",PayType),
+                new LcswPayParaInfo("merchant_name",MerchantName),
+                new LcswPayParaInfo("merchant_no",MerchantNo),
+                new LcswPayParaInfo("terminal_id",TerminalId),
+                new LcswPayParaInfo("terminal_trace",TerminalTrace),
+                new LcswPayParaInfo("terminal_time",TerminalTime),
+                new LcswPayParaInfo("order_amt",OrderAmt),
+                new LcswPayParaInfo("finish_amt",FinishAmt),
+                new LcswPayParaInfo("return_amt",ReturnAmt),
+                new LcswPayParaInfo("poundage",Poundage),
+                new LcswPayParaInfo("end_time",EndTime),
+                new LcswPayParaInfo("out_trade_no",OutTradeNo),
+                new LcswPayParaInfo("orig_trade_no",OrigTradeNo),
+                new LcswPayParaInfo("channel_trade_no",ChannelTradeNo),
+                new LcswPayParaInfo("channel_order_no",ChannelOrderNo),
+                new LcswPayParaInfo("user_id",UserId),
+                new LcswPayParaInfo("order_body",OrderBody),
+                new LcswPayParaInfo("attach",Attach),
+                new LcswPayParaInfo("store_name",StoreName),
+                new LcswPayParaInfo("pay_status_code",PayStatusCode),
+                new LcswPayParaInfo("order_type",OrderType)
+            });
         }
     }
 }

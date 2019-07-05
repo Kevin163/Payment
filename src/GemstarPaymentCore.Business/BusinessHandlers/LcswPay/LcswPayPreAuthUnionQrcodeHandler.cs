@@ -111,7 +111,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                 {
                     if (para.ParaValue != null)
                     {
-                        urlStrBuilder.Append(split).Append(para.ParaName).Append("=").Append(para.ParaValue);
+                        urlStrBuilder.Append(split).Append(para.ParaName).Append("=").Append(HttpUtility.UrlEncode(para.ParaValue));
                         split = "&";
                     }
                 }
