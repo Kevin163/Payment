@@ -128,13 +128,13 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         /// 捷信达支付查询状态，确认指定订单已经支付成功
         /// </summary>
         /// <param name="payDB">当前分店的营业数据库实例</param>
-        /// <param name="payInfo">已经支付成功的订单实例</param>
+        /// <param name="payInfoId">已经支付成功的订单id</param>
         /// <param name="transactionId">微信支付订单号</param>
         /// <param name="paidTime">支付完成时间</param>
         /// <param name="amount">支付金额</param>
-        public static void JxdUnionPayPaidSuccess(WxPayDB payDB, WxPayInfo payInfo, string transactionId, DateTime paidTime, decimal amount,string payType)
+        public static void JxdUnionPayPaidSuccess(WxPayDB payDB, string payInfoId, string transactionId, DateTime paidTime, decimal amount,string payType)
         {
-            PaidSuccess(payDB, payInfo.ID, transactionId, paidTime,amount, new List<WxPayInfoStatus?> { WxPayInfoStatus.NewForJxdUnionPay },payType);
+            PaidSuccess(payDB, payInfoId, transactionId, paidTime,amount, new List<WxPayInfoStatus?> { WxPayInfoStatus.NewForJxdUnionPay },payType);
         }
         /// <summary>
         /// 捷信达聚合支付查询状态，确认订单已经支付失败

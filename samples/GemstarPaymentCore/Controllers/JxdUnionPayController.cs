@@ -357,7 +357,7 @@ namespace GemstarPaymentCore.Controllers
                         {
                             if (para.PaySuccess)
                             {
-                                WxPayInfoHelper.JxdUnionPayPaidSuccess(payDb, payEntity, para.PaidTransId, para.PaidTime, para.PaidAmount, para.PaidType);
+                                WxPayInfoHelper.JxdUnionPayPaidSuccess(payDb, payEntity.ID, para.PaidTransId, para.PaidTime, para.PaidAmount, para.PaidType);
                             }
                             else
                             {
