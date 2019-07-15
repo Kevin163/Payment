@@ -68,8 +68,10 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                     TerminalTime = terminalTime,
                     TerminalTrace = terminalTrace,
                     TotalFee = Convert.ToInt32(Convert.ToDecimal(totalFee) * 100).ToString(),
-                    OrderBody = orderBody,
-                    Attach = attach
+                    //目前如果传递此字段的话，扫呗会直接报签名错误导致无法支付，等扫呗修复此问题后，再考虑放开此参数的传递,先将orderbody传到attach参数中
+                    //OrderBody = orderBody,
+                    //Attach = attach
+                    Attach = orderBody
                 };
                 _options.Token = accessToken;
                 var response = await _client.ExecuteAsync(request,_options);

@@ -6,9 +6,7 @@ using GemstarPaymentCore.Business.BusinessHandlers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text;
 using Microsoft.Extensions.Options;
-using System.Net;
 using System.Collections.Generic;
 
 namespace GemstarPaymentCore.Controllers
@@ -27,11 +25,13 @@ namespace GemstarPaymentCore.Controllers
         {
             using (var scope = _logger.BeginScope(this))
             {
+                //增加一个请求id,用于区分日志记录中的接收到的内容和返回的内容是否同一请求
+                var requestId = Guid.NewGuid().ToString();
                 try
                 {
                     if (!string.IsNullOrWhiteSpace(payStr))
                     {
-                        _logger.LogInformation(_eventId, $"接收到的业务字符串：{payStr}");
+                        _logger.LogInformation(_eventId, $"请求{requestId}于{DateTime.Now.ToString("mm:ss.fff")}接收到的业务字符串：{payStr}");
 
                         if (redirect == 1)
                         {
@@ -42,7 +42,7 @@ namespace GemstarPaymentCore.Controllers
                             if (string.IsNullOrWhiteSpace(businessOption.JxdPaymentUrl))
                             {
                                 var error = HandleResult.Fail("指定redirect=1时，必须先设置JxdPaymentUrl地址");
-                                 _logger.LogInformation(_eventId, $"返回的业务字符串：{error.Content}");
+                                 _logger.LogInformation(_eventId, $"请求{requestId}于{DateTime.Now.ToString("mm:ss.fff")}返回的业务字符串：{error.Content}");
                                 return Content(error.ResultStr);
                             }
                             using (var requestContent = new FormUrlEncodedContent(
@@ -58,7 +58,7 @@ namespace GemstarPaymentCore.Controllers
                             using (var responseContent = response.Content)
                             {
                                 var resultStr = await responseContent.ReadAsStringAsync();
-                                 _logger.LogInformation(_eventId, $"返回的业务字符串：{resultStr}");
+                                 _logger.LogInformation(_eventId, $"请求{requestId}于{DateTime.Now.ToString("mm:ss.fff")}返回的业务字符串：{resultStr}");
                                 return Content(resultStr);
                             }
                         }
@@ -72,7 +72,7 @@ namespace GemstarPaymentCore.Controllers
                         };
                         var handler = BusinessHandlerFactory.GetHandler(payStr,para, _serviceProvider);
                         var result = await handler.HandleBusinessContentAsync();
-                        _logger.LogInformation(_eventId, $"返回的业务字符串：{result.ResultStr}");
+                        _logger.LogInformation(_eventId, $"请求{requestId}于{DateTime.Now.ToString("mm:ss.fff")}返回的业务字符串：{result.ResultStr}");
                         return Content(result.ResultStr);
                     }
                     else
@@ -83,7 +83,7 @@ namespace GemstarPaymentCore.Controllers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(_eventId, ex, "执行业务时遇到异常");
+                    _logger.LogError(_eventId, ex, $"请求{requestId}于{DateTime.Now.ToString("mm:ss.fff")}执行业务时遇到异常:{ex.Message}");
                     var result = HandleResult.Fail(ex);
                     return Content(result.ResultStr);
                 }
