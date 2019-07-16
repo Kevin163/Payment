@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Essensoft.AspNetCore.Payment.Alipay;
 using Essensoft.AspNetCore.Payment.Alipay.Domain;
 using Essensoft.AspNetCore.Payment.Alipay.Request;
+using GemstarPaymentCore.Business.Utility;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -55,38 +57,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var operatorName = infos[i++];
                 var orderAmount = infos[i++];
                 var content = infos[i++];
-                if (i < infos.Length)
-                {
-                    _options.AppId = infos[i++];
-                }
-                if (i < infos.Length)
-                {
-                    _options.PId = infos[i++];
-                }
-                if (i < infos.Length)
-                {
-                    var temp = infos[i++];
-                    if (!string.IsNullOrEmpty(temp))
-                    {
-                        _options.RsaPublicKey = temp;
-                    }
-                }
-                if (i < infos.Length)
-                {
-                    var temp = infos[i++];
-                    if (!string.IsNullOrEmpty(temp))
-                    {
-                        _options.RsaPrivateKey = temp;
-                    }
-                }
-                if (i < infos.Length)
-                {
-                    var temp = infos[i++];
-                    if (!string.IsNullOrEmpty(temp))
-                    {
-                        _options.SignType = temp;
-                    }
-                }
+                _options.AppId = infos.GetNotEmptyValue(i++, _options.AppId);
+                _options.PId = infos.GetNotEmptyValue(i++, _options.PId);
+                _options.RsaPublicKey = infos.GetNotEmptyValue(i++, _options.RsaPublicKey);
+                _options.RsaPrivateKey = infos.GetNotEmptyValue(i++, _options.RsaPrivateKey);
+                _options.SignType = infos.GetNotEmptyValue(i++, _options.SignType);
+                var allowHb = infos.GetNotEmptyValue(i++, "0");
+                var hbNum = infos.GetNotEmptyValue(i++, "3");
+                var hbFeeOwner = infos.GetNotEmptyValue(i++, "2");
                 if (string.IsNullOrEmpty(_options.AppId))
                 {
                     return HandleResult.Fail("请指定支付宝收款账号信息");
@@ -111,6 +89,29 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                         SysServiceProviderId = string.IsNullOrEmpty(_options.SysServiceProviderId) ? "2088221616228734":_options.SysServiceProviderId
                     }
                 };
+                //处理花呗分期参数
+                if(allowHb == "1")
+                {
+                    if (string.IsNullOrEmpty(hbNum))
+                    {
+                        return HandleResult.Fail("允许花呗分期时必须指定分期期数");
+                    }
+                    var allowFeeOwners = new string[] { "1", "2" };
+                    if(string.IsNullOrEmpty(hbFeeOwner) || !allowFeeOwners.Contains(hbFeeOwner))
+                    {
+                        return HandleResult.Fail("允许花呗分期时必须指定手续费承担者");
+                    }
+                    model.ExtendParams.HbFqNum = hbNum;
+                    //商家承担手续费
+                    if(hbFeeOwner == "1")
+                    {
+                        model.ExtendParams.HbFqSellerPercent = "100";
+                    }
+                    else
+                    {
+                        model.ExtendParams.HbFqSellerPercent = "0";
+                    }
+                }
                 var request = new AlipayTradePayRequest();
                 request.SetBizModel(model);
 
