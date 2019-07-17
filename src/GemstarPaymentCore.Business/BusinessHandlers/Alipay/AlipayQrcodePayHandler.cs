@@ -57,7 +57,6 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 _options.RsaPublicKey = infos.GetNotEmptyValue(i++, _options.RsaPublicKey);
                 _options.RsaPrivateKey = infos.GetNotEmptyValue(i++, _options.RsaPrivateKey);
                 _options.SignType = infos.GetNotEmptyValue(i++, _options.SignType);
-                var allowHb = infos.GetNotEmptyValue(i++, "0");
                 if (string.IsNullOrEmpty(_options.AppId))
                 {
                     return HandleResult.Fail("请指定支付宝收款账号信息");
@@ -81,11 +80,6 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                         SysServiceProviderId = string.IsNullOrEmpty(_options.SysServiceProviderId) ? "2088221616228734":_options.SysServiceProviderId
                     }
                 };
-                //处理花呗分期参数
-                if(allowHb == "1")
-                {
-                    model.EnablePayChannels = "pcreditpayInstallment";
-                }
                 var req = new AlipayTradePrecreateRequest();
                 req.SetBizModel(model);
                 req.SetNotifyUrl(_options.NotifyUrl);
