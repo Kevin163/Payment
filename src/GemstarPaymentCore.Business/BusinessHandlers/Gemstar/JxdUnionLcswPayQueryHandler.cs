@@ -5,9 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using GemstarPaymentCore.Data;
 
 namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
 {
@@ -79,16 +76,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                         var paidTime = payResult.PaidTime;
                         var transactionId = payResult.PaidTransId;
                         var paidAmount = payResult.PaidAmount;
-
-                        var connStr = _businessOption.Systems.First(w => w.Name == systemName).ConnStr;
-                        var dbContextOption = new DbContextOptionsBuilder<WxPayDB>();
-                        dbContextOption.UseSqlServer(connStr);
-                        using (var payDB = new WxPayDB(dbContextOption.Options))
-                        {
-
-                            WxPayInfoHelper.JxdUnionPayPaidSuccess(payDB, terminalTrace, transactionId, paidTime, paidAmount, payResult.PaidType);
-                        }
-                        return HandleResult.Success($"{transactionId}|{paidTime}|{paidAmount}");
+                        return HandleResult.Success($"{transactionId}|{paidTime}|{paidAmount}|{payResult.PaidType}|{terminalTrace}");
                     }
                     else
                     {
