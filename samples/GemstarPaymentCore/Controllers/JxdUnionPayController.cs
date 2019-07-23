@@ -165,7 +165,7 @@ namespace GemstarPaymentCore.Controllers
                         }
                         if (!string.IsNullOrEmpty(openId))
                         {
-                            var memberInfos = await QueryMember(openId, payEntity.MemberType, payEntity.MemberUrl);
+                            var memberInfos = await QueryMember(openId, payEntity.MemberType, payEntity.MemberUrl,payEntity.MemberPara);
                             if (memberInfos != null && memberInfos.Count > 0)
                             {
                                 var memberInfosDisplay = memberInfos.Select(w => new MemberInfoDisplay(w)).ToList();
@@ -261,7 +261,7 @@ namespace GemstarPaymentCore.Controllers
                 }
                 if (payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay)
                 {
-                    var memberHandle = _memberHandlerFactory.GetMemberHandler(payEntity.MemberType, payEntity.MemberUrl);
+                    var memberHandle = _memberHandlerFactory.GetMemberHandler(payEntity.MemberType, payEntity.MemberUrl,payEntity.MemberPara);
                     var payPara = new MemberPaymentParameter
                     {
                         Amount = payEntity.TotalFee,
@@ -322,11 +322,11 @@ namespace GemstarPaymentCore.Controllers
         /// <param name="memberUrl">会员接口地址</param>
         /// <returns>openid对应的会员信息</returns>
 
-        private async Task<List<MemberInfo>> QueryMember(string openId, string memberType, string memberUrl)
+        private async Task<List<MemberInfo>> QueryMember(string openId, string memberType, string memberUrl,string memberPara)
         {
             if (!string.IsNullOrWhiteSpace(memberUrl))
             {
-                var memberHandler = _memberHandlerFactory.GetMemberHandler(memberType, memberUrl);
+                var memberHandler = _memberHandlerFactory.GetMemberHandler(memberType, memberUrl,memberPara);
                 return await memberHandler.QueryMember(openId);
             }
             return null;

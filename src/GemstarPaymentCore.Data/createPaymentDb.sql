@@ -32,3 +32,9 @@ if not exists(select * from syscolumns where id=object_id('unionPay_lcsw') and n
 BEGIN
 	ALTER TABLE unionPay_lcsw add memberBindUrl varchar(2000) null
 END
+--给利楚商务扫呗聚合支付业务表增加会员参数列，用于会员调用接口时需要传递的额外参数
+if not exists(select * from syscolumns where id=object_id('unionPay_lcsw') and name = 'memberPara')
+BEGIN
+	ALTER TABLE unionPay_lcsw add memberPara varchar(2000) null
+END
+

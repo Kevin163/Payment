@@ -73,6 +73,10 @@ namespace GemstarPaymentCore.Data
         /// </summary>
         public string MemberBindUrl { get; set; }
         /// <summary>
+        /// 会员参数
+        /// </summary>
+        public string MemberPara { get; set; }
+        /// <summary>
         /// 扫呗支付聚合支付的二维码链接地址
         /// </summary>
         public string LcswPayUnionQrcodeUrl { get; set; }

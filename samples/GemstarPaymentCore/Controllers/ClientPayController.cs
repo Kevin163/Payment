@@ -21,7 +21,7 @@ namespace GemstarPaymentCore.Controllers
             _logger = logger;
             _serviceProvider = serviceProvider;
         }
-        public async Task<IActionResult> Index(string payStr,string callbackUrl,string memberUrl,string memberType,string memberBindUrl,int? redirect=0,int? isFromRedirect = 0)
+        public async Task<IActionResult> Index(string payStr,string callbackUrl,string memberUrl,string memberType,string memberBindUrl,string bspmsGrpid,string bspmsChannelCode,string bspmsChannelKey,int? redirect=0,int? isFromRedirect = 0)
         {
             using (var scope = _logger.BeginScope(this))
             {
@@ -52,6 +52,9 @@ namespace GemstarPaymentCore.Controllers
                                 ,KeyValuePair.Create("memberUrl",businessOption.InternetMemberUrl)
                                 ,KeyValuePair.Create("memberType",businessOption.MemberVersion)
                                 ,KeyValuePair.Create("memberBindUrl",businessOption.MemberBindWxUrl)
+                                ,KeyValuePair.Create("bspmsGrpid",businessOption.BsPmsGrpId)
+                                ,KeyValuePair.Create("bspmsChannelCode",businessOption.BsPmsChannelCode)
+                                ,KeyValuePair.Create("bspmsChannelKey",businessOption.BsPmsChannelKey)
                                 ,KeyValuePair.Create("isFromRedirect","1") }
                             ))
                             using (var response = await httpClient.PostAsync(businessOption.JxdPaymentUrl, requestContent))
@@ -68,7 +71,10 @@ namespace GemstarPaymentCore.Controllers
                             MemberUrl = memberUrl,
                             MemberType = memberType,
                             MemberBindUrl = memberBindUrl,
-                            IsFromRedirect = isFromRedirect == 1
+                            IsFromRedirect = isFromRedirect == 1,
+                            BspmsGrpid = bspmsGrpid,
+                            BspmsChannelCode = bspmsChannelCode,
+                            BspmsChannelKey = bspmsChannelKey
                         };
                         var handler = BusinessHandlerFactory.GetHandler(payStr,para, _serviceProvider);
                         var result = await handler.HandleBusinessContentAsync();

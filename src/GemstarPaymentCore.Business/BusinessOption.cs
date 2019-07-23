@@ -36,6 +36,18 @@ namespace GemstarPaymentCore.Business
         /// </summary>
         public string MemberVersion { get; set; }
         /// <summary>
+        /// 捷云会员的集团id
+        /// </summary>
+        public string BsPmsGrpId { get; set; }
+        /// <summary>
+        /// 捷云会员的渠道代码
+        /// </summary>
+        public string BsPmsChannelCode { get; set; }
+        /// <summary>
+        /// 捷云会员的渠道对应的密钥
+        /// </summary>
+        public string BsPmsChannelKey { get; set; }
+        /// <summary>
         /// 票付通接口中转地址
         /// </summary>
         public string PFTSwitchUrl { get; set; }

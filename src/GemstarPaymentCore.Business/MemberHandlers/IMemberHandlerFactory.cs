@@ -10,7 +10,8 @@
         /// </summary>
         /// <param name="memberType">会员类型</param>
         /// <param name="memberUrl">会员接口地址</param>
+        /// <param name="memberPara">会员参数</param>
         /// <returns>对应的会员处理实例</returns>
-        IMemberHandler GetMemberHandler(string memberType,string memberUrl);
+        IMemberHandler GetMemberHandler(string memberType, string memberUrl, string memberPara);
     }
 }

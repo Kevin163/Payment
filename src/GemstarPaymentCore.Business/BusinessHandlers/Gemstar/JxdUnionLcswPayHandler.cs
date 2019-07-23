@@ -2,6 +2,7 @@
 using Essensoft.AspNetCore.Payment.LcswPay.Request;
 using GemstarPaymentCore.Data;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -134,6 +135,18 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                         Status = WxPayInfoStatus.NewForJxdUnionPay,
                         MemberBindUrl = _para.MemberBindUrl
                     };
+                    //处理捷云会员的会员参数,以便后续会员支付时可以取到正确的参数来调用接口
+                    if (MemberHandlers.MemberHandlerFactory.IsMemberBspms(_para.MemberType))
+                    {
+                        var bsPara = new MemberHandlers.BSPMS.BSPmsMemberPara
+                        {
+                            ChannelCode = _para.BspmsChannelCode,
+                            ChannelKey = _para.BspmsChannelKey,
+                            GrpId = _para.BspmsGrpid
+                        };
+                        var bsParaStr = JsonConvert.SerializeObject(bsPara);
+                        payEntity.MemberPara = bsParaStr;
+                    }
                     _payDb.UnionPayLcsws.Add(payEntity);
                     await _payDb.SaveChangesAsync();
                     string id = payEntity.Id.ToString("N");

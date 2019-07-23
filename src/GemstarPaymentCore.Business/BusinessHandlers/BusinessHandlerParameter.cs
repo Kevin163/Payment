@@ -18,6 +18,18 @@
         /// </summary>
         public string MemberType { get; set; }
         /// <summary>
+        /// 捷云会员集团id
+        /// </summary>
+        public string BspmsGrpid { get; set; }
+        /// <summary>
+        /// 捷云会员渠道代码
+        /// </summary>
+        public string BspmsChannelCode { get; set; }
+        /// <summary>
+        /// 捷云会员渠道密钥
+        /// </summary>
+        public string BspmsChannelKey { get; set; }
+        /// <summary>
         /// 会员绑定地址
         /// </summary>
         public string MemberBindUrl { get; set; }
