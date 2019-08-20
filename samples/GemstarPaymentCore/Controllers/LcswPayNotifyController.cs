@@ -42,8 +42,8 @@ namespace GemstarPaymentCore.Controllers
                         notifyRequest.Body = body;
                         //这里本来就是支付成功了才通行的，所以此处不再需要检查支付状态
                         var payDb = _wxPayDBFactory.GetFirstHavePaySystemDB();
-                        var payTime = DateTime.ParseExact(notifyRequest.PayTime, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
-                        var payEntities = payDb.UnionPayLcsws.Where(w => w.TerminalTrace == notifyRequest.PayTrace && w.TerminalTime == payTime).ToList();
+                        var terminalTime = DateTime.ParseExact(notifyRequest.TerminalTime, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+                        var payEntities = payDb.UnionPayLcsws.Where(w => w.TerminalTrace == notifyRequest.TerminalTrace && w.TerminalTime == terminalTime).ToList();
                         if (payEntities == null || payEntities.Count == 0)
                         {
                             return Json(NotifyResult.Failure("没有指定的支付记录"));
@@ -59,7 +59,7 @@ namespace GemstarPaymentCore.Controllers
                                 payEntity.PayRemark = $"使用扫呗聚合支付中的{notifyRequest.PayType},支付方{notifyRequest.UserId},渠道流水号{notifyRequest.ChannelTradeNo}";
                             }
                             //通知回调地址支付状态
-                            if (!string.IsNullOrEmpty(payEntity.CallbackUrl))
+                            if (!string.IsNullOrEmpty(payEntity.CallbackUrl) && payEntity.CallbackUrl != "http://pay.gshis.net/ClientPay")
                             {
                                 var paymentCallbackPara = new PaymentCallbackParameter
                                 {
