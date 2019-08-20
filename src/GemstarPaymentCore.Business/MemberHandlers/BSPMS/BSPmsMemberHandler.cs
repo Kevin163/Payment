@@ -57,6 +57,7 @@ namespace GemstarPaymentCore.Business.MemberHandlers.BSPMS
                 .Append("<XType>JxdBSPms</XType>")
                 .Append("<OpType>会员交易</OpType>")
                 .Append("<ProfileCa>")
+                .Append("<OutletCode>").Append(para.OutletCode).Append("</OutletCode>")
                 .Append("<BalanceType>0102</BalanceType>")
                 .Append("<Amount>").Append(para.Amount > 0 ? -para.Amount : para.Amount).Append("</Amount>")
                 .Append("<Creator>jxdUnionPay</Creator>")
