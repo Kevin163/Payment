@@ -78,7 +78,54 @@ namespace GemstarPaymentCore.Business.MemberHandlers.BSPMS
             using (var responseContent = response.Content)
             {
                 var resultStr = await responseContent.ReadAsStringAsync();
-                return ParsePaymentResult(resultStr);
+                var payResult = ParsePaymentResult(resultStr);
+                if (payResult.PaySuccess)
+                {
+                    await AddMemberScore(para);
+                }
+                return payResult;
+            }
+        }
+        /// <summary>
+        /// 增加会员本次消费的积分
+        /// </summary>
+        /// <param name="para">消费参数</param>
+        private  async Task AddMemberScore(MemberPaymentParameter para)
+        {
+            try
+            {
+                var xml = new StringBuilder();
+                xml.Append("<?xml version=\"1.0\" encoding=\"gbk\"?>")
+                    .Append("<RealOperate>")
+                    .Append("<XType>JxdBSPms</XType>")
+                    .Append("<OpType>会员消费上传</OpType>")
+                    .Append("<ProfileTrans>")
+                    .Append("<ProfileId>").Append(para.Id).Append("</ProfileId>")
+                    .Append("<OutletCode>").Append(para.OutletCode).Append("</OutletCode>")
+                    .Append("<HotelCode>").Append(_para.GrpId).Append("</HotelCode>")
+                    .Append("<Amount>").Append(para.Amount < 0 ? -para.Amount : para.Amount).Append("</Amount>")
+                    .Append("<AmountScore>").Append(para.Amount < 0 ? -para.Amount : para.Amount).Append("</AmountScore>")
+                    .Append("<RefNo>").Append(para.RefNo).Append("</RefNo>")
+                    .Append("<Remark>").Append(para.Remark).Append("</Remark>")
+                    .Append("<Creator>jxdUnionPay</Creator>")
+                    .Append("<OpType></OpType>")
+                    .Append("<ShiftId></ShiftId>")
+                    .Append("</ProfileTrans>")
+                    .Append("</RealOperate>");
+
+                var httpClient = _httpClientFactory.CreateClient();
+                var url = AddQueryParameters(xml.ToString());
+
+                using (var requestContent = new StringContent(xml.ToString(), Encoding.UTF8, "text/xml"))
+                using (var response = await httpClient.PostAsync(url, requestContent))
+                using (var responseContent = response.Content)
+                {
+                    var resultStr = await responseContent.ReadAsStringAsync();
+                }
+            }
+            catch
+            {
+
             }
         }
 
