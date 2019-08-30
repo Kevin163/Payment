@@ -356,6 +356,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }
+            flagStr = "LcswPayJsPay|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<LcswPayJsPayHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
             #endregion
             #region 利楚商务扫呗预授权支付
             flagStr = "LcswPayPreAuthBar|";

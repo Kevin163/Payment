@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Essensoft.AspNetCore.Payment.LcswPay;
 using Essensoft.AspNetCore.Payment.LcswPay.Request;
@@ -223,6 +225,16 @@ namespace WebApplicationSample.Controllers
             return View(viewModel);
         }
         #endregion
-
+        #region 公众号支付测试
+        public async Task<IActionResult> JsPay()
+        {
+            var str = $"LcswPayJsPay|010|858404816000002|11068520|4badcbd5c6124b90b224bf415e0dd808|trace{DateTime.Now.ToString("yyyyMMddHHmmss")}|{DateTime.Now.ToString("yyyyMMddHHmmss")}|0.01|wx44c21dd6ff9fbfe1|oA_0B1dF671tH0DsDZYpeepCjTxU|测试公众号支付|测试";
+            var httpClient = HttpClientFactory.Create();
+            var response = await httpClient.PostAsync("http://localhost:8999/clientpay", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("payStr",str)}));
+            var content = await response.Content.ReadAsStringAsync();
+            ViewBag.results = content.Split('|');
+            return View();
+        }
+        #endregion
     }
 }
