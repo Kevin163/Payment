@@ -116,7 +116,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                             if(queryResponse.IsReturnCodeSuccess && queryResponse.TradeState == "SUCCESS")
                             {
                                 //已经支付成功
-                                 var queryResultStr = $"{queryResponse.OutTradeNo}|{queryResponse.ChannelTradeNo}|{queryResponse.MerchantName}|{queryResponse.EndTime}|{queryResponse.Attach}";
+                                 var queryResultStr = $"{queryResponse.OutTradeNo}|{queryResponse.ChannelTradeNo}|{queryResponse.MerchantName}|{queryResponse.EndTime}|{queryResponse.Attach}|{queryResponse.PayType}";
                                 return HandleResult.Success(queryResultStr);
                             }
                         }
@@ -127,7 +127,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                     }
                     return HandleResult.Fail($"错误代码{response.ResultCode};错误描述:{response.ReturnMsg}");
                 }
-                var resultStr = $"{response.OutTradeNo}|{response.ChannelTradeNo}|{response.MerchantName}|{response.EndTime}|{response.Attach}";
+                var resultStr = $"{response.OutTradeNo}|{response.ChannelTradeNo}|{response.MerchantName}|{response.EndTime}|{response.Attach}|{response.PayType}";
                 return HandleResult.Success(resultStr);
             } catch (Exception ex)
             {
