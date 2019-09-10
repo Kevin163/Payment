@@ -11,7 +11,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
     /// </summary>
     public class LcswPayJsPayHandler : IBusinessHandler
     {
-        private const string contentFormat = "payType|merchantNo|terminalId|accessToken|terminalTrace|terminalTime|totalFee|appId|openId|orderBody|attach";
+        private const string contentFormat = "payType|merchantNo|terminalId|accessToken|terminalTrace|terminalTime|totalFee|appId|openId|orderBody|attach|notifyUrl";
         private const char splitChar = '|';
         private readonly ILcswPayClient _client;
         private readonly LcswPayOption _options;
@@ -54,6 +54,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                 var openId = infos[i++];
                 var orderBody = infos[i++];
                 var attach = infos[i++];
+                var notifyUrl = infos[i++];
 
                 var request = new LcswPayJspayRequest
                 {
@@ -67,7 +68,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                     OpenId = openId,
                     OrderBody = orderBody,
                     Attach = attach,
-                    NotifyUrl = ""
+                    NotifyUrl = notifyUrl
                 };
                 _options.Token = accessToken;
                 var response = await _client.ExecuteAsync(request, _options);
