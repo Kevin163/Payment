@@ -167,6 +167,19 @@ namespace GemstarPaymentCore
                         .WithSimpleSchedule(s => s.WithIntervalInSeconds(businessOption.QueryInterval).RepeatForever())
                         .Build();
                     await _scheduler.ScheduleJob(jobJxdUnionPayQuery, triggerjxdunionpayquery);
+                    //启动退款任务
+                    var refundJob = JobBuilder.Create<WaitRefundJob>()
+                        .WithIdentity($"WaitRefundJob{system.Name}", "WaitRefundJob")
+                        .Build();
+                    refundJob.JobDataMap.Put(JobParaName.ParaSystemName, system.Name);
+                    refundJob.JobDataMap.Put(JobParaName.ParaConnStrName, system.ConnStr);
+
+                    var triggerRefundJob = TriggerBuilder.Create()
+                        .WithIdentity($"WaitRefundJob{system.Name}", "WaitRefundJob")
+                        .WithSimpleSchedule(s => s.WithIntervalInSeconds(businessOption.QueryInterval).RepeatForever())
+                        .Build();
+
+                    await _scheduler.ScheduleJob(refundJob, triggerRefundJob);
 
 
                     hasJob = true;

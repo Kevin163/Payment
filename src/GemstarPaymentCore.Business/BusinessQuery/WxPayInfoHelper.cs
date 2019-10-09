@@ -148,6 +148,12 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         }
         #endregion
 
+        #region 查询待退款记录，以便执行退款
+        public static List<WaitRefundList> GetNotSendWaitRefunds(WxPayDB payDB)
+        {
+            return payDB.WaitRefundLists.Where(w => w.RefundStatus == WaitRefundList.RefundStatu.StatuNotSend).ToList();
+        }
+        #endregion
 
         #region 通用方法实现
         private static List<WxPayInfo> GetNeedQueryOrders(WxPayDB payDB, BusinessOption option,List<WxPayInfoStatus?> status)

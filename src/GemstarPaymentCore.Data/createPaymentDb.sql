@@ -38,3 +38,17 @@ BEGIN
 	ALTER TABLE unionPay_lcsw add memberPara varchar(2000) null
 END
 
+--增加线下业务系统待退款记录表，陈前良，2019-10-8 18:14:6
+if object_id('waitRefundList') is null
+begin
+	create table waitRefundList(
+		refundId varchar(32) not null,--退款id，主键值
+		payType varchar(20) not null,--支付类型，将决定了如何进行退款，支持的类型:weixinpay,alipay,lcswpay
+		refundPara varchar(max) not null,--退款参数，不同的支付类型需要不同的参数，以json格式进行传递，具体的参数格式见文档https://www.yuque.com/gemstar/works/payment_refund
+		refundStatus varchar(30) not null,--退款状态,notSend:未发送退款请求，sended：已发送退款请求，success：退款成功，fail：退款失败，其他中间状态字符串
+		refundFailReason varchar(max) null,--退款失败原因
+		createDate datetime not null,--创建日期
+		sendDate datetime null,--发送退款请求日期
+		constraint pk_waitRefundList primary key(refundId)
+	)
+end
