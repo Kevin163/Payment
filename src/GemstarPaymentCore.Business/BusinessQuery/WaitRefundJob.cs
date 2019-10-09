@@ -53,7 +53,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                                     var refundInstance = DoRefundBase.GetDoRefundInstance(record.PayType);
                                     var refundResult = await refundInstance.DoRefund(record, serviceProvider);
                                     //记录退款状态
-                                    record.RefundStatus = refundResult.RefundStatu;
+                                    record.RefundStatus = string.IsNullOrEmpty(refundResult.RefundStatu) ? WaitRefundList.RefundStatu.StatuFail : refundResult.RefundStatu;
                                     record.RefundFailReason = refundResult.RefundFailReason;
                                     payDB.Entry(record).State = EntityState.Modified;
                                     await payDB.SaveChangesAsync();
