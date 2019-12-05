@@ -1,8 +1,12 @@
-﻿using Essensoft.AspNetCore.Payment.LcswPay.Notify;
+﻿using Essensoft.AspNetCore.Payment.LcswPay;
+using Essensoft.AspNetCore.Payment.LcswPay.Notify;
+using Essensoft.AspNetCore.Payment.LcswPay.Request;
 using GemstarPaymentCore.Data;
 using GemstarPaymentCore.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
 using System.Globalization;
@@ -21,11 +25,13 @@ namespace GemstarPaymentCore.Controllers
         private IWxPayDBFactory _wxPayDBFactory;
         private ILogger _logger;
         private IHttpClientFactory _httpClientFactory;
-        public LcswPayNotifyController(IWxPayDBFactory wxPayDBFactory, ILogger<LcswPayNotifyController> logger,IHttpClientFactory httpClientFactory)
+        private IServiceProvider _serviceProvider;
+        public LcswPayNotifyController(IWxPayDBFactory wxPayDBFactory, ILogger<LcswPayNotifyController> logger,IHttpClientFactory httpClientFactory,IServiceProvider serviceProvider)
         {
             _wxPayDBFactory = wxPayDBFactory;
             _logger = logger;
             _httpClientFactory = httpClientFactory;
+            _serviceProvider = serviceProvider;
         }
         public async Task<IActionResult> Index()
         {
@@ -57,6 +63,15 @@ namespace GemstarPaymentCore.Controllers
                                 payEntity.PayTransId = notifyRequest.OutTradeNo;
                                 payEntity.PayType = notifyRequest.PayType;
                                 payEntity.PayRemark = $"使用扫呗聚合支付中的{notifyRequest.PayType},支付方{notifyRequest.UserId},渠道流水号{notifyRequest.ChannelTradeNo}";
+                                await payDb.SaveChangesAsync();
+                            }else if(payEntity.Status == WxPayInfoStatus.PaidSuccess)
+                            {
+                                //已经支付成功，再次接收到支付通知的话，检查是否是同一个支付记录，不是的话，则自动退款
+                                if (!payEntity.PayTransId.Equals(notifyRequest.OutTradeNo))
+                                {
+                                    await DoRefund(payEntity,notifyRequest);
+                                    continue;
+                                }
                             }
                             //通知回调地址支付状态
                             if (!string.IsNullOrEmpty(payEntity.CallbackUrl) && payEntity.CallbackUrl != "http://pay.gshis.net/ClientPay")
@@ -76,7 +91,6 @@ namespace GemstarPaymentCore.Controllers
                                 PaymentCallback.CallbackNotify(paymentCallbackPara, _httpClientFactory);
                             }
                         }
-                        await payDb.SaveChangesAsync();
                         return Json(NotifyResult.Success(""));
                     }
                     else
@@ -89,6 +103,31 @@ namespace GemstarPaymentCore.Controllers
             {
                 return Json(NotifyResult.Failure(ex.Message));
             }
+        }
+
+        private async Task DoRefund(UnionPayLcsw payEntity, LcswPayNotifyRequest notifyRequest)
+        {
+            _logger.LogError($"收到重复支付通知，开始自动退款：原支付记录id:{payEntity.Id.ToString()},扫呗唯一订单号：{notifyRequest.OutTradeNo}");
+            //调用退款申请接口
+            var request = new LcswPayRefundRequest
+            {
+                PayType = notifyRequest.PayType,
+                ServiceId = "030",
+                MerchantNo = payEntity.MerchantNo,
+                TerminalId = payEntity.TerminalId,
+                TerminalTime = DateTime.Now.ToString("yyyyMMddHHmmss"),
+                TerminalTrace = Guid.NewGuid().ToString("N"),
+                RefundFee = Convert.ToInt32(Convert.ToDecimal(payEntity.TotalFee) * 100).ToString(),
+                OutTradeNo = notifyRequest.OutTradeNo,
+                PayTrace = notifyRequest.TerminalTrace,
+                PayTime = notifyRequest.TerminalTime,
+                AuthCode = ""
+            };
+            var _options = _serviceProvider.GetService<IOptionsSnapshot<LcswPayOption>>().Value;
+            _options.Token = payEntity.AccessToken;
+            var _client = _serviceProvider.GetService<ILcswPayClient>();
+            var response = await _client.ExecuteAsync(request, _options);
+            _logger.LogError($"收到的退款结果：{response.Body}");
         }
     }
 }
