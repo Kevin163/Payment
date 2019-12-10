@@ -16,6 +16,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
     /// <summary>
     /// 查询支付宝扫码支付结果
     /// </summary>
+    [DisallowConcurrentExecution]
     public class AlipayQueryJob : IJob
     {
         public async Task Execute(IJobExecutionContext context)

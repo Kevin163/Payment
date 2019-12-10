@@ -13,8 +13,10 @@ namespace GemstarPaymentCore.Business.BusinessQuery
     /// <summary>
     /// 待退款记录执行退款作业
     /// </summary>
+    [DisallowConcurrentExecution]
     public class WaitRefundJob : IJob
     {
+        
         public async Task Execute(IJobExecutionContext context)
         {
             //获取参数
@@ -36,7 +38,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                         var businessOption = serviceProvider.GetService<IOptions<BusinessOption>>().Value;
                         var options = serviceProvider.GetService<IOptions<LcswPayOption>>().Value;
                         var client = serviceProvider.GetService<ILcswPayClient>();
-                        var records = WxPayInfoHelper.GetNotSendWaitRefunds(payDB);
+                        var records = WxPayInfoHelper.GetNotSendWaitRefunds(payDB,businessOption);
                         if (records.Count > 0)
                         {
                             foreach (var record in records)

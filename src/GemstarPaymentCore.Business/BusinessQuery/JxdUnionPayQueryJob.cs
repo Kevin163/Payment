@@ -15,6 +15,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
     /// <summary>
     /// 捷信达聚合支付扫码结果查询
     /// </summary>
+    [DisallowConcurrentExecution]
     public class JxdUnionPayQueryJob : IJob
     {
         public async Task Execute(IJobExecutionContext context)

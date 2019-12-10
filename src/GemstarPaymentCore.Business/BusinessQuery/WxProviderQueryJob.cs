@@ -14,6 +14,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
     /// <summary>
     /// 查询微信服务商支付结果
     /// </summary>
+    [DisallowConcurrentExecution]
     public class WxProviderQueryJob : IJob
     {
         public async Task Execute(IJobExecutionContext context)

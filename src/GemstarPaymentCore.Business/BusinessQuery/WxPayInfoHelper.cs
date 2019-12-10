@@ -149,9 +149,10 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         #endregion
 
         #region 查询待退款记录，以便执行退款
-        public static List<WaitRefundList> GetNotSendWaitRefunds(WxPayDB payDB)
+        public static List<WaitRefundList> GetNotSendWaitRefunds(WxPayDB payDB,BusinessOption option)
         {
-            return payDB.WaitRefundLists.Where(w => w.RefundStatus == WaitRefundList.RefundStatu.StatuNotSend).ToList();
+            var lastDate = DateTime.Now.AddMinutes(-option.LastMinute);
+            return payDB.WaitRefundLists.Where(w => w.RefundStatus == WaitRefundList.RefundStatu.StatuNotSend && w.CreateDate >= lastDate).OrderBy(w=>w.CreateDate).ToList();
         }
         #endregion
 
