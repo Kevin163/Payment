@@ -61,7 +61,11 @@ namespace GemstarPaymentCore
                     NLog.LogManager.Shutdown();
                 }
             }
-
+            if(_scheduler != null && !_scheduler.IsShutdown)
+            {
+                _scheduler.Shutdown().Wait();
+                Console.WriteLine("定时任务已经停止");
+            }
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args, bool isService)
