@@ -13,6 +13,7 @@ using System.Linq;
 using System.IO;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
 using NLog.Web;
+using Microsoft.Extensions.Configuration;
 
 namespace GemstarPaymentCore
 {
@@ -70,6 +71,16 @@ namespace GemstarPaymentCore
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args, bool isService)
         {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+            var portStr = config["Port"];
+            int port = 8999;
+            if(string.IsNullOrEmpty(portStr) || !int.TryParse(portStr,out port))
+            {
+                port = 8999;
+            }
             var hostBuilder = WebHost.CreateDefaultBuilder(args)
             .ConfigureLogging(builder =>
             {
@@ -95,9 +106,9 @@ namespace GemstarPaymentCore
                     builder.AddProvider(new AliyunLoggerProvider(aliyunLoggerOption));
                 }
             })
-            .UseKestrel(config =>
+            .UseKestrel(cfg =>
             {
-                config.ListenAnyIP(8999);
+                cfg.ListenAnyIP(port);
             })
             .UseStartup<Startup>();
             //如果是使用控制台运行的，则将日志文件写到文件中，以便分析日志

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DD8CC860-F3E3-40F4-8A8F-20BF66EA051C}"
 EndProject
@@ -34,7 +34,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GemstarPaymentCore.Business
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essensoft.AspNetCore.Payment.LcswPay", "src\Essensoft.AspNetCore.Payment.LcswPay\Essensoft.AspNetCore.Payment.LcswPay.csproj", "{63CD1592-AF28-4B1A-A153-B4E26BAFB192}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GemstarPaymentCore.Data", "src\GemstarPaymentCore.Data\GemstarPaymentCore.Data.csproj", "{BED139B3-6B62-4E46-9BD1-749679DA15FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GemstarPaymentCore.Data", "src\GemstarPaymentCore.Data\GemstarPaymentCore.Data.csproj", "{BED139B3-6B62-4E46-9BD1-749679DA15FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GemstarPaymentCore.Test", "GemstarPaymentCore.Test\GemstarPaymentCore.Test.csproj", "{6F4326F5-D664-44C0-BD9D-FC6956916955}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -90,6 +92,10 @@ Global
 		{BED139B3-6B62-4E46-9BD1-749679DA15FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BED139B3-6B62-4E46-9BD1-749679DA15FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BED139B3-6B62-4E46-9BD1-749679DA15FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F4326F5-D664-44C0-BD9D-FC6956916955}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F4326F5-D664-44C0-BD9D-FC6956916955}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F4326F5-D664-44C0-BD9D-FC6956916955}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F4326F5-D664-44C0-BD9D-FC6956916955}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,6 +113,7 @@ Global
 		{B22D8B07-78DF-4BAB-A897-5583756CC29B} = {D3871E61-CA47-4BD0-8BF9-B64A42B2200D}
 		{63CD1592-AF28-4B1A-A153-B4E26BAFB192} = {D3871E61-CA47-4BD0-8BF9-B64A42B2200D}
 		{BED139B3-6B62-4E46-9BD1-749679DA15FE} = {D3871E61-CA47-4BD0-8BF9-B64A42B2200D}
+		{6F4326F5-D664-44C0-BD9D-FC6956916955} = {D3871E61-CA47-4BD0-8BF9-B64A42B2200D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C5BE9B18-CD29-4490-84EA-68EDEEF75428}
