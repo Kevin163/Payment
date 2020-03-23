@@ -434,6 +434,15 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 handler.SetBusiessHandlerParameter(para);
                 return handler;
             }
+            flagStr = "JxdUnionLcswCancel|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<JxdUnionLcswPayCancelHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                handler.SetBusiessHandlerParameter(para);
+                return handler;
+            }
             flagStr = "JxdUnionLcswQuery|";
             if (content.StartsWith(flagStr))
             {
