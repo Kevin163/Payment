@@ -127,7 +127,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                     PayeeUserId = _options.PId,
                     PayTimeout = payTimeOut,
                     ProductCode = "PRE_AUTH",
-                    ExtraParam = JsonConvert.SerializeObject(extraParam)
+                    //ExtraParam = JsonConvert.SerializeObject(extraParam)//传递此参数的话，会导致使用信用分进行冻结，但真实扣款的，可能导致扣不到款项，所以先不传递此值，要求支付宝冻结果需要直接冻结相应金额，以便可以正常扣款。
                 };
                 var request = new AlipayFundAuthOrderFreezeRequest();
                 request.SetBizModel(model);

@@ -1,0 +1,102 @@
+﻿@model SignViewModel
+@{
+    Layout = null;
+    ViewBag.Title = "计算加密签名";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
+              crossorigin="anonymous"
+              integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" />
+    </environment>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="container">
+        <main role="main" class="pb-3">
+            <h2>@ViewBag.Title</h2>
+            <form asp-controller="GetSign" asp-action="CalcSign" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Content">加密内容：(加密内容一般是各种收款账号，来源于签约后的邮件通知或者相应的商户后台)</label>
+                    <input type="text" class="form-control" asp-for="Content" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="Key">加密密钥：(加密密钥是用户序列号，线下用户的比如SZKAIFHOTEL,线上的比如000001，来源于今目标主线)</label>
+                    <input type="text" class="form-control" asp-for="Key" />
+                </div>
+                <div class="form-group">
+                    <label for="encrypted">加密结果：(加密结果需要写回主线，做为收款账号，明文的收款账号将不能正常收款)</label>
+                    <input type="text" class="form-control" id="encrypted" />
+                </div>
+                <button type="button" class="btn btn-primary" id="calcButton">计算加密结果</button>
+            </form>
+            <hr />
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2018 - 捷信达版权所有
+        </div>
+    </footer>
+
+    <environment include="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous"
+                integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=">
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.bundle.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+                crossorigin="anonymous"
+                integrity="sha256-E/V4cWE4qvAeO5MOhjtGtqDzPndRO1LBk8lJ/PR7CA4=">
+        </script>
+    </environment>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("#calcButton").click(function (e) {
+                e.preventDefault();
+                var content = $("#Content").val();
+                var key = $("#Key").val();
+
+                if (!content) {
+                    alert("请输入加密内容");
+                    return;
+                }
+                if (!key) {
+                    alert("请输入加密密钥");
+                    return;
+                }
+                var url = $("form").attr("action");
+                $("#encrypted").val("");
+                $.post(url, { Content: content, Key: key }, function (data) {
+                    if (data.success) {
+                        $("#encrypted").val(data.data);
+                    } else {
+                        alert("计算加密结果失败，原因："+data.data);
+                    }
+                }, "json");
+            });
+        });
+    </script>
+</body>
+</html>
