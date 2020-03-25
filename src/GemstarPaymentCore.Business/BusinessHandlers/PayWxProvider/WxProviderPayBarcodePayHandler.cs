@@ -10,15 +10,12 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
     /// <summary>
     /// 微信服务商条码支付的udp请求处理类，负责接收udp内容，调用条码支付类进行支付，并且返回相应结果
     /// </summary>
-    public class WxProviderPayBarcodePayHandler : IBusinessHandler
+    public class WxProviderPayBarcodePayHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "subAppid|subMchId|body|outTradeNo|orderAmount|authCode";
-        private const char splitChar = '|';
         private readonly IWeChatPayClient _client;
         private readonly WeChatPayOptions _options;
         private readonly BusinessOption _businessOption;
-        private string _businessContent;
         public WxProviderPayBarcodePayHandler(ILogger<WxProviderPayBarcodePayHandler> log, IWeChatPayClient client, IOptionsSnapshot<WeChatPayOptions> options,IOptionsSnapshot<BusinessOption> businessOptions)
         {
             _log = log;
@@ -26,25 +23,11 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
             _options = options.Value;
             _businessOption = businessOptions.Value;
         }
+        protected override string contentFormat => "subAppid|subMchId|body|outTradeNo|orderAmount|authCode";
+        protected override int[] contentEncryptedIndexs => new int[] { 1 };
 
-        public void SetBusinessContent(string businessContent)
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;

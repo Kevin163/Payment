@@ -11,11 +11,9 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
     /// <summary>
     /// 阿里支付宝支付结果查询的udp请求处理类，负责接收udp内容，调用支付查询类进行查询，并且返回相应结果
     /// </summary>
-    public class AlipayPayQueryHandler : IBusinessHandler
+    public class AlipayPayQueryHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "Appid|Pid|outTradeNo";
-        private const char splitChar = '|';
         private readonly IAlipayClient _client;
         private readonly AlipayOptions _options;
         private string _businessContent;
@@ -25,25 +23,11 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
             _client = client;
             _options = options.Value;
         }
+        protected override string contentFormat => "Appid|Pid|outTradeNo";
+        protected override int[] contentEncryptedIndexs => new int[] { 0, 1 };
 
-        public void SetBusinessContent(string businessContent)
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -91,12 +75,12 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
 
                 var queryModel = new AlipayTradeQueryModel
                 {
-                    OutTradeNo = outTradeNo                    
+                    OutTradeNo = outTradeNo
                 };
                 var request = new AlipayTradeQueryRequest();
                 request.SetBizModel(queryModel);
 
-                var response = await _client.ExecuteAsync(request,_options);
+                var response = await _client.ExecuteAsync(request, _options);
                 var result = response.FailResult();
 
                 if (response.IsSuccessCode())

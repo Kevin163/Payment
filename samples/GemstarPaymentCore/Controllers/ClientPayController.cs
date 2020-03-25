@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
+using System.Linq;
+using GemstarPaymentCore.Business.Utility;
+using System.Data.SqlClient;
 
 namespace GemstarPaymentCore.Controllers
 {
@@ -21,7 +24,7 @@ namespace GemstarPaymentCore.Controllers
             _logger = logger;
             _serviceProvider = serviceProvider;
         }
-        public async Task<IActionResult> Index(string payStr,string callbackUrl,string memberUrl,string memberType,string memberBindUrl,string bspmsGrpid,string bspmsChannelCode,string bspmsChannelKey,int? redirect=0,int? isFromRedirect = 0)
+        public async Task<IActionResult> Index(string payStr,string callbackUrl,string memberUrl,string memberType,string memberBindUrl,string bspmsGrpid,string bspmsChannelCode,string bspmsChannelKey,int? redirect=0,int? isFromRedirect = 0,int? isEncrypted = 1)
         {
             using (var scope = _logger.BeginScope(this))
             {
@@ -32,7 +35,11 @@ namespace GemstarPaymentCore.Controllers
                     if (!string.IsNullOrWhiteSpace(payStr))
                     {
                         _logger.LogInformation(_eventId, $"请求{requestId}于{DateTime.Now.ToString("mm:ss.fff")}接收到的业务字符串：{payStr}");
-
+                        //如果当前账号是加密的，则先执行解密
+                        if(isEncrypted == 1)
+                        {
+                            payStr = Decrypt(payStr);
+                        }
                         if (redirect == 1)
                         {
                             //将求转发给线上地址进行处理
@@ -55,7 +62,8 @@ namespace GemstarPaymentCore.Controllers
                                 ,KeyValuePair.Create("bspmsGrpid",businessOption.BsPmsGrpId)
                                 ,KeyValuePair.Create("bspmsChannelCode",businessOption.BsPmsChannelCode)
                                 ,KeyValuePair.Create("bspmsChannelKey",businessOption.BsPmsChannelKey)
-                                ,KeyValuePair.Create("isFromRedirect","1") }
+                                ,KeyValuePair.Create("isFromRedirect","1")
+                                ,KeyValuePair.Create("isEncrypted","0")}
                             ))
                             using (var response = await httpClient.PostAsync(businessOption.JxdPaymentUrl, requestContent))
                             using (var responseContent = response.Content)
@@ -93,6 +101,56 @@ namespace GemstarPaymentCore.Controllers
                     var result = HandleResult.Fail(ex);
                     return Content(result.ResultStr);
                 }
+            }
+        }
+
+        private static string UserSeriesNo = "";
+        private string Decrypt(string payStr)
+        {
+            try
+            {
+                //取出解密密钥，密钥为连接的数据库中的cyuserinfo表中的用户序列号
+                //如果没有设置任何数据库连接则不能获取到有效加密密钥，则直接认为不需要解密，直接返回原文
+                //线上的payment数据库中的用户序列号设置为固定值PaymentNotEncrypted，如果是这个固定值，则表示是线上系统调用或者是线下系统转发过来的支付请求，此时不需要解密。因为线上系统的账号用户不能直接修改，直接就是明文保存的。线下转发的已经解密完成了，不需要解密
+                if (string.IsNullOrEmpty(UserSeriesNo))
+                {
+                    var businessOption = _serviceProvider.GetService<IOptions<BusinessOption>>().Value;
+                    var businessSystemInfo = businessOption.Systems.FirstOrDefault(w => w.HavePay == 1);
+                    if (businessSystemInfo == null)
+                    {
+                        return payStr;
+                    }
+                    var connStr = businessSystemInfo.ConnStr;
+                    using (var conn = new SqlConnection(connStr))
+                    {
+                        conn.Open();
+                        var cmd = conn.CreateCommand();
+                        cmd.CommandText = "select v_SeriesNo from cyUserInfo";
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                UserSeriesNo = reader.GetString(0);
+                            }
+                            reader.Close();
+                        }
+                        conn.Close();
+                    }
+                }
+                if(string.IsNullOrEmpty(UserSeriesNo) || "PaymentNotEncrypted".Equals(UserSeriesNo))
+                {
+                    return payStr;
+                }
+                //调用各业务组件进行解密，只需要解密收款账号，由于不同的业务请求收款账号位置不同，不能统一处理
+                var para = new BusinessHandlerParameter();
+                var handler = BusinessHandlerFactory.GetHandler(payStr, para, _serviceProvider);
+                var security = _serviceProvider.GetService<ISecurity>();
+                return handler.Decrypt(payStr, UserSeriesNo, security);
+            } catch(Exception ex)
+            {
+                //解密有异常时，直接返回原始字符串
+                _logger.LogError(_eventId, ex, $"解密字符串{payStr}时遇到异常{ex.Message}");
+                return payStr;
             }
         }
     }

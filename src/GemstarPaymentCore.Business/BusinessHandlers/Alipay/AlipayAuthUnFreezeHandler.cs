@@ -11,39 +11,22 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
     /// <summary>
     /// 支付宝预授权取消冻结
     /// </summary>
-    public class AlipayAuthUnFreezeHandler : IBusinessHandler
+    public class AlipayAuthUnFreezeHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "authNo|outRequestNo|Amount|remark|AppId|PId";
-        private const char splitChar = '|';
         private readonly IAlipayClient _client;
         private readonly AlipayOptions _options;
-        private string _businessContent;
         public AlipayAuthUnFreezeHandler(ILogger<AlipayAuthUnFreezeHandler> log, IAlipayClient client, IOptionsSnapshot<AlipayOptions> options)
         {
             _log = log;
             _client = client;
             _options = options.Value;
         }
+        protected override string contentFormat => "authNo|outRequestNo|Amount|remark|AppId|PId";
+        protected override int[] contentEncryptedIndexs => new int[] { 4, 5 };
 
-        public void SetBusinessContent(string businessContent)
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -116,7 +99,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var request = new AlipayFundAuthOrderUnfreezeRequest();
                 request.SetBizModel(model);
 
-                var response = await _client.ExecuteAsync(request,_options);
+                var response = await _client.ExecuteAsync(request, _options);
 
                 var result = response.FailResult();
                 if (response.IsSuccessCode())

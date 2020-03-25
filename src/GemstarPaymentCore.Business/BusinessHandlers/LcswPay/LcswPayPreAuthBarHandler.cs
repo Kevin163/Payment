@@ -11,11 +11,9 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
     /// <summary>
     /// 利楚商务条码预授权处理
     /// </summary>
-    public class LcswPayPreAuthBarHandler: IBusinessHandler
+    public class LcswPayPreAuthBarHandler: BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "merchantNo|terminalId|accessToken|terminalTrace|terminalTime|authNo|totalFee|orderBody|attach";
-        private const char splitChar = '|';
         private readonly ILcswPayClient _client;
         private readonly LcswPayOption _options;
         private readonly BusinessOption _businessOption;
@@ -27,25 +25,11 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
             _options = options.Value;
             _businessOption = businessOption.Value;
         }
+        protected override string contentFormat => "merchantNo|terminalId|accessToken|terminalTrace|terminalTime|authNo|totalFee|orderBody|attach";
+        protected override int[] contentEncryptedIndexs => new int[] { 0 };
 
-
-        public void SetBusinessContent(string businessContent)
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -71,7 +55,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                     Attach = attach
                 };
                 _options.Token = accessToken;
-                var response = await _client.ExecuteAsync(request,_options);
+                var response = await _client.ExecuteAsync(request, _options);
 
                 if (!response.IsReturnCodeSuccess)
                 {
@@ -107,14 +91,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                             _options.Token = accessToken;
                             queryResponse = await _client.ExecuteAsync(queryRequest, _options);
 
-                            if(queryResponse.IsReturnCodeSuccess && queryResponse.TradeState == "SUCCESS" && queryResponse.PayStatusCode == "7")
+                            if (queryResponse.IsReturnCodeSuccess && queryResponse.TradeState == "SUCCESS" && queryResponse.PayStatusCode == "7")
                             {
                                 //已经支付成功
-                                 var queryResultStr = $"{queryResponse.OutTradeNo}|{response.PayType}|{queryResponse.ChannelTradeNo}|{queryResponse.MerchantName}|{queryResponse.EndTime}|{queryResponse.Attach}";
+                                var queryResultStr = $"{queryResponse.OutTradeNo}|{response.PayType}|{queryResponse.ChannelTradeNo}|{queryResponse.MerchantName}|{queryResponse.EndTime}|{queryResponse.Attach}";
                                 return HandleResult.Success(queryResultStr);
                             }
                         }
-                        if(queryResponse != null)
+                        if (queryResponse != null)
                         {
                             return HandleResult.Fail($"错误代码{queryResponse.ResultCode};错误描述:{queryResponse.ReturnMsg}|{queryResponse.PayStatusCode}");
                         }
@@ -128,6 +112,5 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                 return HandleResult.Fail(ex);
             }
         }
-
     }
 }

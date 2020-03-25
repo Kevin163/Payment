@@ -12,39 +12,22 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
     /// <summary>
     /// 支付宝预授权发码
     /// </summary>
-    public class AlipayAuthQrcodeHandler : IBusinessHandler
+    public class AlipayAuthQrcodeHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "orderNo|requestNo|orderAmount|content|payTimeOut|AppId|PId";
-        private const char splitChar = '|';
         private readonly IAlipayClient _client;
         private readonly AlipayOptions _options;
-        private string _businessContent;
         public AlipayAuthQrcodeHandler(ILogger<AlipayAuthQrcodeHandler> log, IAlipayClient client, IOptionsSnapshot<AlipayOptions> options)
         {
             _log = log;
             _client = client;
             _options = options.Value;
         }
+        protected override string contentFormat => "orderNo|requestNo|orderAmount|content|payTimeOut|AppId|PId";
+        protected override int[] contentEncryptedIndexs => new int[] { 5, 6 };
 
-        public void SetBusinessContent(string businessContent)
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -122,12 +105,12 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                     PayeeUserId = _options.PId,
                     PayTimeout = payTimeOut,
                     ProductCode = "PRE_AUTH",
-                    ExtraParam = JsonConvert.SerializeObject(extraParam)
+                    //ExtraParam = JsonConvert.SerializeObject(extraParam)
                 };
                 var request = new AlipayFundAuthOrderVoucherCreateRequest();
                 request.SetBizModel(model);
 
-                var response = await _client.ExecuteAsync(request,_options);
+                var response = await _client.ExecuteAsync(request, _options);
                 var result = response.FailResult();
                 if (response.IsSuccessCode())
                 {

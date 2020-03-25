@@ -10,37 +10,19 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
     /// <summary>
     /// 酒店押金支付消费接口
     /// </summary>
-    public class WxProviderDepositConsumeHandler : IBusinessHandler
+    public class WxProviderDepositConsumeHandler : BusinessHandlerBase
     {
-        private const string contentFormat = "subAppid|subMchId|outTradeNo|totalFee|consumeFee";
-        private const char splitChar = '|';
         private readonly IWeChatPayClient _client;
         private readonly BusinessOption _options;
-        private string _businessContent;
         public WxProviderDepositConsumeHandler(IWeChatPayClient client, IOptionsSnapshot<BusinessOption> options)
         {
             _client = client;
             _options = options.Value;
         }
-
-
-        public void SetBusinessContent(string businessContent)
+        protected override string contentFormat => "subAppid|subMchId|outTradeNo|totalFee|consumeFee";
+        protected override int[] contentEncryptedIndexs => new int[] { 1 };
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 var subAppId = infos[0];

@@ -13,9 +13,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.TicketsZhiWoYou
     /// <summary>
     /// 自我游订单明细核销
     /// </summary>
-    public class ZWYOrderCheckUdpContentHandler : IBusinessHandler
+    public class ZWYOrderCheckUdpContentHandler : BusinessHandlerBase
     {
-        private string _content;
         private ILogger _log;
         private IHttpClientFactory _clientFactory;
         private BusinessOption _businessOption;
@@ -25,13 +24,10 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.TicketsZhiWoYou
             _clientFactory = httpClientFactory;
             _businessOption = businessOption.Value;
         }
+        protected override string contentFormat => "ZWYCorpCode|ZWYCorpKey|ZWYUsername|orderDetailId|checkNum";
+        protected override int[] contentEncryptedIndexs => new int[] { };
 
-        public void SetBusinessContent(string businessContent)
-        {
-            _content = businessContent;
-        }
-
-        public async Task<HandleResult> HandleBusinessContentAsync()
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] contentInfo)
         {
             try
             {
@@ -41,14 +37,6 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.TicketsZhiWoYou
                     return HandleResult.Fail("请先在配置文件中增加ZWYAPIUrl参数设置，用于与自我游进行通信");
                 }
 
-                var contentInfo = _content.Split('|');
-                var contentFormat = "ZWYCorpCode|ZWYCorpKey|ZWYUsername|orderDetailId|checkNum";
-                var contentFormatLength = contentFormat.Split('|').Length;
-                var length = contentInfo.Length;
-                if (length < contentFormatLength)
-                {
-                    return HandleResult.Fail(string.Format("参数格式不正确，请按照{0}格式进行传递", contentFormat));
-                }
                 var corpCode = contentInfo[0];
                 var corpKey = contentInfo[1];
                 var username = contentInfo[2];

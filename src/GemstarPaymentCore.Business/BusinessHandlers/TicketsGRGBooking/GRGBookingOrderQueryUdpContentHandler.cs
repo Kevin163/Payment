@@ -15,9 +15,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.TicketsGRGBooking
     /// <summary>
     /// 广电运通订单查询接口
     /// </summary>
-    public class GRGBookingOrderQueryUdpContentHandler : IBusinessHandler
+    public class GRGBookingOrderQueryUdpContentHandler : BusinessHandlerBase
     {
-        private string _content;
         private ILogger _log;
         private IHttpClientFactory _clientFactory;
         private BusinessOption _businessOption;
@@ -27,12 +26,9 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.TicketsGRGBooking
             _clientFactory = httpClientFactory;
             _businessOption = businessOption.Value;
         }
-
-        public void SetBusinessContent(string businessContent)
-        {
-            _content = businessContent;
-        }
-        public async Task<HandleResult> HandleBusinessContentAsync()
+        protected override string contentFormat => "GRGCorpCode|GRGCorpKey|GRGUsername|orderNo|systemName";
+        protected override int[] contentEncryptedIndexs => new int[] { };
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] contentInfo)
         {
             try
             {
@@ -43,14 +39,6 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.TicketsGRGBooking
                 }
                 switchUrl = System.IO.Path.Combine(switchUrl, "queryOrder.do");
 
-                var contentInfo = _content.Split('|');
-                var contentFormat = "GRGCorpCode|GRGCorpKey|GRGUsername|orderNo|systemName";
-                var contentFormatLength = contentFormat.Split('|').Length;
-                var length = contentInfo.Length;
-                if (length < contentFormatLength)
-                {
-                    return HandleResult.Fail(string.Format("参数格式不正确，请按照{0}格式进行传递", contentFormat));
-                }
                 var corpCode = contentInfo[0];
                 var corpKey = contentInfo[1];
                 var username = contentInfo[2];

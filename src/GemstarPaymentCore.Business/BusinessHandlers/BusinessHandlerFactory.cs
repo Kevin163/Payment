@@ -34,6 +34,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                 var contentWithoutFlag = content.Substring(flagStr.Length);
                 var handler = serviceProvider.GetService<AlipayAuthCancelHandler>();
                 handler.SetBusinessContent(contentWithoutFlag);
+                
                 return handler;
             }
             flagStr = "AlipayAuthFinish|";

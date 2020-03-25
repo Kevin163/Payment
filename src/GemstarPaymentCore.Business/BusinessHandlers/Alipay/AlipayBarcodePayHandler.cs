@@ -13,15 +13,12 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
     /// <summary>
     /// 阿里支付宝条码支付的udp请求处理类，负责接收udp内容，调用条码支付类进行支付，并且返回相应结果
     /// </summary>
-    public class AlipayBarcodePayHandler : IBusinessHandler
+    public class AlipayBarcodePayHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "authCode|scene|orderNo|operatorName|orderAmount|content|AppId";
-        private const char splitChar = '|';
         private readonly IAlipayClient _client;
         private readonly AlipayOptions _options;
         private readonly BusinessOption _businessOption;
-        private string _businessContent;
         public AlipayBarcodePayHandler(ILogger<AlipayBarcodePayHandler> log, IAlipayClient client, IOptionsSnapshot<AlipayOptions> options,IOptionsSnapshot<BusinessOption> businessOption)
         {
             _log = log;
@@ -29,25 +26,11 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
             _options = options.Value;
             _businessOption = businessOption.Value;
         }
+        protected override string contentFormat => "authCode|scene|orderNo|operatorName|orderAmount|content|AppId";
+        protected override int[] contentEncryptedIndexs => new int[] { 6 };
 
-        public void SetBusinessContent(string businessContent)
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -86,28 +69,27 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                     Subject = content,
                     ExtendParams = new ExtendParams
                     {
-                        SysServiceProviderId = string.IsNullOrEmpty(_options.SysServiceProviderId) ? "2088221616228734":_options.SysServiceProviderId
+                        SysServiceProviderId = string.IsNullOrEmpty(_options.SysServiceProviderId) ? "2088221616228734" : _options.SysServiceProviderId
                     }
                 };
                 //处理花呗分期参数
-                if(allowHb == "1")
+                if (allowHb == "1")
                 {
                     if (string.IsNullOrEmpty(hbNum))
                     {
                         return HandleResult.Fail("允许花呗分期时必须指定分期期数");
                     }
                     var allowFeeOwners = new string[] { "1", "2" };
-                    if(string.IsNullOrEmpty(hbFeeOwner) || !allowFeeOwners.Contains(hbFeeOwner))
+                    if (string.IsNullOrEmpty(hbFeeOwner) || !allowFeeOwners.Contains(hbFeeOwner))
                     {
                         return HandleResult.Fail("允许花呗分期时必须指定手续费承担者");
                     }
                     model.ExtendParams.HbFqNum = hbNum;
                     //商家承担手续费
-                    if(hbFeeOwner == "1")
+                    if (hbFeeOwner == "1")
                     {
                         model.ExtendParams.HbFqSellerPercent = "100";
-                    }
-                    else
+                    } else
                     {
                         model.ExtendParams.HbFqSellerPercent = "0";
                     }
@@ -126,7 +108,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                     return HandleResult.Success("mocktransno|19000101000000|" + builder.total_amount);
                 }
 #endif
-                var response = await _client.ExecuteAsync(request,_options);
+                var response = await _client.ExecuteAsync(request, _options);
 
                 if (response.IsSuccessCode())
                 {

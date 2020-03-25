@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using GemstarPaymentCore.Data;
 
@@ -11,10 +9,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
     /// 捷信达聚合支付取消接口
     /// 只有刚打单后，还没有支付成功的才可以取消成功
     /// </summary>
-    public class JxdUnionLcswPayCancelHandler : IBusinessHandler
+    public class JxdUnionLcswPayCancelHandler : BusinessHandlerBase
     {
-        private const string contentFormat = "terminalTrace";
-        private const char splitChar = '|';
         private BusinessHandlerParameter _para;
         private BusinessOption _businessOption;
         private WxPayDB _payDb;
@@ -23,29 +19,15 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
         {
             _payDb = payDBFactory.GetFirstHavePaySystemDB();
         }
+        protected override string contentFormat => "terminalTrace";
+        protected override int[] contentEncryptedIndexs => new int[] { };
 
-
-        public void SetBusinessContent(string businessContent)
-        {
-            _businessContent = businessContent;
-        }
         public void SetBusiessHandlerParameter(BusinessHandlerParameter para)
         {
             _para = para;
         }
-        public async Task<HandleResult> HandleBusinessContentAsync()
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -60,7 +42,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                 {
                     //如果有相同业务单号对应的新记录，则将原来的记录撤销
                     var cancelEntities = _payDb.UnionPayLcsws.Where(w => w.TerminalTrace == terminalTrace && w.Status == WxPayInfoStatus.NewForJxdUnionPay).ToList();
-                    if(cancelEntities.Count <= 0)
+                    if (cancelEntities.Count <= 0)
                     {
                         return HandleResult.Fail($"指定的单号已经不是初始打单状态，不能取消");
                     }
@@ -80,7 +62,5 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                 return HandleResult.Fail(ex);
             }
         }
-
-
     }
 }

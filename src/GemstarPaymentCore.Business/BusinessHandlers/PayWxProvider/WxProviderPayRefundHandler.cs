@@ -10,39 +10,22 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
     /// <summary>
     /// 微信服务商退款申请功能
     /// </summary>
-    public class WxProviderPayRefundHandler : IBusinessHandler
+    public class WxProviderPayRefundHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "subAppId|subMchId|transactionId|outRefundNo|totalFee|refundFee|opUserId";
-        private const char splitChar = '|';
         private readonly IWeChatPayClient _client;
         private readonly WeChatPayOptions _options;
-        private string _businessContent;
         public WxProviderPayRefundHandler(ILogger<WxProviderPayRefundHandler> log, IWeChatPayClient client, IOptionsSnapshot<WeChatPayOptions> options)
         {
             _log = log;
             _client = client;
             _options = options.Value;
         }
+        protected override string contentFormat => "subAppId|subMchId|transactionId|outRefundNo|totalFee|refundFee|opUserId";
+        protected override int[] contentEncryptedIndexs => new int[] { 1 };
 
-        public void SetBusinessContent(string businessContent)
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;

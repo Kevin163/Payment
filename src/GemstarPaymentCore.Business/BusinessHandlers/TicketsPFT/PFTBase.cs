@@ -10,7 +10,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.TicketsPFT
     /// <summary>
     /// 票付通父类，用于实现一些通用的业务处理方法
     /// </summary>
-    public class PFTBase
+    public abstract class PFTBase:BusinessHandlerBase
     {
 
         /// <summary>

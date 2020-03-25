@@ -10,39 +10,22 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
     /// <summary>
     /// 微信服务商扫码支付的udp请求处理类，负责接收udp内容，调用统一下单后，返回二维码内容
     /// </summary>
-    public class WxProviderPayQrcodePayHandler : IBusinessHandler
+    public class WxProviderPayQrcodePayHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "subAppid|subMchId|body|outTradeNo|orderAmount";
-        private const char splitChar = '|';
         private readonly IWeChatPayClient _client;
         private readonly WeChatPayOptions _options;
-        private string _businessContent;
         public WxProviderPayQrcodePayHandler(ILogger<WxProviderPayQrcodePayHandler> log,IWeChatPayClient client,IOptionsSnapshot<WeChatPayOptions> options)
         {
             _log = log;
             _client = client;
             _options = options.Value;
         }
-        
-        public void SetBusinessContent(string businessContent)
-        {
-            _businessContent = businessContent;
-        }
+        protected override string contentFormat => "subAppid|subMchId|body|outTradeNo|orderAmount";
+        protected override int[] contentEncryptedIndexs => new int[] { 1 };
 
-        public async Task<HandleResult> HandleBusinessContentAsync()
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 var subAppId = infos[0];

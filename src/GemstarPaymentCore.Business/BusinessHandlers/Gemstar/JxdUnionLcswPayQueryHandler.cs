@@ -11,42 +11,24 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
     /// <summary>
     /// 捷信达聚合支付结果查询
     /// </summary>
-    public class JxdUnionLcswPayQueryHandler : IBusinessHandler
+    public class JxdUnionLcswPayQueryHandler : BusinessHandlerBase
     {
-        private const string contentFormat = "terminalTrace|systemName";
-        private const char splitChar = '|';
         private readonly IHttpClientFactory _clientFactory;
         private BusinessHandlerParameter _para;
         private BusinessOption _businessOption;
-        private string _businessContent;
         public JxdUnionLcswPayQueryHandler(IHttpClientFactory client,IOptionsSnapshot<BusinessOption> businessOption)
         {
             _clientFactory = client;
             _businessOption = businessOption.Value;
         }
-
-
-        public void SetBusinessContent(string businessContent)
-        {
-            _businessContent = businessContent;
-        }
+        protected override string contentFormat => "terminalTrace|systemName";
+        protected override int[] contentEncryptedIndexs => new int[] { };
         public void SetBusiessHandlerParameter(BusinessHandlerParameter para)
         {
             _para = para;
         }
-        public async Task<HandleResult> HandleBusinessContentAsync()
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -77,19 +59,15 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                         var transactionId = payResult.PaidTransId;
                         var paidAmount = payResult.PaidAmount;
                         return HandleResult.Success($"{transactionId}|{paidTime}|{paidAmount}|{payResult.PaidType}|{terminalTrace}");
-                    }
-                    else
+                    } else
                     {
                         return HandleResult.Fail(payResult.ErrorMessage);
                     }
                 }
-            }
-            catch (Exception ex)
+            } catch (Exception ex)
             {
                 return HandleResult.Fail(ex);
             }
         }
-
-
     }
 }

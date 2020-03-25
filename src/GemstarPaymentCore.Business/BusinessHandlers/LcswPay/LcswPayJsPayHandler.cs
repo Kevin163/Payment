@@ -9,10 +9,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
     /// <summary>
     /// 扫呗公众号支付统一下单业务请求处理
     /// </summary>
-    public class LcswPayJsPayHandler : IBusinessHandler
+    public class LcswPayJsPayHandler : BusinessHandlerBase
     {
-        private const string contentFormat = "payType|merchantNo|terminalId|accessToken|terminalTrace|terminalTime|totalFee|appId|openId|orderBody|attach|notifyUrl";
-        private const char splitChar = '|';
         private readonly ILcswPayClient _client;
         private readonly LcswPayOption _options;
         private string _businessContent;
@@ -21,25 +19,11 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
             _client = client;
             _options = options.Value;
         }
+        protected override string contentFormat => "payType|merchantNo|terminalId|accessToken|terminalTrace|terminalTime|totalFee|appId|openId|orderBody|attach|notifyUrl";
+        protected override int[] contentEncryptedIndexs => new int[] { 1 };
 
-
-        public void SetBusinessContent(string businessContent)
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -83,13 +67,10 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                 }
                 var resultStr = $"{response.OutTradeNo}|{response.AppId}|{response.TimeStamp}|{response.NonceStr}|{response.PackageStr}|{response.WxSignType}|{response.PaySign}|{response.AliTradeNo}|{response.TokenId}";
                 return HandleResult.Success(resultStr);
-            }
-            catch (Exception ex)
+            } catch (Exception ex)
             {
                 return HandleResult.Fail(ex);
             }
         }
-
-
     }
 }

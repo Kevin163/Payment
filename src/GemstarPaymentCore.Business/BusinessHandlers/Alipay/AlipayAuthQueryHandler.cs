@@ -11,39 +11,22 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
     /// <summary>
     /// 阿里预授权查询
     /// </summary>
-    public class AlipayAuthQueryHandler : IBusinessHandler
+    public class AlipayAuthQueryHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "outOrderNo|outRequestNo|Appid|Pid";
-        private const char splitChar = '|';
         private readonly IAlipayClient _client;
         private readonly AlipayOptions _options;
-        private string _businessContent;
         public AlipayAuthQueryHandler(ILogger<AlipayAuthQueryHandler> log, IAlipayClient client, IOptionsSnapshot<AlipayOptions> options)
         {
             _log = log;
             _client = client;
             _options = options.Value;
         }
+        protected override string contentFormat => "outOrderNo|outRequestNo|Appid|Pid";
+        protected override int[] contentEncryptedIndexs => new int[] { 2, 3 };
 
-        public void SetBusinessContent(string businessContent)
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -99,7 +82,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var request = new AlipayFundAuthOperationDetailQueryRequest();
                 request.SetBizModel(model);
 
-                var response = await _client.ExecuteAsync(request,_options);
+                var response = await _client.ExecuteAsync(request, _options);
 
                 var result = response.FailResult();
 

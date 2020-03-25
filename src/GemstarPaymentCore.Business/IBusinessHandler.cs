@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using GemstarPaymentCore.Business.Utility;
 
 namespace GemstarPaymentCore.Business
 {
@@ -12,6 +13,15 @@ namespace GemstarPaymentCore.Business
         /// </summary>
         /// <param name="businessContent">业务内容</param>
         void SetBusinessContent(string businessContent);
+        /// <summary>
+        /// 解密支付字符串中的收款账号信息
+        /// </summary>
+        /// <param name="payStr">支付字符串</param>
+        /// <param name="encryptKey">加密密钥</param>
+        /// <param name="security">解密方法实例</param>
+        /// <returns>解密后的支付字符串</returns>
+        string Decrypt(string payStr, string encryptKey, ISecurity security);
+
         /// <summary>
         /// 处理业务内容
         /// </summary>

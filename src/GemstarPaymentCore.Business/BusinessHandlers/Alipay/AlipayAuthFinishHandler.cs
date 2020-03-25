@@ -11,15 +11,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
     /// <summary>
     /// 支付宝预授权完成
     /// </summary>
-    public class AlipayAuthFinishHandler : IBusinessHandler
+    public class AlipayAuthFinishHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "outTradeNo|totalAmount|authNo|subject|buyerId|SellerId|authConfirmMode|AppId";
-        private const char splitChar = '|';
         private readonly IAlipayClient _client;
         private readonly AlipayOptions _options;
         private readonly BusinessOption _businessOption;
-        private string _businessContent;
+        protected override string contentFormat => "outTradeNo|totalAmount|authNo|subject|buyerId|SellerId|authConfirmMode|AppId";
+        protected override int[] contentEncryptedIndexs => new int[] { 7 };
         public AlipayAuthFinishHandler(ILogger<AlipayAuthFinishHandler> log, IAlipayClient client, IOptionsSnapshot<AlipayOptions> options,IOptionsSnapshot<BusinessOption> businessOption)
         {
             _log = log;
@@ -28,24 +27,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
             _businessOption = businessOption.Value;
         }
 
-        public void SetBusinessContent(string businessContent)
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -122,13 +105,13 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                     AuthConfirmMode = authConfirmMode,
                     ExtendParams = new ExtendParams
                     {
-                        SysServiceProviderId = string.IsNullOrEmpty(_options.SysServiceProviderId) ? "2088221616228734":_options.SysServiceProviderId
+                        SysServiceProviderId = string.IsNullOrEmpty(_options.SysServiceProviderId) ? "2088221616228734" : _options.SysServiceProviderId
                     }
                 };
                 var request = new AlipayTradePayRequest();
                 request.SetBizModel(model);
 
-                var response = await _client.ExecuteAsync(request,_options);
+                var response = await _client.ExecuteAsync(request, _options);
 
                 var result = response.FailResult();
                 if (response.IsSuccessCode())
@@ -160,7 +143,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                         continue;
                     }
                     queryDate = DateTime.Now.AddSeconds(2);
-                    var queryResponse = await _client.ExecuteAsync(queryRequest,_options);
+                    var queryResponse = await _client.ExecuteAsync(queryRequest, _options);
                     if (queryResponse.IsSuccessCode())
                     {
                         if (queryResponse.TradeStatus == "TRADE_SUCCESS" || queryResponse.TradeStatus == "TRADE_FINISHED")

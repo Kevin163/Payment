@@ -11,11 +11,9 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
     /// <summary>
     /// 利楚商务扫呗预授权撤销接口
     /// </summary>
-    public class LcswPayPreAuthCancelHandler : IBusinessHandler
+    public class LcswPayPreAuthCancelHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "merchantNo|terminalId|accessToken|terminalTrace|terminalTime|payTrace|payTime|outTradeNo|orderBody|attach";
-        private const char splitChar = '|';
         private readonly ILcswPayClient _client;
         private readonly LcswPayOption _options;
         private readonly BusinessOption _businessOption;
@@ -27,25 +25,10 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
             _options = options.Value;
             _businessOption = businessOption.Value;
         }
-
-
-        public void SetBusinessContent(string businessContent)
+        protected override string contentFormat => "merchantNo|terminalId|accessToken|terminalTrace|terminalTime|payTrace|payTime|outTradeNo|orderBody|attach";
+        protected override int[] contentEncryptedIndexs => new int[] { 0 };
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -85,12 +68,10 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                 }
                 var resultStr = $"{response.OutTradeNo}|{response.PayType}|{response.ChannelTradeNo}|{response.MerchantName}|{response.EndTime}|{response.Attach}";
                 return HandleResult.Success(resultStr);
-            }
-            catch (Exception ex)
+            } catch (Exception ex)
             {
                 return HandleResult.Fail(ex);
             }
         }
-
     }
 }

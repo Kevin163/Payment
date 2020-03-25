@@ -14,7 +14,6 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.TicketsPFT
     /// </summary>
     public class PFTCheckTicketUdpContentHandler : PFTBase, IBusinessHandler
     {
-        private string _content;
         private ILogger _log;
         private IHttpClientFactory _clientFactory;
         private BusinessOption _businessOption;
@@ -24,12 +23,9 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.TicketsPFT
             _clientFactory = httpClientFactory;
             _businessOption = businessOption.Value;
         }
-
-        public void SetBusinessContent(string businessContent)
-        {
-            _content = businessContent;
-        }
-        public async Task<HandleResult> HandleBusinessContentAsync()
+        protected override string contentFormat => "pftAppId|pftSecret|pftSalerId|checkType|checkValue";
+        protected override int[] contentEncryptedIndexs => new int[] { };
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] contentInfo)
         {
             try
             {
@@ -37,14 +33,6 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.TicketsPFT
                 if (string.IsNullOrWhiteSpace(switchUrl))
                 {
                     return HandleResult.Fail("请先在配置文件中增加PFTSwitchUrl参数设置，用于与票付通进行通信");
-                }
-                var contentInfo = _content.Split('|');
-                var contentFormat = "pftAppId|pftSecret|pftSalerId|checkType|checkValue";
-                var contentFormatLength = contentFormat.Split('|').Length;
-                var length = contentInfo.Length;
-                if (length < contentFormatLength)
-                {
-                    return HandleResult.Fail(string.Format("参数格式不正确，请按照{0}格式进行传递", contentFormat));
                 }
                 var appId = contentInfo[0];
                 var secret = contentInfo[1];

@@ -10,39 +10,21 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
     /// <summary>
     /// 利楚商务扫呗支付退款查询
     /// </summary>
-    public class LcswPayRefundQueryHandler : IBusinessHandler
+    public class LcswPayRefundQueryHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "payType|merchantNo|terminalId|accessToken|terminalTrace|terminalTime|outRefundNo|payTrace|payTime";
-        private const char splitChar = '|';
         private readonly ILcswPayClient _client;
         private readonly LcswPayOption _options;
-        private string _businessContent;
         public LcswPayRefundQueryHandler(ILogger<LcswPayRefundQueryHandler> log, ILcswPayClient client, IOptionsSnapshot<LcswPayOption> options)
         {
             _log = log;
             _client = client;
             _options = options.Value;
         }
-
-
-        public void SetBusinessContent(string businessContent)
+        protected override string contentFormat => "payType|merchantNo|terminalId|accessToken|terminalTrace|terminalTime|outRefundNo|payTrace|payTime";
+        protected override int[] contentEncryptedIndexs => new int[] { 1 };
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -69,7 +51,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                     PayTime = payTime
                 };
                 _options.Token = accessToken;
-                var response = await _client.ExecuteAsync(request,_options);
+                var response = await _client.ExecuteAsync(request, _options);
 
                 if (!response.IsReturnCodeSuccess)
                 {
@@ -79,7 +61,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                 {
                     return HandleResult.Fail($"错误代码{response.ResultCode};错误描述:{response.ReturnMsg}|{response.TradeStatus}");
                 }
-                if(response.TradeStatus != "SUCCESS")
+                if (response.TradeStatus != "SUCCESS")
                 {
                     return HandleResult.Fail($"退款请求还没有处理成功，当前状态是:{response.TradeStatus}|{response.TradeStatus}");
                 }
@@ -90,7 +72,5 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                 return HandleResult.Fail(ex);
             }
         }
-
-
     }
 }

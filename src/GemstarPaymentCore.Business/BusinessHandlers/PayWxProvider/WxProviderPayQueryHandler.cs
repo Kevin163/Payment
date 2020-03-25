@@ -10,39 +10,22 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
     /// <summary>
     /// 微信服务商支付状态查询功能，用于微信刷卡支付时，对于未知状态的进行查询确认
     /// </summary>
-    public class WxProviderPayQueryHandler : IBusinessHandler
+    public class WxProviderPayQueryHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "subAppid|subMchId|outTradeNo";
-        private const char splitChar = '|';
         private readonly IWeChatPayClient _client;
         private readonly WeChatPayOptions _options;
-        private string _businessContent;
         public WxProviderPayQueryHandler(ILogger<WxProviderPayQueryHandler> log, IWeChatPayClient client, IOptionsSnapshot<WeChatPayOptions> options)
         {
             _log = log;
             _client = client;
             _options = options.Value;
         }
+        protected override string contentFormat => "subAppid|subMchId|outTradeNo";
+        protected override int[] contentEncryptedIndexs => new int[] { 1 };
 
-        public void SetBusinessContent(string businessContent)
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;

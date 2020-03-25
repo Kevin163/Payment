@@ -7,25 +7,19 @@ using GemstarPaymentCore.Business.Utility;
 
 namespace GemstarPaymentCore.Business.BusinessHandlers
 {
-    public class HttpSwitchHandler : IBusinessHandler
+    public class HttpSwitchHandler : BusinessHandlerBase
     {
         private ILogger _log;
         private IHttpClientFactory _clientFactory;
-        private string _businessContent;
         public HttpSwitchHandler(ILogger<HttpSwitchHandler> log,IHttpClientFactory clientFactory)
         {
             _log = log;
             _clientFactory = clientFactory;
         }
-
-
-        public void SetBusinessContent(string businessContent)
+        protected override string contentFormat => "url";
+        protected override int[] contentEncryptedIndexs => new int[] { };
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] paras)
         {
-            _businessContent = businessContent;
-        }
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            var paras = _businessContent.Split('|');
             if (paras.Length < 3)
             {
                 return await DoGet(paras[0]);

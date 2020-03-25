@@ -5,23 +5,21 @@ using Essensoft.AspNetCore.Payment.Alipay.Domain;
 using Essensoft.AspNetCore.Payment.Alipay.Request;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
 {
     /// <summary>
     /// 支付宝预授权冻结
     /// </summary>
-    public class AlipayAuthFreezeHandler : IBusinessHandler
+    public class AlipayAuthFreezeHandler : BusinessHandlerBase
     {
         private ILogger _log;
-        private const string contentFormat = "authCode|orderNo|requestNo|orderAmount|content|payTimeOut|AppId|PId";
-        private const char splitChar = '|';
         private readonly IAlipayClient _client;
         private readonly AlipayOptions _options;
         private readonly BusinessOption _businessOption;
-        private string _businessContent;
-        public AlipayAuthFreezeHandler(ILogger<AlipayAuthFreezeHandler> log, IAlipayClient client, IOptionsSnapshot<AlipayOptions> options,IOptionsSnapshot<BusinessOption> businessOption)
+        protected override string contentFormat => "authCode|orderNo|requestNo|orderAmount|content|payTimeOut|AppId|PId";
+        protected override int[] contentEncryptedIndexs => new int[] { 6, 7 };
+        public AlipayAuthFreezeHandler(ILogger<AlipayAuthFreezeHandler> log, IAlipayClient client, IOptionsSnapshot<AlipayOptions> options, IOptionsSnapshot<BusinessOption> businessOption)
         {
             _log = log;
             _client = client;
@@ -29,24 +27,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
             _businessOption = businessOption.Value;
         }
 
-        public void SetBusinessContent(string businessContent)
+        protected override async Task<HandleResult> DoHandleBusinessContentAsync(string[] infos)
         {
-            _businessContent = businessContent;
-        }
-
-        public async Task<HandleResult> HandleBusinessContentAsync()
-        {
-            //参数有效性检查
-            if (string.IsNullOrWhiteSpace(_businessContent))
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
-            var length = contentFormat.Split(splitChar).Length;
-            var infos = _businessContent.Split(splitChar);
-            if (infos.Length < length)
-            {
-                return HandleResult.Fail($"必须以格式'{contentFormat}'进行交互");
-            }
             try
             {
                 int i = 0;
@@ -132,7 +114,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                 var request = new AlipayFundAuthOrderFreezeRequest();
                 request.SetBizModel(model);
 
-                var response =await _client.ExecuteAsync(request,_options);
+                var response = await _client.ExecuteAsync(request, _options);
 
                 var result = response.FailResult();
                 if (response.IsSuccessCode())
@@ -174,7 +156,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
                         continue;
                     }
                     queryDate = DateTime.Now.AddSeconds(2);
-                    var queryResponse = await _client.ExecuteAsync(queryRequest,_options);
+                    var queryResponse = await _client.ExecuteAsync(queryRequest, _options);
                     if (queryResponse.IsSuccessCode())
                     {
                         var auth_no = queryResponse.AuthNo;
