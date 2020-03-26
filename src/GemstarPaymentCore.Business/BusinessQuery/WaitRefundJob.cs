@@ -1,4 +1,5 @@
 ﻿using Essensoft.AspNetCore.Payment.LcswPay;
+using GemstarPaymentCore.Business.Utility;
 using GemstarPaymentCore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,8 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                     dbContextOption.UseSqlServer(connStr);
                     using (var payDB = new WxPayDB(dbContextOption.Options))
                     {
+                        var cyUserInfo = await payDB.CYUserInfos.FirstAsync();
+                        var security = serviceProvider.GetService<ISecurity>();
                         var businessOption = serviceProvider.GetService<IOptions<BusinessOption>>().Value;
                         var options = serviceProvider.GetService<IOptions<LcswPayOption>>().Value;
                         var client = serviceProvider.GetService<ILcswPayClient>();
@@ -52,7 +55,7 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                                     payDB.Entry(record).State = EntityState.Modified;
                                     await payDB.SaveChangesAsync();
                                     //执行退款
-                                    var refundInstance = DoRefundBase.GetDoRefundInstance(record.PayType);
+                                    var refundInstance = DoRefundBase.GetDoRefundInstance(record.PayType,cyUserInfo.SeriesNo,security);
                                     var refundResult = await refundInstance.DoRefund(record, serviceProvider);
                                     //记录退款状态
                                     record.RefundStatus = string.IsNullOrEmpty(refundResult.RefundStatu) ? WaitRefundList.RefundStatu.StatuFail : refundResult.RefundStatu;

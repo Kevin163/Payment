@@ -1,4 +1,5 @@
-﻿using GemstarPaymentCore.Data;
+﻿using GemstarPaymentCore.Business.Utility;
+using GemstarPaymentCore.Data;
 using System;
 using System.Threading.Tasks;
 
@@ -9,24 +10,30 @@ namespace GemstarPaymentCore.Business.BusinessQuery
     /// </summary>
     public abstract class DoRefundBase
     {
-        public static DoRefundBase GetDoRefundInstance(string payType)
+        protected string SeriesNo { get; private set; }
+        protected ISecurity Security { get; private set; }
+        public static DoRefundBase GetDoRefundInstance(string payType, string seriesNo, ISecurity security)
         {
+            DoRefundBase result = null;
             if (WaitRefundList.RefundPayType.PayTypeWeixin.Equals(payType, StringComparison.OrdinalIgnoreCase))
             {
-                return new DoRefundWeixin();
+                result = new DoRefundWeixin();
             }
             else if (WaitRefundList.RefundPayType.PayTypeAlipay.Equals(payType, StringComparison.OrdinalIgnoreCase))
             {
-                return new DoRefundAlipay();
+                result = new DoRefundAlipay();
             }
             else if (WaitRefundList.RefundPayType.PayTypeLcsw.Equals(payType, StringComparison.OrdinalIgnoreCase))
             {
-                return new DoRefundLcswPay();
+                result = new DoRefundLcswPay();
             }
             else
             {
                 throw new ApplicationException($"不支持退款的支付类型{payType}");
             }
+            result.Security = security;
+            result.SeriesNo = seriesNo;
+            return result;
         }
         /// <summary>
         /// 执行退款

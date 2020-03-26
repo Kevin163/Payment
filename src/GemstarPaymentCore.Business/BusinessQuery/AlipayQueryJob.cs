@@ -2,6 +2,7 @@
 using Essensoft.AspNetCore.Payment.Alipay.Domain;
 using Essensoft.AspNetCore.Payment.Alipay.Request;
 using GemstarPaymentCore.Business.BusinessHandlers.Alipay;
+using GemstarPaymentCore.Business.Utility;
 using GemstarPaymentCore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +37,8 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                     dbContextOption.UseSqlServer(connStr);
                     using (var payDB = new WxPayDB(dbContextOption.Options))
                     {
+                        var cyUserInfo = await payDB.CYUserInfos.FirstAsync();
+                        var security = serviceProvider.GetService<ISecurity>();
                         var businessOption = serviceProvider.GetService<IOptions<BusinessOption>>().Value;
                         var alipayOption = serviceProvider.GetService<IOptions<AlipayOptions>>().Value;
                         var records = WxPayInfoHelper.GetNeedQueryStatus(payDB, businessOption);
@@ -53,6 +56,9 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                                     if ("zfb".Equals(appId, StringComparison.OrdinalIgnoreCase))
                                     {
                                         appId = alipayOption.AppId;
+                                    }else if(appId.Length > 16)
+                                    {
+                                        appId = security.Decrypt(appId, cyUserInfo.SeriesNo);
                                     }
                                     //if ("zfb".Equals(pid, StringComparison.OrdinalIgnoreCase))
                                     //{

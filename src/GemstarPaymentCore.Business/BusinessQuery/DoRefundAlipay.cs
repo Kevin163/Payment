@@ -43,6 +43,10 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                 result.RefundFailReason = "请指定支付宝对应的密钥信息";
                 return result;
             }
+            if (options.AppId.Length > 16)
+            {
+                options.AppId = Security.Decrypt(options.AppId, SeriesNo);
+            }
 
             refund_amount = Convert.ToDouble(refund_amount).ToString("0.00");
 

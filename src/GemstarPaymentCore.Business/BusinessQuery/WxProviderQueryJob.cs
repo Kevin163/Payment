@@ -1,5 +1,6 @@
 ﻿using Essensoft.AspNetCore.Payment.WeChatPay;
 using Essensoft.AspNetCore.Payment.WeChatPay.Request;
+using GemstarPaymentCore.Business.Utility;
 using GemstarPaymentCore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,8 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                     dbContextOption.UseSqlServer(connStr);
                     using (var payDB = new WxPayDB(dbContextOption.Options))
                     {
+                        var cyUserInfo = await payDB.CYUserInfos.FirstAsync();
+                        var security = serviceProvider.GetService<ISecurity>();
                         var businessOption = serviceProvider.GetService<IOptions<BusinessOption>>().Value;
                         var records = WxPayInfoHelper.GetWxProviderOrderNeedStatus(payDB, businessOption);
                         if (records.Count > 0)
@@ -50,6 +53,11 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                                         SubAppId = record.AppID,
                                         SubMchId = record.MchID
                                     };
+                                    //如果长度大于正常的长度，则说明是加密后的，需要进行解密
+                                    if(request.SubMchId.Length > 11)
+                                    {
+                                        request.SubMchId = security.Decrypt(request.SubMchId, cyUserInfo.SeriesNo);
+                                    }
                                     var client = serviceProvider.GetService<IWeChatPayClient>();
                                     var result = await client.ExecuteAsync(request);
                                     log.LogInformation($"收到的查询微信服务商支付状态返回消息：{result.Body}");

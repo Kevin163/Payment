@@ -20,7 +20,10 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
                     var interfaceType = type.GetInterface(interfaceName);
                     if(interfaceType != null)
                     {
-                        services.AddScoped(type);
+                        if (!type.IsAbstract)
+                        {
+                            services.AddScoped(type);
+                        }
                     }
                 }
             }

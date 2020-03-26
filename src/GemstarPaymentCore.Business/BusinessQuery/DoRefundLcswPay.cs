@@ -34,7 +34,11 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                 PayTrace = para.PayTrace,
                 PayTime = para.PayTime,
                 AuthCode = para.AuthCode
-            };
+            }; 
+            if (request.MerchantNo.Length > 16)
+            {
+                request.MerchantNo = Security.Decrypt(request.MerchantNo, SeriesNo);
+            }
             options.Token = para.AccessToken;
             var response = await client.ExecuteAsync(request, options);
 

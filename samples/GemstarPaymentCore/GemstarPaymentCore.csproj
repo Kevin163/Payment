@@ -49,6 +49,9 @@
     <None Update="installService.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="saveconfig.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="start.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

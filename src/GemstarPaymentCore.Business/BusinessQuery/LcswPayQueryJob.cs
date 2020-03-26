@@ -1,5 +1,6 @@
 ﻿using Essensoft.AspNetCore.Payment.LcswPay;
 using Essensoft.AspNetCore.Payment.LcswPay.Request;
+using GemstarPaymentCore.Business.Utility;
 using GemstarPaymentCore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,8 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                     dbContextOption.UseSqlServer(connStr);
                     using (var payDB = new WxPayDB(dbContextOption.Options))
                     {
+                        var cyUserInfo = await payDB.CYUserInfos.FirstAsync();
+                        var security = serviceProvider.GetService<ISecurity>();
                         var businessOption = serviceProvider.GetService<IOptions<BusinessOption>>().Value;
                         var options = serviceProvider.GetService<IOptions<LcswPayOption>>().Value;
                         var client = serviceProvider.GetService<ILcswPayClient>();
@@ -58,6 +61,10 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                                         PayTime = record.BuildDate.Value.ToString("yyyyMMddHHmmss"),
                                         OutTradeNo = record.PrePayID
                                     };
+                                    if(request.MerchantNo.Length > 16)
+                                    {
+                                        request.MerchantNo = security.Decrypt(request.MerchantNo, cyUserInfo.SeriesNo);
+                                    }
                                     options.Token = record.Key;//要求扫呗支付时，将令牌写入到wxpayinfo表中的appkey
                                     var response = await client.ExecuteAsync(request, options);
                                     log.LogInformation($"收到的查询利楚商务扫呗支付状态返回消息：{response.Body}");

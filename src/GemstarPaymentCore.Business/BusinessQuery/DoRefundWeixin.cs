@@ -32,6 +32,11 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                 TotalFee = Convert.ToInt32(Convert.ToDecimal(para.TotalFee) * 100),
                 RefundFee = Convert.ToInt32(Convert.ToDecimal(para.RefundFee) * 100),
             };
+            //如果长度大于正常的长度，则说明是加密后的，需要进行解密
+            if (request.SubMchId.Length > 11)
+            {
+                request.SubMchId = Security.Decrypt(request.SubMchId, SeriesNo);
+            }
             var response = await client.ExecuteAsync(request, ConfigHelper.WxPayCertificateName);
             var result = new RefundResult
             {
