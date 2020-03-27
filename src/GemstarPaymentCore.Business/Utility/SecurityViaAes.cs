@@ -22,7 +22,16 @@ namespace GemstarPaymentCore.Business.Utility
             {
                 throw new ArgumentNullException(nameof(encryptKey));
             }
-            var input = Convert.FromBase64String(encryptedString);
+            byte[] input = null;
+            try
+            {
+                input = Convert.FromBase64String(encryptedString);
+            }catch(FormatException ex)
+            {
+                //可能是由于加密后有+号，但接收到的时候变成空格了，需要转换回去再进行解密
+                encryptedString = encryptedString.Replace(" ", "+");
+                input = Convert.FromBase64String(encryptedString);
+            }
             using (var aes = Aes.Create())
             {
                 var rgbKeys = GetEncryptedKeyBytes(encryptKey,aes.LegalKeySizes);
