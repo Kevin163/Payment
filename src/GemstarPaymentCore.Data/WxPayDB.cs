@@ -18,6 +18,7 @@ namespace GemstarPaymentCore.Data
         #region 表实体
         public DbSet<WxPayInfo> WxPayInfos { get; set; }
         public DbSet<UnionPayLcsw> UnionPayLcsws { get; set; }
+        public DbSet<UnionPayLcswHistory> UnionPayLcswHistories { get; set; }
         public DbSet<WaitRefundList> WaitRefundLists { get; set; }
         public DbSet<CYUserInfo> CYUserInfos { get; set; }
         #endregion

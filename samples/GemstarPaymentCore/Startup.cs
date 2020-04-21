@@ -10,6 +10,7 @@ using GemstarPaymentCore.Business.BusinessHandlers;
 using GemstarPaymentCore.Business.MemberHandlers;
 using GemstarPaymentCore.Business.Utility;
 using GemstarPaymentCore.Data;
+using GemstarPaymentCore.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -79,6 +80,8 @@ namespace GemstarPaymentCore
             services.AddScoped<IWxPayDBFactory, WxPayDBFactory>();
             services.AddScoped<IMemberHandlerFactory, MemberHandlerFactory>();
             services.AddSingleton<ISecurity, SecurityViaAes>();
+            //引入后台服务
+            services.AddHostedService<TransferDataToHistoryService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }

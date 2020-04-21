@@ -18,7 +18,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Alipay
         private readonly AlipayOptions _options;
         private readonly BusinessOption _businessOption;
         protected override string contentFormat => "outTradeNo|totalAmount|authNo|subject|buyerId|SellerId|authConfirmMode|AppId";
-        protected override int[] contentEncryptedIndexs => new int[] { 7 };
+        protected override int[] contentEncryptedIndexs => new int[] { 5,7 };
         public AlipayAuthFinishHandler(ILogger<AlipayAuthFinishHandler> log, IAlipayClient client, IOptionsSnapshot<AlipayOptions> options,IOptionsSnapshot<BusinessOption> businessOption)
         {
             _log = log;

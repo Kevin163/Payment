@@ -68,6 +68,10 @@ namespace GemstarPaymentCore.Business
         /// </summary>
         public string JxdPaymentUrl { get; set; }
         /// <summary>
+        /// 部署方式
+        /// </summary>
+        public string Deploy { get; set; }
+        /// <summary>
         /// 业务系统信息
         /// </summary>
         public List<BusinessSystemInfo> Systems { get; set; }
