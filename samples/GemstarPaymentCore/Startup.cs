@@ -81,6 +81,7 @@ namespace GemstarPaymentCore
             services.AddScoped<IMemberHandlerFactory, MemberHandlerFactory>();
             services.AddSingleton<ISecurity, SecurityViaAes>();
             //引入后台服务
+            services.AddHostedService<QueryPayResultService>();
             services.AddHostedService<TransferDataToHistoryService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
