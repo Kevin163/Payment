@@ -42,6 +42,7 @@
                         </div>
                         @Html.HiddenFor(m=>m.MemberId)
                         @Html.Hidden("memberCardNo",Model.MemberInfos[0].CardNo)
+                        <input type="hidden" id="memberHavePassword" value="1" />
                         <span class="code-name">@Model.MemberInfos[0].CardTypeName</span>
                         <p class="code-num">@Model.MemberInfos[0].CardNoDisplay</p>
                         <em class="code-price">￥@Model.MemberInfos[0].Balance</em>
@@ -50,7 +51,7 @@
                         <div class="code-more" style="display: none;">
                             @foreach (var memberInfo in Model.MemberInfos)
                             {
-                            <div class="code-list" data-member-id="@memberInfo.Id" data-member-cardno="@memberInfo.CardNo">
+                            <div class="code-list" data-member-id="@memberInfo.Id" data-member-cardno="@memberInfo.CardNo" data-member-password="@memberInfo.HavePassword">
                                 <div class="pay-img">
                                     <img src="~/images/code.png" alt="">
                                 </div>
@@ -104,11 +105,13 @@
             var codePrice = $(this).find('em').text();
             var memberId = $(this).data("member-id");
             var cardNo = $(this).data("member-cardno");
+            var havePassword = $(this).data("member-password");
             $('.code-name').text(codeName);
             $('.code-num').text(codeNum);
             $('.code-price').text(codePrice);
             $('#memberCardNo').val(cardNo);
             $('#MemberId').val(memberId);
+            $("#memberHavePassword").val(havePassword);
             $("#member").prop("checked", "checked");
 
         });
@@ -116,10 +119,16 @@
             e.preventDefault();
             if ($('#member').is(':checked')) {
                 $('#CardPassword').val('');
-                $('.code-more:visible').slideToggle();
-                $('.shade').show();
-                $('#CardPassword').focus();
-                return false;
+                //根据是否有密码来决定是否弹出输入密码框
+                var havePassword = $('#memberHavePassword').val();
+                if (havePassword == "1") {
+                    $('.code-more:visible').slideToggle();
+                    $('.shade').show();
+                    $('#CardPassword').focus();
+                    return false;
+                } else {
+                    doMemberPay();
+                }
             } else {
                 var wxPayUrl = "@Model.WxPayUrl";
                 location.href = wxPayUrl;
@@ -134,7 +143,8 @@
         })
         function doMemberPay() {
             var cardPassword = $("#CardPassword").val();
-            if (!cardPassword) {
+            var havePassword = $("#memberHavePassword").val();
+            if (!cardPassword && havePassword == "1") {
                 alert("请输入支付密码");
                 return;
             }

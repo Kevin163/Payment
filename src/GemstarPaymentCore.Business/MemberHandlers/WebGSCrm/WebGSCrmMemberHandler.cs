@@ -141,6 +141,9 @@ namespace GemstarPaymentCore.Business.MemberHandlers.WebGSCrm
                         case "ValidScore":
                             member.Score = Convert.ToDecimal(value);
                             break;
+                        case "havePassword":
+                            member.HavePassword = Convert.ToInt32(value) == 1;
+                            break;
                     }
                 }
                 result.Add(member);

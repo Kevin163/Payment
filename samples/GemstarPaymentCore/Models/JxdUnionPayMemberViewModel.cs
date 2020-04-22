@@ -61,6 +61,7 @@ namespace GemstarPaymentCore.Models
                 CardNoDisplay = CardNo;
             }
             Balance = info.Balance;
+            HavePassword = info.HavePassword ? "1" : "0";
         }
         /// <summary>
         /// 会员主键
@@ -82,6 +83,10 @@ namespace GemstarPaymentCore.Models
         /// 会员可用储值余额
         /// </summary>
         public decimal Balance { get; set; }
+        /// <summary>
+        /// 是否拥有密码
+        /// </summary>
+        public string HavePassword { get; set; }
 
     }
 }

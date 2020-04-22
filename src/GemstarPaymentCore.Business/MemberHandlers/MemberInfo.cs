@@ -41,5 +41,9 @@
         /// 会员可用积分
         /// </summary>
         public decimal Score { get; set; }
+        /// <summary>
+        /// 是否拥有密码
+        /// </summary>
+        public bool HavePassword { get; set; }
     }
 }
