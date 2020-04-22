@@ -57,11 +57,16 @@ namespace GemstarPaymentCore.Controllers
                 var payEntity = db.UnionPayLcsws.FirstOrDefault(w => w.Id == idValue);
                 if (payEntity != null)
                 {
-                    if (payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay)
+                    //增加有效期功能，限制打单后两小时内进行支付，超出时间的则直接提示超时有效期
+                    var validDate = DateTime.Now.AddHours(-2);
+                    if (payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay && payEntity.TerminalTime >= validDate)
                     {
                         model.IsParaOK = true;
                         model.AppId = payEntity.AppId;
                         model.LcswPayQrcodeUrl = payEntity.LcswPayUnionQrcodeUrl;
+                    }else if(payEntity.TerminalTime < validDate)
+                    {
+                        model.ErrorMessage = "链接已经失效，只能支付2小时内的单据，请通知服务员重新打单";
                     }
                     else if (payEntity.Status == WxPayInfoStatus.PaidSuccess)
                     {
@@ -147,7 +152,7 @@ namespace GemstarPaymentCore.Controllers
                         model.IsParaOK = true;
                         model.LcswPayQrcodeUrl = payEntity.LcswPayUnionQrcodeUrl;
                         //这里写死一个固定的openid用于在本地进行测试，真实调用时由于code肯定会有值的，所以肯定会取真实的openid
-                        string openId = "prefix_oLI_KjkAEEEMOBquaFb3Rabi-czU";
+                        string openId = "oavrb5jZ6ayJ5wgtecrv6zzix5sM";
                         if (!string.IsNullOrEmpty(code))
                         {
                             var openIdUrl = $"https://api.weixin.qq.com/sns/oauth2/access_token?appid={WebUtility.UrlEncode(payEntity.AppId)}&secret={WebUtility.UrlEncode(payEntity.AppSecret)}&code={WebUtility.UrlEncode(code)}&grant_type=authorization_code";
@@ -258,6 +263,11 @@ namespace GemstarPaymentCore.Controllers
                 if (payEntity.Status == WxPayInfoStatus.PaidSuccess)
                 {
                     return Json(JsonResultData.Failure($"支付记录已经支付成功，不需要继续支付"));
+                }
+                var validDate = DateTime.Now.AddHours(-2);
+                if (payEntity.TerminalTime < validDate)
+                {
+                    return Json(JsonResultData.Failure("链接已经失效，只能支付2小时内的单据，请通知服务员重新打单"));
                 }
                 if (payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay)
                 {

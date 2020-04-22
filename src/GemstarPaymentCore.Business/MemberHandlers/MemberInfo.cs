@@ -5,6 +5,11 @@
     /// </summary>
     public class MemberInfo
     {
+        public MemberInfo()
+        {
+            //是否拥有密码，默认为拥有，保持与原来一致
+            HavePassword = true;
+        }
         /// <summary>
         /// 会员主键
         /// </summary>
