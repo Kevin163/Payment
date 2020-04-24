@@ -16,107 +16,201 @@
     <link rel="stylesheet" href="~/css/jxdUnionPay.css">
 </head>
 <body class="bj">
-@using (Html.BeginForm())
-{
-    <div class="content">
-        <div class="pay-header">
-            <div class="pay-order">
-                我的订单
-            </div>
-            <div class="pay-project">
-                <div class="project-name"><span>支付项目：</span><p>@Model.OrderTitle</p></div>
-                <em class="project-price"><span>￥</span>@Model.PayFee</em>
-            </div>
-        </div>
-    </div>
-    <div class="content">
-        <div class="pay-content">
-            <div class="pay-mode-title">
-                支付方式
-            </div>
-            <div class="pay-mode">
-                <div class="pay-code">
-                    <div class="pay-left" id="memberCardSelect">
-                        <div class="pay-img">
-                            <img src="~/images/code.png" alt="">
-                        </div>
-                        @Html.HiddenFor(m=>m.MemberId)
-                        @Html.Hidden("memberCardNo",Model.MemberInfos[0].CardNo)
-                        <input type="hidden" id="memberHavePassword" value="1" />
-                        <span class="code-name">@Model.MemberInfos[0].CardTypeName</span>
-                        <p class="code-num">@Model.MemberInfos[0].CardNoDisplay</p>
-                        <em class="code-price">￥@Model.MemberInfos[0].Balance</em>
-                        <b class="bottom"></b>
-
-                        <div class="code-more" style="display: none;">
-                            @foreach (var memberInfo in Model.MemberInfos)
-                            {
-                            <div class="code-list" data-member-id="@memberInfo.Id" data-member-cardno="@memberInfo.CardNo" data-member-password="@memberInfo.HavePassword">
-                                <div class="pay-img">
-                                    <img src="~/images/code.png" alt="">
-                                </div>
-                                <span>@memberInfo.CardTypeName</span>
-                                <p>@memberInfo.CardNoDisplay</p>
-                                <em>￥@memberInfo.Balance</em>
-                            </div>
-                            }
-                        </div>
-                    </div>
-                    <input type="radio" name="payMode" id="member">
+    @using (Html.BeginForm())
+    {
+        <div class="content">
+            <div class="pay-header">
+                <div class="pay-order">
+                    我的订单
                 </div>
-                <label class="pay-code">
-                    <div class="pay-left">
-                        <div class="pay-img">
-                            <img src="~/images/wx.png" alt="">
+                <div class="pay-project">
+                    <div class="project-name"><span>支付项目：</span><p>@Model.OrderTitle</p></div>
+                    <em class="project-price"><span>￥</span>@Model.PayFee</em>
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="pay-content">
+                <div class="pay-mode-title">
+                    我的优惠券
+                </div>
+                <div class="pay-mode">
+                    <div class="pay-code">
+                        <div class="pay-left" id="memberTicketSelect">
+                            <div class="pay-img">
+                                <img src="~/images/ticket.png" alt="">
+                            </div>
+                            <span class="code-name">@(Model.UsedTicket ? "已使用优惠券":"")</span>
+                            <p class="code-num">@(Model.UsedTicket ? Model.TicketNo:"")</p>
+                            <em class="code-price">@(Model.UsedTicket ? Model.TicketAmount.ToString():"")</em>
+                            <b class="bottom"></b>
+                            <input type="hidden" value="@(Model.TicketNo)" id="ticketId" />
+                            <input type="hidden" value="" id="ticketProfileId" />
+                            <input type="hidden" value="@(Model.TicketAmount)" id="ticketAmount" />
+                            <input type="hidden" value="@(Model.UsedTicket ? "1":"0")" id="usedTicket" />
+
+                            <div class="code-more" style="display: none;">
+                                @if (Model.UsedTicket)
+                                {
+                                    <div class="ticket-code-list" data-ticket-id="@Model.TicketNo" data-ticket-profileid="@Model.TicketNo" data-ticket-amount="@Model.TicketAmount" onclick="selectMemberTicket(this)">
+                                        <div class="pay-img">
+                                            <img src="../images/ticket.png" alt="">
+                                        </div>
+                                        <span>已使用优惠券</span>
+                                        <p>@Model.TicketNo</p>
+                                        <em>￥@Model.TicketAmount</em>
+                                    </div>
+                                }
+                            </div>
                         </div>
-                        <span>微信</span>
+                        <input type="radio" name="payUseTicket" id="memberTicket" @(Model.UsedTicket ? "checked='checked'" : "")>
                     </div>
-                    <input type="radio" name="payMode" checked="checked">
-                </label>
+                    @if (!Model.UsedTicket)
+                    {
+                    <label class="pay-code">
+                        <div class="pay-left">
+                            <div class="pay-img">
+                                <img src="~/images/notuseticket.png" alt="">
+                            </div>
+                            <span>不使用优惠券</span>
+                        </div>
+                        <input type="radio" name="payUseTicket" @(Model.UsedTicket ? "" : "checked='checked'")>
+                    </label>
+                    }
+                </div>
             </div>
         </div>
-    </div>
-    <div class="shade" style="display: none;">
-        <div class="password">
-            <p>请输入密码：</p>
-             @Html.PasswordFor(w => w.CardPassword)
-            <div class="password-btn">
-                <div class="cancel">返回</div>
-                <input type="submit" value="确定" id="submitCardPassword">
+        <div class="content">
+            <div class="pay-content">
+                <div class="pay-mode-title">
+                    支付方式
+                </div>
+                <div class="pay-mode">
+                    <div class="pay-code">
+                        <div class="pay-left" id="memberCardSelect">
+                            <div class="pay-img">
+                                <img src="~/images/code.png" alt="">
+                            </div>
+                            @Html.HiddenFor(m => m.MemberId)
+                            @Html.Hidden("memberCardNo", Model.MemberInfos[0].CardNo)
+                            <input type="hidden" id="memberHavePassword" value="1" />
+                            <span class="code-name">@Model.MemberInfos[0].CardTypeName</span>
+                            <p class="code-num">@Model.MemberInfos[0].CardNoDisplay</p>
+                            <em class="code-price">￥@Model.MemberInfos[0].Balance</em>
+                            <b class="bottom"></b>
+
+                            <div class="code-more" style="display: none;">
+                                @foreach (var memberInfo in Model.MemberInfos)
+                                {
+                                    <div class="code-list" data-member-id="@memberInfo.Id" data-member-cardno="@memberInfo.CardNo" data-member-password="@memberInfo.HavePassword">
+                                        <div class="pay-img">
+                                            <img src="~/images/code.png" alt="">
+                                        </div>
+                                        <span>@memberInfo.CardTypeName</span>
+                                        <p>@memberInfo.CardNoDisplay</p>
+                                        <em>￥@memberInfo.Balance</em>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <input type="radio" name="payMode" id="member">
+                    </div>
+                    <label class="pay-code">
+                        <div class="pay-left">
+                            <div class="pay-img">
+                                <img src="~/images/wx.png" alt="">
+                            </div>
+                            <span>微信</span>
+                        </div>
+                        <input type="radio" name="payMode" checked="checked">
+                    </label>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="pay-btn">
-        <input type="submit" value="确定" id="submit">
-    </div>
-}
+        <div class="shade" style="display: none;">
+            <div class="password">
+                <p>请输入密码：</p>
+                @Html.PasswordFor(w => w.CardPassword)
+                <div class="password-btn">
+                    <div class="cancel">返回</div>
+                    <input type="submit" value="确定" id="submitCardPassword">
+                </div>
+            </div>
+        </div>
+        <div class="pay-btn">
+            <input type="hidden" value="@Model.WxPayUrl" id="wxPayUrl" />
+            <input type="submit" value="确定" id="submit">
+        </div>
+    }
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script type="text/javascript" src="~/js/public.js"></script>
-<script>
-    $(function () {
-        $('#memberCardSelect').click(function (e) {
-            e.preventDefault();
-            $('.code-more').slideToggle();
-        });
-        $('.code-list').click(function (e) {
-            e.preventDefault();
-            var codeName = $(this).find('span').text();
-            var codeNum = $(this).find('p').text();
-            var codePrice = $(this).find('em').text();
-            var memberId = $(this).data("member-id");
-            var cardNo = $(this).data("member-cardno");
-            var havePassword = $(this).data("member-password");
-            $('.code-name').text(codeName);
-            $('.code-num').text(codeNum);
-            $('.code-price').text(codePrice);
-            $('#memberCardNo').val(cardNo);
-            $('#MemberId').val(memberId);
-            $("#memberHavePassword").val(havePassword);
-            $("#member").prop("checked", "checked");
+    <script>
+        var payId = "@Model.OrderId";
+        var memberAllId = "@Model.MemberAllIds";
 
-        });
-        $('#submit').click(function (e) {
-            e.preventDefault();
+        function selectMemberTicket(obj) {
+            var $this = $(obj);
+            var codeName = $this.find('span').text();
+            var codeNum = $this.find('p').text();
+            var codePrice = $this.find('em').text();
+            var memberId = $this.data("ticket-profileid");
+            var ticketNo = $this.data("ticket-id");
+            var ticketAmount = $this.data("ticket-amount");
+            var $payCode = $this.parents(".pay-code");
+            $payCode.find('.code-name').text(codeName);
+            $payCode.find('.code-num').text(codeNum);
+            $payCode.find('.code-price').text(codePrice);
+            $payCode.find('#ticketId').val(ticketNo);
+            $payCode.find('#ticketProfileId').val(memberId);
+            $payCode.find("#ticketAmount").val(ticketAmount);
+            $payCode.find("#memberTicket").prop("checked", "checked");
+        }
+        function selectMemberCard(obj) {
+            var $this = $(obj);
+            var codeName = $this.find('span').text();
+            var codeNum = $this.find('p').text();
+            var codePrice = $this.find('em').text();
+            var memberId = $this.data("member-id");
+            var cardNo = $this.data("member-cardno");
+            var havePassword = $this.data("member-password");
+            var $payCode = $this.parents(".pay-code");
+            $payCode.find('.code-name').text(codeName);
+            $payCode.find('.code-num').text(codeNum);
+            $payCode.find('.code-price').text(codePrice);
+            $payCode.find('#memberCardNo').val(cardNo);
+            $payCode.find('#MemberId').val(memberId);
+            $payCode.find("#memberHavePassword").val(havePassword);
+            $payCode.find("#member").prop("checked", "checked");
+        }
+        function doPay() {
+            var profileId = $('#ticketProfileId').val();
+            var ticketId = $('#ticketId').val();
+            var ticketAmount = $("#ticketAmount").val();
+            var usedTicket = $("#usedTicket").val();
+            if ($('#memberTicket').is(':checked') && ticketId && profileId && usedTicket == "0") {
+                $("#submit").attr("disabled", "disabled");
+                $.post("@Url.Action("UseMemberTicket")", { id: "@Model.OrderId", profileId: profileId, ticketId: ticketId, ticketAmount: ticketAmount }, function (data) {
+                    $("#submit").removeAttr("disabled");
+                    if (data.success) {
+                        alert(data.data.msg);
+                        $("#usedTicket").val("1");
+                        if (data.data.needPay) {
+                            $("#wxPayUrl").val(data.data.needPayUrl);
+                            doPayAfterTicket();
+                        } else {
+                            //直接使用优惠券已经支付成功，转到支付成功页面
+                            location.href = "@Url.Action("Index")" +"?type=lcsw&id="+"@Model.OrderId";
+                        }
+                    } else {
+                        alert(data.data);
+                        doPayAfterTicket();
+                    }
+                }, "json");
+            } else {
+                doPayAfterTicket();
+            }
+        }
+        function doPayAfterTicket() {
             if ($('#member').is(':checked')) {
                 $('#CardPassword').val('');
                 //根据是否有密码来决定是否弹出输入密码框
@@ -130,17 +224,10 @@
                     doMemberPay();
                 }
             } else {
-                var wxPayUrl = "@Model.WxPayUrl";
+                var wxPayUrl = $("#wxPayUrl").val();
                 location.href = wxPayUrl;
             }
-        });
-        $('#submitCardPassword').click(function (e) {
-            e.preventDefault();
-            doMemberPay();
-        });
-        $('.cancel').click(function () {
-            $('.shade').hide();
-        })
+        }
         function doMemberPay() {
             var cardPassword = $("#CardPassword").val();
             var havePassword = $("#memberHavePassword").val();
@@ -167,7 +254,75 @@
                 }
             }, "json");
         }
-    })
-</script>
+        function showTicketMsg(msg) {
+            $("#memberTicketSelect").find(".code-name").text(msg);
+        }
+        function hideLetters(msg) {
+            if (msg.length > 4) {
+                return "****" + msg.substr(msg.length - 4, 4);
+            }
+            return msg;
+        }
+        function loadMemberTicket() {
+            if (payId && memberAllId) {
+                var $memberTicketSelect = $("#memberTicketSelect");
+                $memberTicketSelect.find(".code-more").empty();
+                showTicketMsg("正在加载中...");
+                $.post("@Url.Action("QueryMemberTicket")", { id: payId, profileIds: memberAllId }, function (data) {
+                    if (data.success) {
+                        var tickets = data.data;
+                        var firstTicket = tickets[0];
+                        $memberTicketSelect.find(".code-name").text(firstTicket.ticketTypeCname);
+                        $memberTicketSelect.find(".code-num").text(hideLetters(firstTicket.ticketCode));
+                        $memberTicketSelect.find(".code-price").text(firstTicket.amount);
+                        $("#ticketId").val(firstTicket.ticketCode);
+
+                        $.each(tickets, function (index, ticket) {
+                            var html = '<div class="ticket-code-list" data-ticket-id="' + ticket.ticketCode + '" data-ticket-profileid="' + ticket.id + '" data-ticket-amount="' + ticket.amount +'" onclick="selectMemberTicket(this)">';
+                            html += '<div class="pay-img">';
+                            html += '<img src="../images/ticket.png" alt="">';
+                            html += '</div>';
+                            html += '<span>' + ticket.ticketTypeCname + '</span>';
+                            html += '<p>' + hideLetters(ticket.ticketCode) + '</p>';
+                            html += '<em>￥' + ticket.amount+'</em>';
+                            html += '</div>';
+                            $(html).appendTo($memberTicketSelect.find(".code-more"));
+                        });
+                    } else {
+                        showTicketMsg(data.data);
+                    }
+                }, "json");
+            }
+        }
+        $(function () {
+            $('#memberCardSelect,#memberTicketSelect').click(function (e) {
+                e.preventDefault();
+                $(this).find('.code-more').slideToggle();
+            });
+            $('.ticket-code-list').click(function (e) {
+                e.preventDefault();
+                selectMemberTicket(this);
+            });
+            $('.code-list').click(function (e) {
+                e.preventDefault();
+                selectMemberCard(this);
+            });
+            $('#submit').click(function (e) {
+                e.preventDefault();
+                doPay();
+            });
+            $('#submitCardPassword').click(function (e) {
+                e.preventDefault();
+                doMemberPay();
+            });
+            $('.cancel').click(function () {
+                $('.shade').hide();
+            });
+            @if (!Model.UsedTicket)
+                {
+                    <text>loadMemberTicket();</text>
+                }
+            });
+    </script>
 </body>
 </html>
