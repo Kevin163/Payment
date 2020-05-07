@@ -1,6 +1,8 @@
 ﻿using GemstarPaymentCore.Data;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace GemstarPaymentCore.Business.BusinessQuery
@@ -178,12 +180,15 @@ namespace GemstarPaymentCore.Business.BusinessQuery
             var updateInfo = payDB.WxPayInfos.FirstOrDefault(w => w.ID == payInfoId && status.Contains(w.Status));
             if (updateInfo != null)
             {
-                updateInfo.PrePayID = transactionId;
-                updateInfo.PayDate = paidTime;
-                updateInfo.WxPaidAmount = amount;
-                updateInfo.Status = WxPayInfoStatus.PaidSuccess;
-                updateInfo.ErrMsg = payType;
-                payDB.SaveChanges();
+                //由于使用ef的自动生成时，不知道为什么，有时会生成的语句执行时报错，所以更改为直接执行原始语句
+                payDB.Database.ExecuteSqlCommand("update WxPayInfos set PrePayID=@PrePayID,PayDate=@PayDate,WxPaidAmount=@WxPaidAmount,Status=@Status,ErrMsg=@ErrMsg where id = @id"
+                    , new SqlParameter("@PrePayID",transactionId)
+                    ,new SqlParameter("@PayDate",paidTime)
+                    ,new SqlParameter("@WxPaidAmount",amount)
+                    ,new SqlParameter("@Status",WxPayInfoStatus.PaidSuccess)
+                    ,new SqlParameter("@ErrMsg",payType)
+                    ,new SqlParameter("@id",payInfoId)
+                    );
             }
         }
         private static void PaidFail(WxPayDB payDB, string payInfoId,List<WxPayInfoStatus?> status, string errMsg)
@@ -191,9 +196,11 @@ namespace GemstarPaymentCore.Business.BusinessQuery
             var updateInfo = payDB.WxPayInfos.FirstOrDefault(w => w.ID == payInfoId && status.Contains(w.Status));
             if (updateInfo != null)
             {
-                updateInfo.ErrMsg = errMsg;
-                updateInfo.Status = WxPayInfoStatus.PaidFailure;
-                payDB.SaveChanges();
+                payDB.Database.ExecuteSqlCommand("update WxPayInfos set Status=@Status,ErrMsg=@ErrMsg where id = @id"
+                    , new SqlParameter("@Status", WxPayInfoStatus.PaidFailure)
+                    , new SqlParameter("@ErrMsg", errMsg)
+                    , new SqlParameter("@id", payInfoId)
+                    );
             }
         }
         #endregion
