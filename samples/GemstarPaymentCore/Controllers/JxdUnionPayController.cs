@@ -391,7 +391,14 @@ namespace GemstarPaymentCore.Controllers
             try
             {
                 var payDb = _dbFactory.GetFirstHavePaySystemDB();
-                var payEntity = payDb.UnionPayLcsws.FirstOrDefault(w => w.TerminalTrace == terminalTrace && w.Status != WxPayInfoStatus.Cancel);
+                //由于现在业务系统可能会重复打单，原来对重复打单的记录处理不严谨，导致历史数据中可能存在有已经支付成功的记录，同时还有为新状态的记录，所以需要查询出所有记录，并且优先查询一下支付成功的记录
+                var payEntities = payDb.UnionPayLcsws.Where(w => w.TerminalTrace == terminalTrace && w.Status != WxPayInfoStatus.Cancel).ToList();
+                var payEntity = payEntities.FirstOrDefault(w=>w.Status == WxPayInfoStatus.PaidSuccess);
+                if(payEntity == null && payEntities.Count > 0)
+                {
+                    //如果有记录，并且是未支付成功状态的，则取第一条记录进行判断
+                    payEntity = payEntities[0];
+                }
                 if (payEntity != null)
                 {
                     //已经支付成功则直接返回

@@ -53,7 +53,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                 var appId = infos[i++];
                 var appSecret = infos[i++];
                 var systemName = infos[i++];
-                //检查参数有效性              
+                //检查参数有效性            
+                var amountValue = Convert.ToDecimal(totalFee);
                 //计算支付成功后的回调通知路径
                 var notifyUri = "";
                 if (!string.IsNullOrEmpty(_businessOption.InternetUrl))
@@ -61,6 +62,16 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                     var uriBase = new Uri(_businessOption.InternetUrl);
                     var notifyPath = $"/LcswPayNotify";
                     notifyUri = new Uri(uriBase, notifyPath).AbsoluteUri;
+                }
+                //如果是转发来的请求，则取出相同业务单号的原支付记录，进行判断
+                if (_para.IsFromRedirect)
+                {
+                    //如果原来已经有记录，并且金额相同，并且状态不是已取消状态，则直接返回原记录id
+                    var existEntity = _payDb.UnionPayLcsws.FirstOrDefault(w => w.TerminalTrace == terminalTrace && w.Status != WxPayInfoStatus.Cancel && w.TotalFee == amountValue);
+                    if(existEntity != null)
+                    {
+                        return SuccessWithPayId(existEntity.Id.ToString("N"));
+                    }
                 }
                 //调用扫码支付接口
                 var request = new LcswPayUnionQrcodePayRequest
@@ -89,8 +100,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                 //如果是转发来的请求，则需要保存订单支付信息
                 if (_para.IsFromRedirect)
                 {
-                    //如果有相同业务单号对应的新记录，则将原来的记录撤销
-                    var cancelEntities = _payDb.UnionPayLcsws.Where(w => w.TerminalTrace == terminalTrace && w.Status == WxPayInfoStatus.NewForJxdUnionPay).ToList();
+                    //如果执行到此，仍然有相同业务单号对应的新记录，则表示是金额与原记录不同，需要将原来的记录撤销，再重新生成新的记录
+                    var cancelEntities = _payDb.UnionPayLcsws.Where(w => w.TerminalTrace == terminalTrace && w.Status != WxPayInfoStatus.Cancel).ToList();
                     foreach (var cancelEntity in cancelEntities)
                     {
                         cancelEntity.Status = WxPayInfoStatus.Cancel;
@@ -113,7 +124,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                         TerminalId = terminalId,
                         TerminalTime = DateTime.ParseExact(terminalTime, "yyyyMMddHHmmss", CultureInfo.InvariantCulture),
                         TerminalTrace = terminalTrace,
-                        TotalFee = Convert.ToDecimal(totalFee),
+                        TotalFee = amountValue,
                         AppId = appId,
                         AppSecret = appSecret,
                         Status = WxPayInfoStatus.NewForJxdUnionPay,
@@ -134,11 +145,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                     _payDb.UnionPayLcsws.Add(payEntity);
                     await _payDb.SaveChangesAsync();
                     string id = payEntity.Id.ToString("N");
-                    //计算要返回的页面地址
-                    var uriBase = new Uri(_businessOption.InternetUrl);
-                    var uriPara = $"/JxdUnionPay?id={WebUtility.UrlEncode(id)}&type=lcsw";
-                    var uri = new Uri(uriBase, uriPara);
-                    return HandleResult.Success(uri.AbsoluteUri);
+                    return SuccessWithPayId(id);
                 }
                 //如果是直接支付的，则直接返回扫呗的聚合二维码地址
                 return HandleResult.Success(resultStr);
@@ -146,6 +153,15 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
             {
                 return HandleResult.Fail(ex);
             }
+        }
+
+        private HandleResult SuccessWithPayId(string id)
+        {
+            //计算要返回的页面地址
+            var uriBase = new Uri(_businessOption.InternetUrl);
+            var uriPara = $"/JxdUnionPay?id={WebUtility.UrlEncode(id)}&type=lcsw";
+            var uri = new Uri(uriBase, uriPara);
+            return HandleResult.Success(uri.AbsoluteUri);
         }
     }
 }
