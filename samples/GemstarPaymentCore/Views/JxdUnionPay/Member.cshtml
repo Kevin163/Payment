@@ -63,7 +63,7 @@
                                 }
                             </div>
                         </div>
-                        <input type="radio" name="payUseTicket" id="memberTicket" @(Model.UsedTicket ? "checked='checked'" : "")>
+                        <input type="radio" name="payUseTicket" id="memberTicket" @(Model.UsedTicket ? "checked='checked'" : "style=display:none") >
                     </div>
                     @if (!Model.UsedTicket)
                     {
@@ -93,7 +93,7 @@
                             </div>
                             @Html.HiddenFor(m => m.MemberId)
                             @Html.Hidden("memberCardNo", Model.MemberInfos[0].CardNo)
-                            <input type="hidden" id="memberHavePassword" value="1" />
+                            <input type="hidden" id="memberHavePassword" value="@Model.MemberInfos[0].HavePassword" />
                             <span class="code-name">@Model.MemberInfos[0].CardTypeName</span>
                             <p class="code-num">@Model.MemberInfos[0].CardNoDisplay</p>
                             <em class="code-price">￥@Model.MemberInfos[0].Balance</em>
@@ -113,7 +113,7 @@
                                 }
                             </div>
                         </div>
-                        <input type="radio" name="payMode" id="member">
+                        <input type="radio" name="payMode" id="member" style="display:none;">
                     </div>
                     <label class="pay-code">
                         <div class="pay-left">
@@ -164,6 +164,7 @@
             $payCode.find('#ticketProfileId').val(memberId);
             $payCode.find("#ticketAmount").val(ticketAmount);
             $payCode.find("#memberTicket").prop("checked", "checked");
+            showOrHideTicketSelect();
         }
         function selectMemberCard(obj) {
             var $this = $(obj);
@@ -181,6 +182,7 @@
             $payCode.find('#MemberId').val(memberId);
             $payCode.find("#memberHavePassword").val(havePassword);
             $payCode.find("#member").prop("checked", "checked");
+            showOrHideMbrcardSelect();
         }
         function doPay() {
             var profileId = $('#ticketProfileId').val();
@@ -276,6 +278,8 @@
                         $memberTicketSelect.find(".code-num").text(hideLetters(firstTicket.ticketCode));
                         $memberTicketSelect.find(".code-price").text(firstTicket.amount);
                         $("#ticketId").val(firstTicket.ticketCode);
+                        $('#ticketProfileId').val(firstTicket.id);
+                        $("#ticketAmount").val(firstTicket.amount);
 
                         $.each(tickets, function (index, ticket) {
                             var html = '<div class="ticket-code-list" data-ticket-id="' + ticket.ticketCode + '" data-ticket-profileid="' + ticket.id + '" data-ticket-amount="' + ticket.amount +'" onclick="selectMemberTicket(this)">';
@@ -292,6 +296,22 @@
                         showTicketMsg(data.data);
                     }
                 }, "json");
+            }
+        }
+        //控制只能通过选择优惠券才能选择，不能直接点击
+        function showOrHideTicketSelect() {
+            if ($('#memberTicket').is(':checked')) {
+                $('#memberTicket').show();
+            } else {
+                $('#memberTicket').hide();
+            }
+        }
+        //控制只能通过选择会员卡才能选择，不能直接点击
+        function showOrHideMbrcardSelect() {
+            if ($('#member').is(':checked')) {
+                $('#member').show();
+            } else {
+                $('#member').hide();
             }
         }
         $(function () {
@@ -317,6 +337,12 @@
             });
             $('.cancel').click(function () {
                 $('.shade').hide();
+            });
+            $("input[name='payMode']").change(function (e) {
+                showOrHideMbrcardSelect();
+            });
+            $("input[name='payUseTicket']").change(function (e) {
+                showOrHideTicketSelect();
             });
             @if (!Model.UsedTicket)
                 {

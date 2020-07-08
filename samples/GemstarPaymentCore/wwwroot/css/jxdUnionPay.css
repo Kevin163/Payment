@@ -49,6 +49,7 @@
     box-sizing: border-box;
     padding: 0 .14rem;
     height: 1.03rem;
+    margin-top:0.2rem;
     display: flex;
     display: -webkit-box;
     display: -webkit-flex;
@@ -72,8 +73,6 @@
 }
 .project-name p{
     flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
     text-overflow: ellipsis;
     font-weight: bold;
 }
