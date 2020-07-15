@@ -49,6 +49,7 @@
     box-sizing: border-box;
     padding: 0 .14rem;
     height: 1.03rem;
+    margin-top:0.2rem;
     display: flex;
     display: -webkit-box;
     display: -webkit-flex;
@@ -72,8 +73,6 @@
 }
 .project-name p{
     flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
     text-overflow: ellipsis;
     font-weight: bold;
 }
@@ -226,6 +225,7 @@
 .code-more{
     position: absolute;
     top: .65rem;
+    left:.5rem;
     z-index: 8;
     background:rgba(255,255,255,1);
     border:1px solid rgba(239, 239, 239, 1);
@@ -237,7 +237,7 @@
     display: -ms-flexbox;
     flex-direction: column;
 }
-.code-list{
+.code-list,.ticket-code-list{
     width: 100%;
     display: flex;
     display: -webkit-box;

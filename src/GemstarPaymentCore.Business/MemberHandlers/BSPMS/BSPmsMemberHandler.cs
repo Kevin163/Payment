@@ -129,6 +129,54 @@ namespace GemstarPaymentCore.Business.MemberHandlers.BSPMS
             }
         }
 
+        /// <summary>
+        /// 查询会员券明细列表
+        /// </summary>
+        /// <param name="para">查询参数</param>
+        /// <returns>券明细列表</returns>
+        public async Task<List<MemberTicketInfo>> QueryMemberTickets(MemberTicketQueryParameter para)
+        {
+            var xml = new StringBuilder();
+            xml.Append("<?xml version=\"1.0\" encoding=\"gbk\"?>")
+                .Append("<RealOperate>")
+                .Append("<XType>JxdBSPms</XType>")
+                .Append("<OpType>会员优惠券查询</OpType>")
+                .Append("<ProfileCards>")
+                .Append("<ProfileID>").Append(para.Id).Append("</ProfileID>")
+                .Append("<IsAll>0</IsAll>")
+                .Append("</ProfileCards>")
+                .Append("</RealOperate>");
+
+            var httpClient = _httpClientFactory.CreateClient();
+            var url = AddQueryParameters(xml.ToString());
+
+            using (var requestContent = new StringContent(xml.ToString(), Encoding.UTF8, "text/xml"))
+            using (var response = await httpClient.PostAsync(url, requestContent))
+            using (var responseContent = response.Content)
+            {
+                var resultStr = await responseContent.ReadAsStringAsync();
+                return ParseQueryTicketResult(resultStr);
+            }
+        }
+
+
+        public async Task<MemberPaymentResult> MemberUseTicket(MemberTicketUseParameter para)
+        {
+            return new MemberPaymentResult
+            {
+                PaySuccess = false,
+                Message = "暂时还不支持捷云会员优惠券"
+            };
+        }
+
+        public async Task<MemberPaymentResult> MemberUnusedTicket(MemberTicketUnusedParameter para)
+        {
+            return new MemberPaymentResult
+            {
+                PaySuccess = false,
+                Message = "暂时还不支持捷云会员优惠券"
+            };
+        }
         private MemberPaymentResult ParsePaymentResult(string resultStr)
         {
             var result = new MemberPaymentResult
@@ -203,6 +251,49 @@ namespace GemstarPaymentCore.Business.MemberHandlers.BSPMS
             }
             return result;
         }
+
+        private List<MemberTicketInfo> ParseQueryTicketResult(string resultStr)
+        {
+            var xmlDocument = new XmlDocument();
+            xmlDocument.LoadXml(resultStr);
+            var rows = xmlDocument.GetElementsByTagName("Row");
+            var result = new List<MemberTicketInfo>();
+            foreach (XmlNode node in rows)
+            {
+                var member = new MemberTicketInfo();
+                foreach (XmlNode child in node.ChildNodes)
+                {
+                    string name = child.Name;
+                    string value = child.InnerText;
+                    switch (name)
+                    {
+                        case "ProfileId":
+                            member.Id = value;
+                            break;
+                        case "TicketTypeId":
+                            member.TicketTypeCode = value;
+                            break;
+                        case "TicketTypeName":
+                            member.TicketTypeCname = value;
+                            break;
+                        case "TicketNo":
+                            member.TicketCode = value;
+                            break;
+                        case "TicketStatus":
+                            member.IsUsed = Convert.ToInt32(value) != 0;
+                            break;
+                        case "CouponMoney":
+                            member.Amount = Convert.ToDecimal(value);
+                            break;
+                        case "EndDate":
+                            member.ExpiredDate = Convert.ToDateTime(value);
+                            break;
+                    }
+                }
+                result.Add(member);
+            }
+            return result;
+        }
         /// <summary>
         /// 在链接地址中加入调用bs捷云会员需要的参数，并且计算签名
         /// </summary>
@@ -237,5 +328,6 @@ namespace GemstarPaymentCore.Business.MemberHandlers.BSPMS
             var signStr = $"{profileId.ToLower()}{pwd}";
             return MD5Helper.MD5Encrypt(signStr, Encoding.UTF8, MD5Helper.MD5Length.Length32);
         }
+
     }
 }

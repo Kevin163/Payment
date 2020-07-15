@@ -64,9 +64,12 @@ namespace GemstarPaymentCore.Controllers
                         model.IsParaOK = true;
                         model.AppId = payEntity.AppId;
                         model.LcswPayQrcodeUrl = payEntity.LcswPayUnionQrcodeUrl;
-                    }else if(payEntity.TerminalTime < validDate)
-                    {
-                        model.ErrorMessage = "链接已经失效，只能支付2小时内的单据，请通知服务员重新打单";
+                        //如果仍然是待支付状态的，则需要检查一下是否有支付明细。有可能是使用优惠券支付后，后续的支付过程没有完成，再次进来的，如果是的话，则只需要继续完成支付即可
+                        var lcswDetail = db.UnionPayLcswDetails.FirstOrDefault(w => w.PayId == payEntity.Id && w.PayStatus == WxPayInfoStatus.NewForJxdUnionPay && w.PayType == UnionPayLcswDetail.PayTypeLcsw);
+                        if(lcswDetail != null && !string.IsNullOrEmpty(lcswDetail.PayQrcodeUrl))
+                        {
+                            model.LcswPayQrcodeUrl = lcswDetail.PayQrcodeUrl;
+                        }
                     }
                     else if (payEntity.Status == WxPayInfoStatus.PaidSuccess)
                     {
@@ -76,11 +79,14 @@ namespace GemstarPaymentCore.Controllers
                             PaidMethod = payEntity.PayRemark
                         };
                         return View("Success", successModel);
-                    }
-                    else if (payEntity.Status == WxPayInfoStatus.Cancel)
+                    }else if (payEntity.Status == WxPayInfoStatus.Cancel)
                     {
                         model.ErrorMessage = $"已经由业务系统撤销订单，不需要支付";
+                    }else if(payEntity.TerminalTime < validDate)
+                    {
+                        model.ErrorMessage = "链接已经失效，只能支付2小时内的单据，请通知服务员重新打单";
                     }
+                    
                 }
             }
             if (model.IsParaOK)
@@ -174,6 +180,7 @@ namespace GemstarPaymentCore.Controllers
                             if (memberInfos != null && memberInfos.Count > 0)
                             {
                                 var memberInfosDisplay = memberInfos.Select(w => new MemberInfoDisplay(w)).ToList();
+                                var memberAllIds = string.Join(',', memberInfos.Select(w => w.Id).ToArray());
                                 //转到会员支付界面
                                 var viewModel = new JxdUnionPayMemberViewModel
                                 {
@@ -182,8 +189,20 @@ namespace GemstarPaymentCore.Controllers
                                     PayFee = payEntity.TotalFee,
                                     WxPayUrl = payEntity.LcswPayUnionQrcodeUrl,
                                     MemberId = memberInfos[0].Id,
-                                    MemberInfos = memberInfosDisplay
+                                    MemberInfos = memberInfosDisplay,
+                                    MemberAllIds = memberAllIds,
+                                    UsedTicket = false,
+                                    TicketAmount = 0,
+                                    TicketNo = ""
                                 };
+                                //需要先检查支付明细中，是否已经有使用过优惠券明细，有的话，则需要返回优惠券的相关信息，以便界面上进行控制，并且不允许再使用其他优惠券进行支付，一张单先只允许使用一张优惠券
+                                var ticketDetail = payDb.UnionPayLcswDetails.FirstOrDefault(w => w.PayId == payEntity.Id && w.PayStatus == WxPayInfoStatus.PaidSuccess && w.PayType == UnionPayLcswDetail.PayTypeMemberTicket);
+                                if(ticketDetail != null)
+                                {
+                                    viewModel.UsedTicket = true;
+                                    viewModel.TicketNo = ticketDetail.PaidTransNo;
+                                    viewModel.TicketAmount = ticketDetail.PaidAmount;
+                                }
                                 return View("Member", viewModel);
                             }
                             else
@@ -237,6 +256,186 @@ namespace GemstarPaymentCore.Controllers
         }
         #endregion
 
+        #region 查询会员优惠券
+        public async Task<ActionResult> QueryMemberTicket(Guid id,string profileIds)
+        {
+            try
+            {
+                var payDb = _dbFactory.GetFirstHavePaySystemDB();
+                var payEntity = payDb.UnionPayLcsws.FirstOrDefault(w => w.Id == id);
+                if (payEntity != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(payEntity.MemberUrl))
+                    {
+                        var memberHandler = _memberHandlerFactory.GetMemberHandler(payEntity.MemberType, payEntity.MemberUrl, payEntity.MemberPara);
+                        var memberTickets = await memberHandler.QueryMemberTickets(new MemberTicketQueryParameter { Id = profileIds,OutletCode = payEntity.OutletCode});
+                        if(memberTickets != null && memberTickets.Count > 0)
+                        {
+                            return Json(JsonResultData.Successed(memberTickets));
+                        } 
+                    }
+                }
+                return Json(JsonResultData.Failure("没有可用的优惠券"));
+
+            } catch(Exception ex)
+            {
+                return Json(JsonResultData.Failure(ex));
+            }
+        }
+        #endregion
+
+        #region 使用会员优惠券
+        public async Task<ActionResult> UseMemberTicket(Guid id,string profileId,string ticketId,decimal ticketAmount)
+        {
+            try
+            {
+                var payDb = _dbFactory.GetFirstHavePaySystemDB();
+                var payEntity = payDb.UnionPayLcsws.FirstOrDefault(w => w.Id == id);
+                if (payEntity != null)
+                {
+                    var result = new JxdUnionPayTicketUseResultViewModel
+                    {
+                        TicketUseSuccess = false,
+                        TicketAmount = 0,
+                        Msg = "会员优惠券使用失败，请继续支付",
+                        NeedPay = true,
+                        NeedPayAmount = payEntity.TotalFee,
+                        NeedPayUrl = payEntity.LcswPayUnionQrcodeUrl
+                    };
+                    //为避免重复，需要检查是否已经有券的使用明细，有则表示是重复提交，不再真实核销券，而是直接返回之前的数据
+                    var allDetails = payDb.UnionPayLcswDetails.Where(w => w.PayId == payEntity.Id && w.PayStatus == WxPayInfoStatus.PaidSuccess).ToArray();
+                    if (allDetails != null && allDetails.Length > 0)
+                    {
+                        var ticketDetail = allDetails.FirstOrDefault(w => w.PayType == UnionPayLcswDetail.PayTypeMemberTicket);
+                        if (ticketDetail != null)
+                        {
+                            result.TicketUseSuccess = true;
+                            result.TicketAmount = ticketDetail.Amount;
+                            if (payEntity.TotalFee <= ticketDetail.Amount)
+                            {
+                                result.Msg = "会员优惠券已经使用成功";
+                                result.NeedPay = false;
+                            } else
+                            {
+                                var lcswDetail = payDb.UnionPayLcswDetails.FirstOrDefault(w => w.DetailId != ticketDetail.DetailId && w.PayId == payEntity.Id);
+                                if (lcswDetail != null)
+                                {
+                                    if (lcswDetail.PayStatus == WxPayInfoStatus.NewForJxdUnionPay)
+                                    {
+                                        result.NeedPay = true;
+                                        result.NeedPayAmount = lcswDetail.Amount;
+                                        result.NeedPayUrl = lcswDetail.PayQrcodeUrl;
+                                    } else if(lcswDetail.PayStatus == WxPayInfoStatus.PaidSuccess)
+                                    {
+                                        result.NeedPay = false;
+                                        result.Msg = $"已经使用扫呗{lcswDetail.PayType}支付成功";
+                                    }
+                                }
+                            }
+                            return Json(JsonResultData.Successed(result));
+                        }
+                    }
+                    var memberHandler = _memberHandlerFactory.GetMemberHandler(payEntity.MemberType, payEntity.MemberUrl, payEntity.MemberPara);
+                    var useTicketResult = await memberHandler.MemberUseTicket(new MemberTicketUseParameter { Id = profileId, Operator = "JxdUnionPay", OutletCode = payEntity.OutletCode, Remark = "聚合支付时使用优惠券", TicketCode = ticketId,RefNo = payEntity.TerminalTrace });
+                    if (useTicketResult.PaySuccess)
+                    {
+                        result.TicketUseSuccess = true;
+                        result.TicketAmount = ticketAmount;
+                        result.Msg = "会员优惠券使用成功";
+                        //增加优惠券使用记录
+                        var ticketDetail = new UnionPayLcswDetail
+                        {
+                            DetailId = Guid.NewGuid(),
+                            PayId = payEntity.Id,
+                            CDate = DateTime.Now,
+                            Amount = ticketAmount,
+                            PaidAmount = ticketAmount,
+                            PaidTime = DateTime.Now,
+                            PaidTransNo = ticketId,
+                            PayQrcodeUrl = "",
+                            PayStatus = WxPayInfoStatus.PaidSuccess,
+                            PayType = UnionPayLcswDetail.PayTypeMemberTicket
+                        };
+                        payDb.UnionPayLcswDetails.Add(ticketDetail);
+                        var balance = payEntity.TotalFee - ticketAmount;
+                        //将使用券后的剩余金额重新生成一条支付记录
+                        if(balance > 0)
+                        {
+                            var balanceDetail = new UnionPayLcswDetail
+                            {
+                                DetailId = Guid.NewGuid(),
+                                PayId = payEntity.Id,
+                                CDate = DateTime.Now,
+                                Amount = balance,
+                                PayStatus = WxPayInfoStatus.NewForJxdUnionPay,
+                                PayType = UnionPayLcswDetail.PayTypeLcsw
+                            };
+                            //调用扫呗接口，重新下单生成支付二维码
+                            //计算支付成功后的回调通知路径
+                            var notifyUri = "";
+                            if (!string.IsNullOrEmpty(_businessOption.InternetUrl))
+                            {
+                                var uriBase = new Uri(_businessOption.InternetUrl);
+                                var notifyPath = $"/LcswPayNotify";
+                                notifyUri = new Uri(uriBase, notifyPath).AbsoluteUri;
+                            }
+                            //调用扫码支付接口
+                            var request = new LcswPayUnionQrcodePayRequest
+                            {
+                                MerchantNo = payEntity.MerchantNo,
+                                TerminalId = payEntity.TerminalId,
+                                TerminalTime = balanceDetail.CDate.ToString("yyyyMMddHHmmss"),
+                                TerminalTrace = balanceDetail.DetailId.ToString("N"),
+                                TotalFee = Convert.ToInt32(Convert.ToDecimal(balance) * 100).ToString(),
+                                OrderBody = payEntity.OrderBody,
+                                Attach = payEntity.Attach,
+                                NotifyUrl = notifyUri
+                            };
+                            var _options = _serviceProvider.GetService<IOptions<LcswPayOption>>().Value;
+                            _options.Token = payEntity.AccessToken;
+                            var _client = _serviceProvider.GetService<ILcswPayClient>();
+                            var response = await _client.ExecuteAsync(request, _options);
+
+                            if (!response.IsReturnCodeSuccess)
+                            {
+                                return Json(JsonResultData.Failure(response.ReturnMsg));
+                            }
+                            if (response.ResultCode != "01")
+                            {
+                                return Json(JsonResultData.Failure($"错误代码{response.ResultCode};错误描述:{response.ReturnMsg}"));
+                            }
+                            var resultStr = $"{response.QrCode}";
+                            balanceDetail.PayQrcodeUrl = resultStr;
+                            payDb.UnionPayLcswDetails.Add(balanceDetail);
+
+                            result.Msg = $"会员优惠券已抵扣{ticketAmount}元，剩余{balance}元请继续支付";
+                            result.NeedPay = true;
+                            result.NeedPayAmount = balance;
+                            result.NeedPayUrl = resultStr;
+                        } else
+                        {
+                            //券的金额可全部抵扣支付金额，则券使用成功则表示整张单支付成功
+                            payEntity.Status = WxPayInfoStatus.PaidSuccess;
+                            payEntity.Paytime = DateTime.Now;
+                            payEntity.PayRemark = UnionPayLcswDetailExtension.GetPayRemark(UnionPayLcswDetail.PayTypeMemberTicket);
+                            payEntity.PayType = UnionPayLcswDetail.PayTypeMemberTicket;
+                            payEntity.PayTransId = ticketId;
+                            result.Msg = "会员优惠券已全额支付，无需继续支付";
+                            result.NeedPay = false;
+                        }
+                        await payDb.SaveChangesAsync();
+                        return Json(JsonResultData.Successed(result));
+                    }
+                    return Json(JsonResultData.Failure(useTicketResult.Message));
+                }
+                return Json(JsonResultData.Failure("优惠券使用失败"));
+            }catch(Exception ex)
+            {
+                return Json(JsonResultData.Failure(ex));
+            }
+        }
+        #endregion
+
         #region 会员卡支付
         /// <summary>
         /// 会员在页面中输入会员支付密码后继续使用会员卡支付
@@ -271,10 +470,18 @@ namespace GemstarPaymentCore.Controllers
                 }
                 if (payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay)
                 {
+                    var payAmount = payEntity.TotalFee;
+                    //如果支付记录明细里面有相应的明细记录，则取出其中的待支付记录
+                    var allDetails = payDb.UnionPayLcswDetails.Where(w => w.PayId == payEntity.Id).ToList();
+                    var needPayDetail = allDetails?.FirstOrDefault(w => w.PayId == payEntity.Id && w.PayStatus == WxPayInfoStatus.NewForJxdUnionPay);
+                    if(needPayDetail != null)
+                    {
+                        payAmount = needPayDetail.Amount;
+                    }
                     var memberHandle = _memberHandlerFactory.GetMemberHandler(payEntity.MemberType, payEntity.MemberUrl,payEntity.MemberPara);
                     var payPara = new MemberPaymentParameter
                     {
-                        Amount = payEntity.TotalFee,
+                        Amount = payAmount,
                         Id = memberId,
                         OrigBillNo = payEntity.Id.ToString("N"),
                         OutletCode = payEntity.OutletCode,
@@ -288,9 +495,20 @@ namespace GemstarPaymentCore.Controllers
                         //更改记录的支付状态
                         payEntity.Status = WxPayInfoStatus.PaidSuccess;
                         payEntity.Paytime = DateTime.Now;
-                        payEntity.PayRemark = $"使用会员卡支付成功";
-                        payEntity.PayType = "Member";
+                        payEntity.PayRemark = UnionPayLcswDetailExtension.GetPayRemark(UnionPayLcswDetail.PayTypeMember);
+                        payEntity.PayType = UnionPayLcswDetail.PayTypeMember;
                         payEntity.PayTransId = cardNo;
+                        if(needPayDetail != null)
+                        {
+                            needPayDetail.PaidAmount = payAmount;
+                            needPayDetail.PaidTime = DateTime.Now;
+                            needPayDetail.PaidTransNo = payPara.OrigBillNo;
+                            needPayDetail.PayStatus = WxPayInfoStatus.PaidSuccess;
+                            needPayDetail.PayType = "Member";
+
+                            payEntity.PayType = allDetails.GetPayTypeFromDetails(payEntity);
+                            payEntity.PayRemark = UnionPayLcswDetailExtension.GetPayRemark(payEntity.PayType);
+                        }
                         var saveTask = payDb.SaveChangesAsync();
                         //通知回调地址支付状态
                         if (!string.IsNullOrEmpty(payEntity.CallbackUrl))
@@ -409,6 +627,15 @@ namespace GemstarPaymentCore.Controllers
                     //如果还是新建状态，则调用扫呗支付查询接口进行查询
                     else if (payEntity.Status == WxPayInfoStatus.NewForJxdUnionPay)
                     {
+                        var queryPayTrace = payEntity.TerminalTrace;
+                        var queryPayTime = payEntity.TerminalTime;
+                        var allDetails = payDb.UnionPayLcswDetails.Where(w => w.PayId == payEntity.Id).ToList();
+                        var lcswPayDetail = allDetails.FirstOrDefault(w => w.PayType == "lcsw");
+                        if(lcswPayDetail != null)
+                        {
+                            queryPayTrace = lcswPayDetail.TerminalTrace;
+                            queryPayTime = lcswPayDetail.CDate;
+                        }
                         var lcswClient = _serviceProvider.GetService<ILcswPayClient>();
                         var lcswOption = _serviceProvider.GetService<IOptionsSnapshot<LcswPayOption>>().Value;
                         var request = new LcswPayQueryRequest
@@ -419,8 +646,8 @@ namespace GemstarPaymentCore.Controllers
                             TerminalId = payEntity.TerminalId,
                             TerminalTime = DateTime.Now.ToString("yyyyMMddHHmmss"),
                             TerminalTrace = Guid.NewGuid().ToString("N"),
-                            PayTrace = payEntity.TerminalTrace,
-                            PayTime = payEntity.TerminalTime.ToString("yyyyMMddHHmmss"),
+                            PayTrace = queryPayTrace,
+                            PayTime = queryPayTime.ToString("yyyyMMddHHmmss"),
                             OutTradeNo = ""
                         };
                         lcswOption.Token = payEntity.AccessToken;
@@ -433,7 +660,18 @@ namespace GemstarPaymentCore.Controllers
                             payEntity.Paytime = DateTime.ParseExact(response.EndTime, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
                             payEntity.PayTransId = response.OutTradeNo;
                             payEntity.PayType = response.PayType;
-                            payEntity.PayRemark = $"使用扫呗聚合支付中的{response.PayType},支付方{response.UserId},渠道流水号{response.ChannelTradeNo}";
+                            payEntity.PayRemark = UnionPayLcswDetailExtension.GetPayRemark(response.PayType);
+                            if(lcswPayDetail != null)
+                            {
+                                lcswPayDetail.PayType = response.PayType;
+                                lcswPayDetail.PaidAmount = lcswPayDetail.Amount;
+                                lcswPayDetail.PaidTime = DateTime.ParseExact(response.EndTime, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+                                lcswPayDetail.PaidTransNo = response.OutTradeNo;
+                                lcswPayDetail.PayStatus = WxPayInfoStatus.PaidSuccess;
+
+                                payEntity.PayType = allDetails.GetPayTypeFromDetails(payEntity);
+                                payEntity.PayRemark = UnionPayLcswDetailExtension.GetPayRemark(payEntity.PayType);
+                            }
                             await payDb.SaveChangesAsync();
                             return PaySuccess(callPara, payEntity);
                         }

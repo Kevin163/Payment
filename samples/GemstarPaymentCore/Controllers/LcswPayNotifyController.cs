@@ -52,24 +52,48 @@ namespace GemstarPaymentCore.Controllers
                         var payEntities = payDb.UnionPayLcsws.Where(w => w.TerminalTrace == notifyRequest.TerminalTrace && w.TerminalTime == terminalTime).ToList();
                         if (payEntities == null || payEntities.Count == 0)
                         {
-                            return Json(NotifyResult.Failure("没有指定的支付记录"));
+                            //不存在时，则可能是针对明细记录进行的支付，需要检查明细记录
+                            var detailId = Guid.Parse(notifyRequest.TerminalTrace);
+                            var lcswDetail = payDb.UnionPayLcswDetails.FirstOrDefault(w => w.DetailId == detailId);
+                            if (lcswDetail != null)
+                            {
+                                var allDetails = payDb.UnionPayLcswDetails.Where(w => w.PayId == lcswDetail.PayId).ToList();
+                                var payEntity = payDb.UnionPayLcsws.First(w => w.Id == lcswDetail.PayId);
+                                if(lcswDetail.PayStatus != WxPayInfoStatus.PaidSuccess)
+                                {
+                                    lcswDetail.PayStatus = WxPayInfoStatus.PaidSuccess;
+                                    lcswDetail.PaidAmount = lcswDetail.Amount;
+                                    lcswDetail.PaidTime = DateTime.ParseExact(notifyRequest.EndTime, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+                                    lcswDetail.PaidTransNo = notifyRequest.OutTradeNo;
+                                    lcswDetail.PayType = notifyRequest.PayType;
+
+                                    SetPayEntityPaidSuccess(notifyRequest, payEntity);
+                                    payEntity.PayType = allDetails.GetPayTypeFromDetails(payEntity);
+
+                                    await payDb.SaveChangesAsync();
+                                } else if(lcswDetail.PayStatus == WxPayInfoStatus.PaidSuccess && !lcswDetail.PaidTransNo.Equals(notifyRequest.OutTradeNo))
+                                {
+                                    await DoRefund(payEntity, notifyRequest, lcswDetail.PaidAmount ?? lcswDetail.Amount);
+                                }
+                                return Json(NotifyResult.Success(""));
+
+                            } else
+                            {
+                                return Json(NotifyResult.Failure("没有指定的支付记录"));
+                            }
                         }
                         foreach (var payEntity in payEntities)
                         {
                             if (payEntity.Status != WxPayInfoStatus.PaidSuccess)
                             {
-                                payEntity.Status = WxPayInfoStatus.PaidSuccess;
-                                payEntity.Paytime = DateTime.ParseExact(notifyRequest.EndTime, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
-                                payEntity.PayTransId = notifyRequest.OutTradeNo;
-                                payEntity.PayType = notifyRequest.PayType;
-                                payEntity.PayRemark = $"使用扫呗聚合支付中的{notifyRequest.PayType},支付方{notifyRequest.UserId},渠道流水号{notifyRequest.ChannelTradeNo}";
+                                SetPayEntityPaidSuccess(notifyRequest, payEntity);
                                 await payDb.SaveChangesAsync();
-                            }else if(payEntity.Status == WxPayInfoStatus.PaidSuccess)
+                            } else if(payEntity.Status == WxPayInfoStatus.PaidSuccess)
                             {
                                 //已经支付成功，再次接收到支付通知的话，检查是否是同一个支付记录，不是的话，则自动退款
                                 if (!payEntity.PayTransId.Equals(notifyRequest.OutTradeNo))
                                 {
-                                    await DoRefund(payEntity,notifyRequest);
+                                    await DoRefund(payEntity,notifyRequest, Convert.ToDecimal(payEntity.TotalFee));
                                     continue;
                                 }
                             }
@@ -105,7 +129,16 @@ namespace GemstarPaymentCore.Controllers
             }
         }
 
-        private async Task DoRefund(UnionPayLcsw payEntity, LcswPayNotifyRequest notifyRequest)
+        private static void SetPayEntityPaidSuccess(LcswPayNotifyRequest notifyRequest, UnionPayLcsw payEntity)
+        {
+            payEntity.Status = WxPayInfoStatus.PaidSuccess;
+            payEntity.Paytime = DateTime.ParseExact(notifyRequest.EndTime, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+            payEntity.PayTransId = notifyRequest.OutTradeNo;
+            payEntity.PayType = notifyRequest.PayType;
+            payEntity.PayRemark = UnionPayLcswDetailExtension.GetPayRemark(notifyRequest.PayType);
+        }
+
+        private async Task DoRefund(UnionPayLcsw payEntity, LcswPayNotifyRequest notifyRequest,decimal refundAmount)
         {
             _logger.LogError($"收到重复支付通知，开始自动退款：原支付记录id:{payEntity.Id.ToString()},扫呗唯一订单号：{notifyRequest.OutTradeNo}");
             //调用退款申请接口
@@ -117,7 +150,7 @@ namespace GemstarPaymentCore.Controllers
                 TerminalId = payEntity.TerminalId,
                 TerminalTime = DateTime.Now.ToString("yyyyMMddHHmmss"),
                 TerminalTrace = Guid.NewGuid().ToString("N"),
-                RefundFee = Convert.ToInt32(Convert.ToDecimal(payEntity.TotalFee) * 100).ToString(),
+                RefundFee = Convert.ToInt32(refundAmount * 100).ToString(),
                 OutTradeNo = notifyRequest.OutTradeNo,
                 PayTrace = notifyRequest.TerminalTrace,
                 PayTime = notifyRequest.TerminalTime,

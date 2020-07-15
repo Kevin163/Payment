@@ -40,6 +40,22 @@ namespace GemstarPaymentCore.Models
         /// 会员的所有卡信息
         /// </summary>
         public List<MemberInfoDisplay> MemberInfos { get; set; }
+        /// <summary>
+        /// 以逗号分隔的会员id
+        /// </summary>
+        public string MemberAllIds { get; set; }
+        /// <summary>
+        /// 是否已使用过优惠券
+        /// </summary>
+        public bool UsedTicket { get; set; }
+        /// <summary>
+        /// 已使用过的优惠券券金额
+        /// </summary>
+        public decimal? TicketAmount { get; set; }
+        /// <summary>
+        /// 优惠券券号
+        /// </summary>
+        public string TicketNo { get; set; }
 
     }
     /// <summary>

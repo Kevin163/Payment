@@ -37,6 +37,58 @@ if not exists(select * from syscolumns where id=object_id('unionPay_lcsw') and n
 BEGIN
 	ALTER TABLE unionPay_lcsw add memberPara varchar(2000) null
 END
+--增加一个历史表
+CREATE TABLE [dbo].[unionPay_lcsw_history] (
+  [Id] uniqueidentifier  NOT NULL,
+  [systemName] varchar(20) COLLATE Chinese_PRC_CI_AS  NOT NULL,
+  [terminalTrace] varchar(60) COLLATE Chinese_PRC_CI_AS  NOT NULL,
+  [terminalTime] datetime  NOT NULL,
+  [merchantNo] varchar(60) COLLATE Chinese_PRC_CI_AS  NOT NULL,
+  [terminalId] varchar(60) COLLATE Chinese_PRC_CI_AS  NOT NULL,
+  [accessToken] varchar(60) COLLATE Chinese_PRC_CI_AS  NOT NULL,
+  [outletCode] varchar(30) COLLATE Chinese_PRC_CI_AS  NULL,
+  [totalFee] decimal(18,2)  NOT NULL,
+  [orderBody] varchar(200) COLLATE Chinese_PRC_CI_AS  NOT NULL,
+  [attach] varchar(200) COLLATE Chinese_PRC_CI_AS  NULL,
+  [callbackUrl] varchar(2000) COLLATE Chinese_PRC_CI_AS  NULL,
+  [memberUrl] varchar(2000) COLLATE Chinese_PRC_CI_AS  NULL,
+  [memberType] varchar(30) COLLATE Chinese_PRC_CI_AS  NULL,
+  [lcswPayUnionQrcodeUrl] varchar(2000) COLLATE Chinese_PRC_CI_AS  NULL,
+  [appId] varchar(32) COLLATE Chinese_PRC_CI_AS  NULL,
+  [appSecret] varchar(64) COLLATE Chinese_PRC_CI_AS  NULL,
+  [status] int  NOT NULL,
+  [paytime] datetime  NULL,
+  [payTransId] varchar(64) COLLATE Chinese_PRC_CI_AS  NULL,
+  [payRemark] varchar(200) COLLATE Chinese_PRC_CI_AS  NULL,
+  [payType] varchar(10) COLLATE Chinese_PRC_CI_AS  NULL,
+  [memberBindUrl] varchar(2000) COLLATE Chinese_PRC_CI_AS  NULL,
+  [memberPara] varchar(2000) COLLATE Chinese_PRC_CI_AS  NULL,
+  CONSTRAINT [pk_unionPay_lcsw_copy1] PRIMARY KEY CLUSTERED ([Id])
+)  
+--增加聚合支付的支付明细表，用于记录支付时使用会员优惠券信息和剩余金额的支付信息
+if not exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_NAME = 'unionPay_lcsw_detail')
+begin
+	create table unionPay_lcsw_detail(
+		detailId uniqueidentifier not null,		--明细id，主键值
+		payId uniqueidentifier not null,		--支付记录id
+		amount numeric(18,2) not null,			--应付金额
+		cdate datetime not null,						--创建时间
+		payStatus int not null,				--支付状态，50：待支付，3：已支付，4：支付失败，5：已取消
+		payQrcodeUrl varchar(2000) null,		--二维码支付地址
+		payType varchar(30) not null,			--支付方式：ticket:会员优惠券支付，lcsw:扫呗聚合支付
+		paidAmount numeric(18,2) null,			--实际支付金额
+		paidTime datetime null,					--实际支付时间
+		paidTransNo varchar(60) null,			--实际支付流水号，当为会员优惠券支付时，此时保存的是优惠券的券号
+		constraint pk_unionPay_lcsw_detail primary key(detailid)
+	)
+	create index ix_union_lcsw_detail_payid on unionpay_lcsw_detail(payId)
+end
+--更改支付方式字段列的宽度，因为增加了使用优惠券的支付，原来只是保存简单的010，020，Member这样的字符串，更改为在这些字符串后面增加会员券的使用信息，格式：原支付方式~原支付方式对应的金额~支付流水号|Ticket~会员优惠券金额~会员优惠券券号，比如Member~200|Ticket~10~123456
+if exists(select * from INFORMATION_SCHEMA.columns where table_name = 'unionPay_lcsw' and column_name = 'payType' and character_maximum_length = 10)
+begin
+	alter table unionPay_lcsw alter column payType varchar(200) null 
+end
+
 
 --增加线下业务系统待退款记录表，陈前良，2019-10-8 18:14:6
 if object_id('waitRefundList') is null
