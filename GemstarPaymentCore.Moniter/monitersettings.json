@@ -1,0 +1,15 @@
+﻿{
+  //所有需要启动和监控的进程信息，由此程序来保证当进程退出后，会自动再启动新进程
+  "ProcessItems": 
+  {
+    "Items": 
+    [
+      {
+        "Name": "支付中间件",
+        "FileName": "dotnet.exe",
+        "WorkingDirectory": "d:\\publish\\dotnetcore\\publishCorePayment",
+        "Arguments": "GemstarPaymentCore.dll --console"
+      }
+    ]
+  }
+}
