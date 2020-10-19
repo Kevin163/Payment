@@ -1,4 +1,5 @@
 ﻿using GemstarPaymentCore.Business.BusinessHandlers.Alipay;
+using GemstarPaymentCore.Business.BusinessHandlers.ChinaumsPay;
 using GemstarPaymentCore.Business.BusinessHandlers.Gemstar;
 using GemstarPaymentCore.Business.BusinessHandlers.LcswPay;
 using GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider;
@@ -227,6 +228,41 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             {
                 var contentWithoutFlag = content.Substring(flagStr.Length);
                 var handler = serviceProvider.GetService<WxProviderPayRefundQueryHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            #endregion
+
+            #region 银商支付
+            flagStr = "ChinaumsQrcodePay|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<ChinaumsPayQrcodePayHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "ChinaumsQrcodeClose|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<ChinaumsPayQrcodePayHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "ChinaumsQuery|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<ChinaumsPayQueryHandler>();
+                handler.SetBusinessContent(contentWithoutFlag);
+                return handler;
+            }
+            flagStr = "ChinaumsRefund|";
+            if (content.StartsWith(flagStr))
+            {
+                var contentWithoutFlag = content.Substring(flagStr.Length);
+                var handler = serviceProvider.GetService<ChinaumsPayRefundHandler>();
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }

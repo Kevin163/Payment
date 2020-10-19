@@ -11,6 +11,7 @@ using GemstarPaymentCore.Business.MemberHandlers;
 using GemstarPaymentCore.Business.Utility;
 using GemstarPaymentCore.Data;
 using GemstarPaymentCore.Models;
+using GemstarPaymentCore.Payment.ChinaumsPay;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -44,6 +45,9 @@ namespace GemstarPaymentCore
             //引入利楚商务扫呗支付
             services.Configure<LcswPayOption>(Configuration.GetSection("LcswPay"));
             services.AddLcswPay();
+            //引入银商支付
+            services.Configure<ChinaumsPayOption>(Configuration.GetSection("ChinaumsPay"));
+            services.AddChinaumsPay();
             //引入微信服务商证书
             services.AddHttpClient();
             services.AddHttpClient(ConfigHelper.WxPayCertificateName).ConfigurePrimaryHttpMessageHandler(() =>

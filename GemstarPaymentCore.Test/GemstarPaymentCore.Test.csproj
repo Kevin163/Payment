@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GemstarPaymentCore.Payment.ChinaumsPay\GemstarPaymentCore.Payment.ChinaumsPay.csproj" />
     <ProjectReference Include="..\src\Essensoft.AspNetCore.Payment.WeChatPay\Essensoft.AspNetCore.Payment.WeChatPay.csproj" />
     <ProjectReference Include="..\src\GemstarPaymentCore.Business\GemstarPaymentCore.Business.csproj" />
   </ItemGroup>
