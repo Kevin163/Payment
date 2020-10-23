@@ -246,7 +246,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers
             if (content.StartsWith(flagStr))
             {
                 var contentWithoutFlag = content.Substring(flagStr.Length);
-                var handler = serviceProvider.GetService<ChinaumsPayQrcodePayHandler>();
+                var handler = serviceProvider.GetService<ChinaumsQrcodeCloseHandler>();
                 handler.SetBusinessContent(contentWithoutFlag);
                 return handler;
             }

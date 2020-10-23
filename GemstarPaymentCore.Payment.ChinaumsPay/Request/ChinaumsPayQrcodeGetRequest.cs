@@ -45,6 +45,7 @@ namespace GemstarPaymentCore.Payment.ChinaumsPay.Request
                 {"msgSrc",MsgSrc },
                 {"msgType","bills.getQRCode" },//消息类型
                 {"requestTimestamp",DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") },//报文请求时间，格式yyyy-MM-dd HH:mm:ss
+                {"instMid","QRPAYDEFAULT" },
                 {"billNo",BillNo },
                 {"billDate",BillDate },
                 {"billDesc",BillDesc },

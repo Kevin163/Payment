@@ -30,6 +30,10 @@
         /// </summary>
         public int IsEnvTest { get; set; }
         /// <summary>
+        /// 来源系统地址
+        /// </summary>
+        public string MsgSrc { get; set; }
+        /// <summary>
         /// 获取当前环境的接口地址
         /// </summary>
         public string ApiUrl => IsEnvTest == 1 ? ApiUrlForEnvironmentTest : ApiUrlForEnvironmentProduction;

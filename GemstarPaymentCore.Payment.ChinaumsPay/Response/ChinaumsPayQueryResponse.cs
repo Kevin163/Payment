@@ -74,23 +74,23 @@ namespace GemstarPaymentCore.Payment.ChinaumsPay.Response
             /// <summary>
             /// 账单流水总金额
             /// </summary>
-            public decimal? TotalAmount { get; set; }
+            public long? TotalAmount { get; set; }
             /// <summary>
             /// 实付金额
             /// </summary>
-            public decimal? BuyerPayAmount { get; set; }
+            public long? BuyerPayAmount { get; set; }
             /// <summary>
             /// 开票金额
             /// </summary>
-            public decimal? InvoiceAmount { get; set; }
+            public long? InvoiceAmount { get; set; }
             /// <summary>
             /// 实付现金金额
             /// </summary>
-            public decimal? BuyerCashPayAmt { get; set; }
+            public long? BuyerCashPayAmt { get; set; }
             /// <summary>
             /// 折扣金额
             /// </summary>
-            public decimal? DiscountAmount { get; set; }
+            public long? DiscountAmount { get; set; }
             /// <summary>
             /// 买家ID
             /// </summary>
@@ -148,19 +148,19 @@ namespace GemstarPaymentCore.Payment.ChinaumsPay.Response
             /// <summary>
             /// 账单流水总金额
             /// </summary>
-            public decimal? TotalAmount { get; set; }
+            public long? TotalAmount { get; set; }
             /// <summary>
             /// 实付金额
             /// </summary>
-            public decimal? BuyerPayAmount { get; set; }
+            public long? BuyerPayAmount { get; set; }
             /// <summary>
             /// 开票金额
             /// </summary>
-            public decimal? InvoiceAmount { get; set; }
+            public long? InvoiceAmount { get; set; }
             /// <summary>
             /// 折扣金额
             /// </summary>
-            public decimal? DiscountAmount { get; set; }
+            public long? DiscountAmount { get; set; }
             /// <summary>
             /// 买家ID
             /// </summary>
@@ -188,7 +188,7 @@ namespace GemstarPaymentCore.Payment.ChinaumsPay.Response
             /// <summary>
             /// 买家实退金额
             /// </summary>
-            public string RefundInvoiceAmount { get; set; }
+            public long RefundInvoiceAmount { get; set; }
             /// <summary>
             /// 目标系统
             /// </summary>

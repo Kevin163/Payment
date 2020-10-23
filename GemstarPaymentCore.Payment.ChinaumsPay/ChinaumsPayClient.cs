@@ -32,7 +32,7 @@ namespace GemstarPaymentCore.Payment.ChinaumsPay
             var parameters = request.GetParameters();
             parameters.Add("mid", option.MId);
             parameters.Add("tid", option.TId);
-            parameters.Add("signType", "SHA256");
+            //parameters.Add("signType", "SHA256");
             var sign = ChinaumsPaySignature.SignWithKey(parameters, option.SignKey);
             parameters.Add("sign", sign);
 

@@ -22,7 +22,8 @@ namespace GemstarPaymentCore.Payment.ChinaumsPay.Utility
                 }
             }
             var signContent = sb.Append(key).ToString();
-            return SHA256.Compute(signContent);
+            //return SHA256.Compute(signContent);
+            return MD5.Compute(signContent);
         }
     }
 }

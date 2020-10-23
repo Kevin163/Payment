@@ -102,6 +102,18 @@ namespace GemstarPaymentCore.Models
                         .Build();
 
                     tasks.Add(_scheduler.ScheduleJob(refundJob, triggerRefundJob));
+                    //启动银商支付扫码支付结果查询
+                    var chinaumsPayQuery = JobBuilder.Create<ChinaumsPayQueryJob>()
+                       .WithIdentity($"chinaumspayquery{system.Name}", "chinaumspayquery")
+                       .Build();
+                    chinaumsPayQuery.JobDataMap.Put(JobParaName.ParaSystemName, system.Name);
+                    chinaumsPayQuery.JobDataMap.Put(JobParaName.ParaConnStrName, system.ConnStr);
+
+                    var triggerchinaumspayquery = TriggerBuilder.Create()
+                        .WithIdentity($"chinaumspayquery{system.Name}", "chinaumspayquery")
+                        .WithSimpleSchedule(s => s.WithIntervalInSeconds(_businessOption.QueryInterval).RepeatForever())
+                        .Build();
+                    tasks.Add(_scheduler.ScheduleJob(chinaumsPayQuery, triggerchinaumspayquery));
 
                     Task.WaitAll(tasks.ToArray());
                 }

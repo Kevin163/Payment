@@ -150,6 +150,43 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         }
         #endregion
 
+        #region 查询银商支付订单状态
+        /// <summary>
+        /// 获取当前分店的支付信息中，第一条需要查询订单状态的信息，同时将此信息的上传标志加1
+        /// </summary>
+        /// <param name="payDB">当前分店的营业数据库实例</param>
+        /// <returns>支付信息实例或null（当没有需要上传的信息时）</returns>
+        public static List<WxPayInfo> GetChinaumsNeedQueryStatus(WxPayDB payDB, BusinessOption option)
+        {
+            return GetNeedQueryOrders(payDB, option, new List<WxPayInfoStatus?> { WxPayInfoStatus.NewForChinaumsPay});
+        }
+
+        /// <summary>
+        /// 银商支付查询状态，确认指定订单已经支付成功
+        /// </summary>
+        /// <param name="payDB">当前分店的营业数据库实例</param>
+        /// <param name="payInfo">已经支付成功的订单实例</param>
+        /// <param name="transactionId">支付订单号</param>
+        /// <param name="paidTime">支付完成时间</param>
+        /// <param name="amount">支付金额</param>
+        public static void ChinaumsPaidSuccess(WxPayDB payDB, WxPayInfo payInfo, string transactionId, DateTime paidTime, double amount)
+        {
+            var statuArray = new List<WxPayInfoStatus?> { WxPayInfoStatus.NewForChinaumsPay };
+            PaidSuccess(payDB, payInfo.ID, transactionId, paidTime, Convert.ToDecimal(amount), statuArray);
+        }
+        /// <summary>
+        /// 微信服务商查询状态，确认订单已经支付失败
+        /// </summary>
+        /// <param name="payDB">当前分店的营业数据库实例</param>
+        /// <param name="payInfo">确认支付失败的订单实例</param>
+        /// <param name="errMsg">支付失败原因</param>
+        public static void ChinaumsPaidFail(WxPayDB payDB, WxPayInfo payInfo, string errMsg)
+        {
+            PaidFail(payDB, payInfo.ID, new List<WxPayInfoStatus?> { WxPayInfoStatus.NewForChinaumsPay }, errMsg);
+        }
+        #endregion
+
+
         #region 查询待退款记录，以便执行退款
         public static List<WaitRefundList> GetNotSendWaitRefunds(WxPayDB payDB,BusinessOption option)
         {

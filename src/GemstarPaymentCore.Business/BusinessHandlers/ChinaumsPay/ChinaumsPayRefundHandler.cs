@@ -63,7 +63,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.ChinaumsPay
 
                 if (response.IsSuccessCode() && response.RefundStatus == "SUCCESS")
                 {
-                    return HandleResult.Success($"{response.RefundStatus}|{response.RefundAmount}|{response.RefundInvoiceAmount}");
+                    return HandleResult.Success($"{response.RefundStatus}|{response.RefundAmount/100.0}|{response.RefundInvoiceAmount/100.0}");
                 }
                 return response.FailResult();
             } catch (Exception ex)

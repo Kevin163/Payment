@@ -57,5 +57,9 @@
         /// 捷信达聚合支付的新单
         /// </summary>
         NewForJxdUnionPay = 50,
+        /// <summary>
+        /// 银商支付的新单
+        /// </summary>
+        NewForChinaumsPay = 60,
     }
 }
