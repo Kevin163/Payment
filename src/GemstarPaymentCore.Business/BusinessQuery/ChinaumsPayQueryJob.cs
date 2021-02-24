@@ -68,7 +68,8 @@ namespace GemstarPaymentCore.Business.BusinessQuery
                                             var tradeNo = response.BillPayment.PaySeqId;
                                             var paidTime = DateTime.Parse(response.BillPayment.PayTime);
                                             var paidAmount = response.BillPayment.InvoiceAmount / 100.0;
-                                            WxPayInfoHelper.ChinaumsPaidSuccess(payDB, record, tradeNo, paidTime, paidAmount.Value);
+                                            var payType = response.BillPayment.TargetSys;
+                                            WxPayInfoHelper.ChinaumsPaidSuccess(payDB, record, tradeNo, paidTime, paidAmount.Value,payType);
                                         } else if (tradeStatus == "REFUND" || tradeStatus == "TRADE_REFUND" || tradeStatus == "CLOSED")
                                         {
                                             WxPayInfoHelper.ChinaumsPaidFail(payDB, record, "未付款交易超时关闭，或支付完成后全额退款");

@@ -59,7 +59,7 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.ChinaumsPay
 
                 if (response.IsSuccessCode())
                 {
-                    return HandleResult.Success($"{response.BillStatus}|{response.BillPayment?.Status}|{response.BillPayment?.BuyerPayAmount/100.0}|{response.RefundBillPayment?.Status}|{response.RefundBillPayment?.RefundInvoiceAmount/100.0}");
+                    return HandleResult.Success($"{response.BillStatus}|{response.BillPayment?.Status}|{response.BillPayment?.BuyerPayAmount/100.0}|{response.RefundBillPayment?.Status}|{response.RefundBillPayment?.RefundInvoiceAmount/100.0}|{response.BillPayment?.TargetSys}");
                 }
                 return response.FailResult();
             } catch (Exception ex)

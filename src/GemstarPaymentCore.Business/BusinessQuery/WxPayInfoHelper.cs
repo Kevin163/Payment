@@ -169,10 +169,10 @@ namespace GemstarPaymentCore.Business.BusinessQuery
         /// <param name="transactionId">支付订单号</param>
         /// <param name="paidTime">支付完成时间</param>
         /// <param name="amount">支付金额</param>
-        public static void ChinaumsPaidSuccess(WxPayDB payDB, WxPayInfo payInfo, string transactionId, DateTime paidTime, double amount)
+        public static void ChinaumsPaidSuccess(WxPayDB payDB, WxPayInfo payInfo, string transactionId, DateTime paidTime, double amount,string payType)
         {
             var statuArray = new List<WxPayInfoStatus?> { WxPayInfoStatus.NewForChinaumsPay };
-            PaidSuccess(payDB, payInfo.ID, transactionId, paidTime, Convert.ToDecimal(amount), statuArray);
+            PaidSuccess(payDB, payInfo.ID, transactionId, paidTime, Convert.ToDecimal(amount), statuArray,payType);
         }
         /// <summary>
         /// 微信服务商查询状态，确认订单已经支付失败
