@@ -39,6 +39,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                 var orderBody = infos[i++];
                 var attach = infos[i++];
                 var notifyUrl = infos[i++];
+                //获取新增加的订单优惠标记参数，为保持兼容性，此参数没有直接放到要求的内容格式中
+                var goodsTag = GetParaValueSafely(infos, i++, "");
 
                 var request = new LcswPayJspayRequest
                 {
@@ -52,7 +54,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                     OpenId = openId,
                     OrderBody = orderBody,
                     Attach = attach,
-                    NotifyUrl = notifyUrl
+                    NotifyUrl = notifyUrl,
+                    GoodsTag = goodsTag
                 };
                 _options.Token = accessToken;
                 var response = await _client.ExecuteAsync(request, _options);

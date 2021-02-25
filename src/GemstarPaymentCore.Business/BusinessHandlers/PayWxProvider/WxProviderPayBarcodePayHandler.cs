@@ -30,13 +30,15 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
         {
             try
             {
-                int i = 0;
-                var subAppid = infos[i++];
-                var subMchId = infos[i++];
-                var body = infos[i++];
-                var outTradeNo = infos[i++];
-                var orderAmount = infos[i++];
-                var authCode = infos[i++];
+                int index = 0;
+                var subAppid = infos[index++];
+                var subMchId = infos[index++];
+                var body = infos[index++];
+                var outTradeNo = infos[index++];
+                var orderAmount = infos[index++];
+                var authCode = infos[index++];
+                //获取新增加的订单优惠标记参数，为保持兼容性，此参数没有直接放到要求的内容格式中
+                var goodsTag = GetParaValueSafely(infos, index++, "");
 #if MOCK
                 //如果定义了模拟编译变量，则直接根据金额来返回一个固定的结果，金额小于5则返回失败，金额大于等于5则直接返回支付成功
                 if(Convert.ToDecimal(orderAmount) < 5){
@@ -53,7 +55,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
                     OutTradeNo = outTradeNo,
                     TotalFee = Convert.ToInt32(Convert.ToDecimal(orderAmount) * 100),
                     SubAppId = subAppid,
-                    SubMchId = subMchId
+                    SubMchId = subMchId,
+                    GoodsTag = goodsTag
                 };
                 var response = await _client.ExecuteAsync(request);
 

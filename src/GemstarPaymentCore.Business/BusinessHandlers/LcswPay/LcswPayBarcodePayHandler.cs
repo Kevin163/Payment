@@ -43,6 +43,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                 var subAppid = infos[i++];
                 var orderBody = infos[i++];
                 var attach = infos[i++];
+                //获取新增加的订单优惠标记参数，为保持兼容性，此参数没有直接放到要求的内容格式中
+                var goodsTag = GetParaValueSafely(infos, i++, "");
                 //调用条码支付接口
                 var request = new LcswPayBarcodePayRequest
                 {
@@ -56,7 +58,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.LcswPay
                     TotalFee = Convert.ToInt32(Convert.ToDecimal(totalFee) * 100).ToString(),
                     SubAppid = subAppid,
                     OrderBody = orderBody,
-                    Attach = attach
+                    Attach = attach,
+                    GoodsTag = goodsTag
                 };
                 _options.Token = accessToken;
                 var response = await _client.ExecuteAsync(request, _options);

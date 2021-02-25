@@ -68,6 +68,21 @@ namespace GemstarPaymentCore.Business
             }
         }
         protected abstract Task<HandleResult> DoHandleBusinessContentAsync(string[] infos);
+        /// <summary>
+        /// 获取参数值
+        /// </summary>
+        /// <param name="paraValues">所有参数值</param>
+        /// <param name="index">参数位置下标</param>
+        /// <param name="defaultValue">默认值</param>
+        /// <returns>对应的参数值</returns>
+        protected string GetParaValueSafely(string[] paraValues,int index,string defaultValue)
+        {
+            if(paraValues?.Length > index)
+            {
+                return paraValues[index];
+            }
+            return defaultValue;
+        }
 
     }
 }

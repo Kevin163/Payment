@@ -28,11 +28,14 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
         {
             try
             {
-                var subAppId = infos[0];
-                var subMchId = infos[1];
-                var body = infos[2];
-                var outTradeNo = infos[3];
-                var orderAmount = infos[4];
+                int index = 0;
+                var subAppId = infos[index++];
+                var subMchId = infos[index++];
+                var body = infos[index++];
+                var outTradeNo = infos[index++];
+                var orderAmount = infos[index++];
+                //获取新增加的订单优惠标记参数，为保持兼容性，此参数没有直接放到要求的内容格式中
+                var goodsTag = GetParaValueSafely(infos, index++, "");
                 //开始下单
                 var wxQrcodeRequest = new WeChatPayUnifiedOrderRequest
                 {
@@ -44,7 +47,8 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.PayWxProvider
                     SubMchId = subMchId,
                     SubAppId = subAppId,
                     NotifyUrl = _options.NotifyUrl,
-                    SpbillCreateIp = _options.CreateIP
+                    SpbillCreateIp = _options.CreateIP,
+                    GoodsTag = goodsTag
                 };
                 var response = await _client.ExecuteAsync(wxQrcodeRequest);
 
