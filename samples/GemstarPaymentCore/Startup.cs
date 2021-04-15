@@ -18,6 +18,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace GemstarPaymentCore
 {
@@ -89,6 +91,21 @@ namespace GemstarPaymentCore
             services.AddHostedService<TransferDataToHistoryService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            //check if rcsign is enabled,then inject signalr
+            if(IsRCSignEnabled)
+            {
+                services.AddSingleton<RCSignHub>();
+                services.AddSignalR();
+            }
+        }
+        private bool IsRCSignEnabled
+        {
+            get
+            {
+                var enableRCSign = Configuration.GetValue<string>("Business:EnableRCSign");
+                var rcSignEnabled = "1";
+                return enableRCSign == rcSignEnabled;
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -98,6 +115,14 @@ namespace GemstarPaymentCore
          
             app.UseStaticFiles();
             app.UseCookiePolicy();
+
+            if (IsRCSignEnabled)
+            {
+                app.UseSignalR(route =>
+                {
+                    route.MapHub<RCSignHub>("/RCSignHub");
+                });
+            }
 
             app.UseMvc(routes =>
             {

@@ -75,6 +75,18 @@ namespace GemstarPaymentCore.Business
         /// 业务系统信息
         /// </summary>
         public List<BusinessSystemInfo> Systems { get; set; }
+        /// <summary>
+        /// 是否启用cs客房的rc单安卓设备电子签名功能，默认为不启用，只有在用户明确购买了安卓签名设备的情况下，才需要开启此功能,0:不开启,1:开启
+        /// </summary>
+        public string EnableRCSign { get; set; } = "0";
+        /// <summary>
+        /// 客人签名图片放置到pdf中时，离下边的距离，需要根据rc单的格式进行调整，默认为100
+        /// </summary>
+        public string RCSignPositionBottom { get; set; } = "100";
+        /// <summary>
+        /// 客人签名图片放置到pdf中时，离右边的距离，需要根据rc单的格式进行调整，默认为100
+        /// </summary>
+        public string RCSignPositionRight { get; set; } = "100";
     }
     /// <summary>
     /// 业务系统信息

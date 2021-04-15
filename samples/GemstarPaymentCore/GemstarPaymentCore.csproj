@@ -20,13 +20,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Freeware.Pdf2Png" Version="1.0.1" />
     <PackageReference Include="Gemstar.Extensions.Logging.AliyunLogService" Version="1.0.2" />
+    <PackageReference Include="itext7" Version="7.1.15" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.0.15" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.10" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.8.2" />
+    <PackageReference Include="PdfiumViewer" Version="2.13.0" />
     <PackageReference Include="Quartz" Version="3.0.7" />
     <PackageReference Include="System.Text.Encodings.Web" Version="4.5.0" />
   </ItemGroup>
@@ -60,6 +64,182 @@
     <None Update="startAndHide.vbs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\css\nivotheme\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\js\cmaps\78-EUC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\78-EUC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\78-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\78-RKSJ-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\78-RKSJ-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\78-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\78ms-RKSJ-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\78ms-RKSJ-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\83pv-RKSJ-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\90ms-RKSJ-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\90ms-RKSJ-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\90msp-RKSJ-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\90msp-RKSJ-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\90pv-RKSJ-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\90pv-RKSJ-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\Add-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\Add-RKSJ-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\Add-RKSJ-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\Add-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-CNS1-0.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-CNS1-1.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-CNS1-2.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-CNS1-3.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-CNS1-4.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-CNS1-5.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-CNS1-6.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-CNS1-UCS2.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-GB1-0.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-GB1-1.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-GB1-2.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-GB1-3.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-GB1-4.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-GB1-5.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-GB1-UCS2.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-Japan1-0.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-Japan1-1.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-Japan1-2.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-Japan1-3.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-Japan1-4.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-Japan1-5.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-Japan1-6.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-Japan1-UCS2.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-Korea1-0.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-Korea1-1.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-Korea1-2.bcmap" />
+    <None Include="wwwroot\js\cmaps\Adobe-Korea1-UCS2.bcmap" />
+    <None Include="wwwroot\js\cmaps\B5-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\B5-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\B5pc-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\B5pc-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\CNS-EUC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\CNS-EUC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\CNS1-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\CNS1-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\CNS2-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\CNS2-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\ETen-B5-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\ETen-B5-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\ETenms-B5-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\ETenms-B5-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\ETHK-B5-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\ETHK-B5-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\EUC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\EUC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\Ext-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\Ext-RKSJ-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\Ext-RKSJ-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\Ext-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\GB-EUC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\GB-EUC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\GB-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\GB-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBK-EUC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBK-EUC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBK2K-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBK2K-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBKp-EUC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBKp-EUC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBpc-EUC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBpc-EUC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBT-EUC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBT-EUC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBT-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBT-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBTpc-EUC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\GBTpc-EUC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\H.bcmap" />
+    <None Include="wwwroot\js\cmaps\Hankaku.bcmap" />
+    <None Include="wwwroot\js\cmaps\Hiragana.bcmap" />
+    <None Include="wwwroot\js\cmaps\HKdla-B5-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\HKdla-B5-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\HKdlb-B5-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\HKdlb-B5-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\HKgccs-B5-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\HKgccs-B5-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\HKm314-B5-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\HKm314-B5-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\HKm471-B5-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\HKm471-B5-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\HKscs-B5-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\HKscs-B5-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\Katakana.bcmap" />
+    <None Include="wwwroot\js\cmaps\KSC-EUC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\KSC-EUC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\KSC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\KSC-Johab-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\KSC-Johab-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\KSC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\KSCms-UHC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\KSCms-UHC-HW-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\KSCms-UHC-HW-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\KSCms-UHC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\KSCpc-EUC-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\KSCpc-EUC-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\LICENSE" />
+    <None Include="wwwroot\js\cmaps\NWP-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\NWP-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\RKSJ-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\RKSJ-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\Roman.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniCNS-UCS2-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniCNS-UCS2-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniCNS-UTF16-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniCNS-UTF16-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniCNS-UTF32-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniCNS-UTF32-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniCNS-UTF8-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniCNS-UTF8-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniGB-UCS2-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniGB-UCS2-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniGB-UTF16-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniGB-UTF16-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniGB-UTF32-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniGB-UTF32-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniGB-UTF8-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniGB-UTF8-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS-UCS2-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS-UCS2-HW-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS-UCS2-HW-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS-UCS2-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS-UTF16-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS-UTF16-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS-UTF32-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS-UTF32-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS-UTF8-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS-UTF8-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS2004-UTF16-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS2004-UTF16-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS2004-UTF32-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS2004-UTF32-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS2004-UTF8-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJIS2004-UTF8-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJISPro-UCS2-HW-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJISPro-UCS2-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJISPro-UTF8-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJISX0213-UTF32-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJISX0213-UTF32-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJISX02132004-UTF32-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniJISX02132004-UTF32-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniKS-UCS2-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniKS-UCS2-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniKS-UTF16-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniKS-UTF16-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniKS-UTF32-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniKS-UTF32-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniKS-UTF8-H.bcmap" />
+    <None Include="wwwroot\js\cmaps\UniKS-UTF8-V.bcmap" />
+    <None Include="wwwroot\js\cmaps\V.bcmap" />
+    <None Include="wwwroot\js\cmaps\WP-Symbol.bcmap" />
   </ItemGroup>
 
 </Project>
