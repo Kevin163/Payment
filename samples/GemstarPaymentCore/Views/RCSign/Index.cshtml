@@ -1,0 +1,229 @@
+﻿@{
+    Layout = null;
+}
+<html>
+<head>
+    <link href="~/css/rcsign.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="home">
+        <div id="home_logo">
+            <div id="logo_wxpay">
+                <img src="~/images/logo_wxpay_home.png" />
+                <p>微信支付</p>
+            </div>
+            <div id="logo_split">
+
+            </div>
+            <div id="logo_gemstar">
+                <img src="~/images/logo_gemstar_home.png" />
+                <p>捷信达</p>
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div id="home_bottom">
+            <img src="~/images/bottom_image_home.png" />
+        </div>
+    </div>
+    <div id="rcpdfshow" style="display:none;overflow:auto">
+        <div class="toolbar">
+            <a href="#" onclick="showHome()"><img src="~/images/btn_back.png" /></a>
+        </div>
+        <div class="pdfbackground">
+            <canvas id="rcpdf"></canvas>
+        </div>
+        <div id="rcpdfsignbox" class="sign-background" style="display:none;">
+            <div class="sign-box">
+                <div id="rcpdfsign"></div>               
+            </div>
+            <div class="sign-tip">
+                <img src="~/images/sign_tip.png" />
+                <p>请在此签名</p>
+            </div>
+            <div class="sign-toolbar">
+                <button class="sign-reset" onclick="resetSign()">重&nbsp;&nbsp;签</button>
+                <button class="sign-confirm" onclick="confirmSign()">确&nbsp;&nbsp;认</button>
+            </div>
+        </div>
+
+            <button class="btn-startsign" onclick="beginSign()">签名并确认</button>
+
+            <div class="botton_log">
+                <img src="~/images/logo_wx_gemstar.png" />
+            </div>
+        </div>
+    <div id="paymentShow" style="display:none;">
+        <div class="toolbar">
+            <a href="#" onclick="showHome()"><img src="~/images/btn_back.png" /></a>
+        </div>
+        <div class="payment-box">
+            <div class="payment-title">
+                <img src="~/images/payment_status.png" />
+                <p>待支付</p>           
+            </div>
+            <div class="payment-amount">
+                <p id="paymentAmount">￥666.66</p>
+            </div>        
+            <div class="payment-qrcode">
+                <div id="paymentQrcode"></div>
+                <div>
+                    <img src="~/images/logo_wxpay_home.png" />
+                    <p>使用微信扫码支付</p>
+                </div>
+            </div>
+        </div>
+        <div class="payment-tip">
+            <img src="~/images/icon_alert.png" />
+            <p>注意：若使用信用卡或现金请联系前台</p>
+        </div>
+
+        <div class="botton_log">
+            <img src="~/images/logo_wx_gemstar.png" />
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js/pdf.js"></script>
+    <script src="~/js/jSignature.min.js"></script>
+    <script src="~/js/qrcode.min.js"></script>
+    <script src="~/js/jquery.qrcode.min.js"></script>
+    <link href="~/css/nivotheme/default/default.css" rel="stylesheet" />
+    <script type="text/javascript">
+        var deviceId = "rcsign1";
+        $(function () {
+            //set pdf js worker
+            pdfjsLib.GlobalWorkerOptions.workerSrc = "js/pdf.worker.js";
+            //read device id from android device
+            if (typeof (AndroidJS) == "object") {
+                deviceId = AndroidJS.GetDeviceSN();
+            }
+            //start web socket            
+            startConnectWebSocket();
+        });
+        //show the rc pdf,then customer can sign over the pdf
+        //and remember the regid and qrcode,when customer has finished sign,save the sign and show payment qrcode
+        var currentRegId, currentQrcode,currentPdfName,currentAmount;
+        function showRC(regid, pdfName, qrcode,amount) {
+            currentRegId = regid;
+            currentQrcode = qrcode;
+            currentPdfName = pdfName;
+            currentAmount = amount;
+            var loadingTask = pdfjsLib.getDocument({ url: pdfName, cMapUrl: "js/cmaps", cMapPacked: true });
+            loadingTask.promise.then(function (pdf) {
+                pdf.getPage(1).then(function (page) {
+                    var scale = 1.0;
+                    var viewport = page.getViewport({ scale: scale });
+                    var canvas = document.getElementById('rcpdf');
+                    var context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    var renderContext = {
+                        canvasContext: context,
+                        viewport: viewport,
+                    };
+                    page.render(renderContext);
+
+                    $("#rcpdfshow").show();
+                    calcSignButtonWidth();
+                    $("#home").hide();
+                });
+            });
+        }
+        function calcSignButtonWidth() {
+            var parentWidth = $(".pdfbackground").css("width");
+            var btnWidth = parseFloat(parentWidth) - 60;
+            $(".btn-startsign").css("width", btnWidth + "px");
+        }
+        //begin sign over rc pdf
+        function beginSign() {
+            $("#signedimage").remove();
+            $(".btn-startsign").hide();
+            $("#rcpdfsignbox").show();
+            var signCanva = $("#rcpdfsign");
+            var param = {
+                width: '' + signCanva.width() + 'px',
+                height: '' + signCanva.height()+'px',
+                signatureLine: false,//去除默认画布上那条横线
+                "background-color": "transparent",//背景透明
+                lineWidth: '3' //画笔的大小
+            };
+            $("#rcpdfsign").jSignature(param);
+            $(".sign-tip").show();
+            //hide the sign tip after a few seconds
+            setTimeout(function () {$(".sign-tip").hide();}, 1000 * 2);
+        }
+        //clean the signed data,and begin sign over rc pdf
+        function cleanAndResign() {
+            resetSign();
+            beginSign();
+        }
+        //reset the signed and begin sign over rc pdf again
+        function resetSign() {
+            $("#rcpdfsign").jSignature("reset");
+        }
+        //get the sign data,convert to image,show over the rc pdf
+        var imageBase64Data;
+        function confirmSign() {
+            var datapair = $("#rcpdfsign").jSignature("getData", "image");
+            if (datapair[0] && datapair[1]) {
+                var imageSrc = "data:" + datapair[0] + "," + datapair[1];
+
+                imageBase64Data = datapair[1];
+                $("<img src='" + imageSrc + "' id='signedimage' style='height:110;position:absolute;right:150px;bottom:150px;'/>").appendTo($(".pdfbackground"));
+                $("#rcpdfsignbox").hide();
+                //there is not another setup to save the sign by user,so need to save sign directly
+                saveSign();
+            } else {
+                alert("请先签名");
+            }
+        }
+        //save sign image to rc pdf
+        function saveSign() {
+            if (!imageBase64Data) {
+                alert("请先签名");
+                return;
+            }
+            $.post("@Url.Action("SaveSignImageToPdf")", { imageBase64Data: imageBase64Data, regid: currentRegId, pdfName: currentPdfName }, function (data) {
+                console.log("save signed image result:", data);
+                if (data.success) {
+                    showPaymentQrcode();
+                } else {
+                    alert(data.data);
+                }
+            }, "json");
+        }
+        function showPaymentQrcode() {
+            $("#paymentQrcode").children().remove();
+            $("#paymentAmount").text("￥" + currentAmount);
+            $("#paymentQrcode").qrcode({ width: 320, height: 320, text: currentQrcode });
+            $("#paymentShow").show();
+            $("#rcpdfshow").hide();
+        }
+        //show home
+        function showHome(regid) {
+            $("#rcpdfshow").hide();
+            $("#paymentShow").hide();
+            $("#home").show();
+        }
+        //start connect timer when websocket closed,and end the timer when websocket connected
+        var websocketReconnectTimer = null;
+        function startConnectWebSocket() {
+            if (websocketReconnectTimer == null) {
+                websocketReconnectTimer = setInterval(reconnectWebSocket, 1000);
+            }
+        }
+        function reconnectWebSocket() {
+            var connection = new signalR.HubConnectionBuilder().withUrl("/RCSignHub").build();
+            connection.on("ShowRC", function (regid, pdfName, qrcode, amount) { showRC(regid, pdfName, qrcode, amount); });
+            connection.on("ShowHome", function (regid) { showHome(regid); });
+            connection.onclose(function () { startConnectWebSocket();});
+            connection.start().then(function () {
+                connection.invoke("BindDeviceId", deviceId);
+                clearInterval(websocketReconnectTimer);
+                websocketReconnectTimer = null;
+            });
+        }
+
+    </script>
+</body>
+</html>
