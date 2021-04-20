@@ -70,11 +70,11 @@ namespace GemstarPaymentCore.Controllers
             {
                 if (pdf == null || pdf.Length <= 0)
                 {
-                    return Json(JsonResultData.Failure("pdf file cat not be null or empty"));
+                    return Json(JsonResultData.Failure("pdf file can not be null or empty"));
                 }
                 if (string.IsNullOrEmpty(regid))
                 {
-                    return Json(JsonResultData.Failure("regid cat not be null or empty"));
+                    return Json(JsonResultData.Failure("regid can not be null or empty"));
                 }
                 if (string.IsNullOrEmpty(qrcode))
                 {
@@ -88,8 +88,17 @@ namespace GemstarPaymentCore.Controllers
                     await pdf.CopyToAsync(stream);
                     stream.Close();
                 }
-                var pdfUri = Url.Content($"rcpdfs/{fileName}");
-                await _rcSignHub.ShowRC(deviceId, pdfUri, qrcode, regid, amount);
+
+                var imageData = Freeware.Pdf2Png.Convert(pdf.OpenReadStream(), 1);
+                var imageName = $"{regid}_{DateTime.Now.ToString("yyyyMMddHHmmssfff")}.png";
+                using (var img = System.IO.File.Create(Path.Combine(path, imageName)))
+                {
+                    img.Write(imageData);
+                    img.Close();
+                }
+                    var pdfUri = Url.Content($"rcpdfs/{fileName}");
+                var imageUri = Url.Content($"rcpdfs/{imageName}");
+                await _rcSignHub.ShowRC(deviceId, pdfUri, qrcode, regid, amount,imageUri);
                 return Json(JsonResultData.Successed("notify android device to show rc pdf successed"));
             }
             catch(Exception ex)

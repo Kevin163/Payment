@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using System;
 using System.Threading.Tasks;
 
 namespace GemstarPaymentCore.Models
@@ -23,10 +24,12 @@ namespace GemstarPaymentCore.Models
         /// <param name="qrcode">pay qrcode content</param>
         /// <param name="regid">the guest checkin id </param>
         /// <param name="amount">the payment amount</param>
+        /// <param name="imageUrl">the pdf file first page's image url</param>
         /// <returns></returns>
-        public async Task ShowRC(string deviceId, string pdfFileName, string qrcode, string regid, string amount)
+        public async Task ShowRC(string deviceId, string pdfFileName, string qrcode, string regid, string amount,string imageUrl)
         {
-            await Clients.Group(deviceId).SendAsync("ShowRC", regid, pdfFileName, qrcode, amount);
+            var group = GetGroup(deviceId);
+            await group.SendAsync("ShowRC", regid, pdfFileName, qrcode, amount,imageUrl);
         }
         /// <summary>
         /// show the home page when user payment successed
@@ -36,7 +39,29 @@ namespace GemstarPaymentCore.Models
         /// <returns></returns>
         public async Task ShowHome(string deviceId,string regid)
         {
-            await Clients.Group(deviceId).SendAsync("ShowHome", regid);
+            var group = GetGroup(deviceId);
+            await group.SendAsync("ShowHome", regid);
+        }
+        /// <summary>
+        /// get the group for the device id
+        /// </summary>
+        /// <param name="deviceId">the device id</param>
+        /// <returns>the group contains the device id</returns>
+        private IClientProxy GetGroup(string deviceId)
+        {
+            try
+            {
+                var group = Clients.Group(deviceId);
+                if(group == null)
+                {
+                    throw new ArgumentException("device id is wrong or the device is not online");
+                }
+                return group;
+            }
+            catch (Exception)
+            {
+                throw new ArgumentException("device id is wrong or the device is not online");
+            }
         }
     }
 }

@@ -3,6 +3,7 @@
 }
 <html>
 <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1,target-densitydpi=device-dpi">
     <link href="~/css/rcsign.css" rel="stylesheet" />
 </head>
 <body>
@@ -30,7 +31,7 @@
             <a href="#" onclick="showHome()"><img src="~/images/btn_back.png" /></a>
         </div>
         <div class="pdfbackground">
-            <canvas id="rcpdf"></canvas>
+            <img id="rcpdf"/>
         </div>
         <div id="rcpdfsignbox" class="sign-background" style="display:none;">
             <div class="sign-box">
@@ -41,8 +42,7 @@
                 <p>请在此签名</p>
             </div>
             <div class="sign-toolbar">
-                <button class="sign-reset" onclick="resetSign()">重&nbsp;&nbsp;签</button>
-                <button class="sign-confirm" onclick="confirmSign()">确&nbsp;&nbsp;认</button>
+                <button class="sign-reset" onclick="resetSign()">重&nbsp;&nbsp;签</button><button class="sign-confirm" onclick="confirmSign()">确&nbsp;&nbsp;认</button>
             </div>
         </div>
 
@@ -59,11 +59,11 @@
         <div class="payment-box">
             <div class="payment-title">
                 <img src="~/images/payment_status.png" />
-                <p>待支付</p>           
+                <p>待支付</p>
             </div>
             <div class="payment-amount">
                 <p id="paymentAmount">￥666.66</p>
-            </div>        
+            </div>
             <div class="payment-qrcode">
                 <div id="paymentQrcode"></div>
                 <div>
@@ -72,6 +72,7 @@
                 </div>
             </div>
         </div>
+        <div style="height:0;clear:both"></div>
         <div class="payment-tip">
             <img src="~/images/icon_alert.png" />
             <p>注意：若使用信用卡或现金请联系前台</p>
@@ -83,7 +84,6 @@
     </div>
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
-    <script src="~/js/pdf.js"></script>
     <script src="~/js/jSignature.min.js"></script>
     <script src="~/js/qrcode.min.js"></script>
     <script src="~/js/jquery.qrcode.min.js"></script>
@@ -91,43 +91,30 @@
     <script type="text/javascript">
         var deviceId = "rcsign1";
         $(function () {
-            //set pdf js worker
-            pdfjsLib.GlobalWorkerOptions.workerSrc = "js/pdf.worker.js";
             //read device id from android device
-            if (typeof (AndroidJS) == "object") {
-                deviceId = AndroidJS.GetDeviceSN();
+            if (typeof (Android2JS) == "object") {
+                //if the page run in android webview,did not need to start websocket,the android app will start websocket
+                deviceId = Android2JS.GetDeviceSN();
+            } else {
+                //start web socket only when the page run in desktop browsers
+                startConnectWebSocket();
             }
-            //start web socket            
-            startConnectWebSocket();
         });
         //show the rc pdf,then customer can sign over the pdf
         //and remember the regid and qrcode,when customer has finished sign,save the sign and show payment qrcode
         var currentRegId, currentQrcode,currentPdfName,currentAmount;
-        function showRC(regid, pdfName, qrcode,amount) {
+        function showRC(regid, pdfName, qrcode,amount,imageUrl) {
             currentRegId = regid;
             currentQrcode = qrcode;
             currentPdfName = pdfName;
             currentAmount = amount;
-            var loadingTask = pdfjsLib.getDocument({ url: pdfName, cMapUrl: "js/cmaps", cMapPacked: true });
-            loadingTask.promise.then(function (pdf) {
-                pdf.getPage(1).then(function (page) {
-                    var scale = 1.0;
-                    var viewport = page.getViewport({ scale: scale });
-                    var canvas = document.getElementById('rcpdf');
-                    var context = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-                    var renderContext = {
-                        canvasContext: context,
-                        viewport: viewport,
-                    };
-                    page.render(renderContext);
 
-                    $("#rcpdfshow").show();
-                    calcSignButtonWidth();
-                    $("#home").hide();
-                });
-            });
+            $("#signedimage").remove();
+            $("#rcpdf").attr("src", imageUrl);
+            $(".btn-startsign").show();
+            $("#rcpdfshow").show();
+            calcSignButtonWidth();
+            $("#home").hide();
         }
         function calcSignButtonWidth() {
             var parentWidth = $(".pdfbackground").css("width");
@@ -195,7 +182,7 @@
         function showPaymentQrcode() {
             $("#paymentQrcode").children().remove();
             $("#paymentAmount").text("￥" + currentAmount);
-            $("#paymentQrcode").qrcode({ width: 320, height: 320, text: currentQrcode });
+            $("#paymentQrcode").qrcode({ width: 256, height: 256, text: currentQrcode });
             $("#paymentShow").show();
             $("#rcpdfshow").hide();
         }
@@ -214,7 +201,7 @@
         }
         function reconnectWebSocket() {
             var connection = new signalR.HubConnectionBuilder().withUrl("/RCSignHub").build();
-            connection.on("ShowRC", function (regid, pdfName, qrcode, amount) { showRC(regid, pdfName, qrcode, amount); });
+            connection.on("ShowRC", function (regid, pdfName, qrcode, amount,imageUrl) { showRC(regid, pdfName, qrcode, amount,imageUrl); });
             connection.on("ShowHome", function (regid) { showHome(regid); });
             connection.onclose(function () { startConnectWebSocket();});
             connection.start().then(function () {
@@ -223,7 +210,22 @@
                 websocketReconnectTimer = null;
             });
         }
-
+        //rem
+        window.onload = function () {
+            getRem()
+        };
+        window.onresize = function () {
+            getRem()
+        };
+        function getRem() {
+        /*800代表设计师给的设计稿的宽度，你的设计稿是多少，就写多少;100代表换算比例，这里写100是
+          为了以后好算,比如，你测量的一个宽度是100px,就可以写为1rem,以及1px=0.01rem等等*/
+            var pwidth = 800;
+            var prem = 100;
+            var html = document.getElementsByTagName("html")[0];
+            var oWidth = document.body.clientWidth || document.documentElement.clientWidth;
+            html.style.fontSize = oWidth / pwidth * prem + "px";
+        }
     </script>
 </body>
 </html>
