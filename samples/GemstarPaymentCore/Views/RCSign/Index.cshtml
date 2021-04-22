@@ -52,6 +52,33 @@
                 <img src="~/images/logo_wx_gemstar.png" />
             </div>
         </div>
+    <div id="inputPhoneNo" style="display:none;">
+        <div class="toolbar">
+            <a href="#" onclick="showPaymentQrcode()"><img src="~/images/btn_back.png" /></a>
+        </div>
+        <div class="phoneNoBox">
+            <p class="phoneNoPrompt1">请输入您的手机号</p>
+            <p class="phoneNoPrompt2">便于酒店同步入住信息</p>
+            <p class="phoneNoInput"></p>
+            <div class="phoneNoKeyboard">
+                <div class="phoneNoInputNumberBtnBox">
+                    <button class="phoneInputBtn" onclick="inputPhoneNo(this)">1</button>
+                    <button class="phoneInputBtn" onclick="inputPhoneNo(this)">2</button>
+                    <button class="phoneInputBtn" onclick="inputPhoneNo(this)">3</button>
+                    <button class="phoneInputBtn" onclick="inputPhoneNo(this)">4</button>
+                    <button class="phoneInputBtn" onclick="inputPhoneNo(this)">5</button>
+                    <button class="phoneInputBtn" onclick="inputPhoneNo(this)">6</button>
+                    <button class="phoneInputBtn" onclick="inputPhoneNo(this)">7</button>
+                    <button class="phoneInputBtn" onclick="inputPhoneNo(this)">8</button>
+                    <button class="phoneInputBtn" onclick="inputPhoneNo(this)">9</button>
+                    <button class="phoneInputZero" onclick="inputPhoneNo(this)">0</button>
+                </div>
+                <button class="phoneInputBtn" onclick="inputPhontNoBack()"><img src="~/images/input_back.png" /></button>
+                <button class="phoneNoConfirm" onclick="confirmPhoneNo()">确认</button>
+                <div style="height:0;clear:both"></div>
+            </div>
+        </div>
+    </div>
     <div id="paymentShow" style="display:none;">
         <div class="toolbar">
             <a href="#" onclick="showHome()"><img src="~/images/btn_back.png" /></a>
@@ -112,9 +139,8 @@
             $("#signedimage").remove();
             $("#rcpdf").attr("src", imageUrl);
             $(".btn-startsign").show();
-            $("#rcpdfshow").show();
+            showPage("rcpdfshow");
             calcSignButtonWidth();
-            $("#home").hide();
         }
         function calcSignButtonWidth() {
             var parentWidth = $(".pdfbackground").css("width");
@@ -135,6 +161,7 @@
                 lineWidth: '3' //画笔的大小
             };
             $("#rcpdfsign").jSignature(param);
+            resetSign();
             $(".sign-tip").show();
             //hide the sign tip after a few seconds
             setTimeout(function () {$(".sign-tip").hide();}, 1000 * 2);
@@ -173,24 +200,57 @@
             $.post("@Url.Action("SaveSignImageToPdf")", { imageBase64Data: imageBase64Data, regid: currentRegId, pdfName: currentPdfName }, function (data) {
                 console.log("save signed image result:", data);
                 if (data.success) {
-                    showPaymentQrcode();
+                    showPhoneNoInput();
                 } else {
                     alert(data.data);
                 }
             }, "json");
         }
+        //show phone no input
+        function showPhoneNoInput() {
+            $(".phoneNoInput").text("");
+            showPage("inputPhoneNo");
+        }
+        function inputPhoneNo(btn) {
+            var text = $(btn).text();
+            $(".phoneNoInput").text($(".phoneNoInput").text() + text);
+            $(".phoneNoInput").css("border", "none");
+        }
+        function inputPhontNoBack() {
+            var text = $(".phoneNoInput").text();
+            var len = text.length;
+            if (len > 1) {
+                $(".phoneNoInput").text(text.substr(0, len - 1));
+            } else {
+                $(".phoneNoInput").text("")
+            }
+        }
+        //save phone no
+        function confirmPhoneNo() {
+            var text = $(".phoneNoInput").text();
+            if (!text) {
+                $(".phoneNoInput").css("border", "1px solid red");
+                return;
+            }
+            showPaymentQrcode();
+        }
+        //show payment qrcode
         function showPaymentQrcode() {
             $("#paymentQrcode").children().remove();
             $("#paymentAmount").text("￥" + currentAmount);
             $("#paymentQrcode").qrcode({ width: 256, height: 256, text: currentQrcode });
-            $("#paymentShow").show();
-            $("#rcpdfshow").hide();
+            showPage("paymentShow");
         }
         //show home
         function showHome(regid) {
+            showPage("home");
+        }
+        function showPage(pageId) {
             $("#rcpdfshow").hide();
             $("#paymentShow").hide();
-            $("#home").show();
+            $("#inputPhoneNo").hide();
+            $("#home").hide();
+            $("#" + pageId).show();
         }
         //start connect timer when websocket closed,and end the timer when websocket connected
         var websocketReconnectTimer = null;
