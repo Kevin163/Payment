@@ -288,7 +288,8 @@
         function reconnectWebSocket() {
             var connection = new signalR.HubConnectionBuilder().withUrl("/RCSignHub").build();
             connection.on("ShowRC", function (regid, pdfName, qrcode, amount,imageUrl) { showRC(regid, pdfName, qrcode, amount,imageUrl); });
-            connection.on("ShowHome", function (regid,seconds) { showHome(regid,seconds); });
+            connection.on("ShowHome", function (regid, seconds) { showHome(regid, seconds); });
+            connection.on("ShowPayQrcode", function (regid) { showPaymentQrcode(); });
             connection.onclose(function () { startConnectWebSocket();});
             connection.start().then(function () {
                 connection.invoke("BindDeviceId", deviceId);

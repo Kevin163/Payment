@@ -178,6 +178,24 @@ namespace GemstarPaymentCore.Controllers
             }
         }
         /// <summary>
+        /// notify the device to show the payment qrcode again
+        /// because the use may change the page to home or other pgae,but did not payment success
+        /// </summary>
+        /// <param name="regid">regid for guest checkin</param>
+        /// <param name="deviceId">the android id from ini config file</param>
+        /// <returns></returns>
+        public async Task<IActionResult> RePay(string regid, string deviceId)
+        {
+            try
+            {
+                await _rcSignHub.RePay(deviceId, regid);
+                return Json(JsonResultData.Successed());
+            }catch(Exception ex)
+            {
+                return Json(JsonResultData.Failure(ex));
+            }
+        }
+        /// <summary>
         /// notify the device the go back to home,because use payment successed
         /// </summary>
         /// <param name="regid">regid for guest checkin</param>

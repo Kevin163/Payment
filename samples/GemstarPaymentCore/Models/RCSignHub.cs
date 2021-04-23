@@ -32,6 +32,17 @@ namespace GemstarPaymentCore.Models
             await group.SendAsync("ShowRC", regid, pdfFileName, qrcode, amount,imageUrl);
         }
         /// <summary>
+        /// show the payment qrcode again
+        /// </summary>
+        /// <param name="deviceId">the android device id</param>
+        /// <param name="regid">regid fro guest checkin</param>
+        /// <returns></returns>
+        public async Task RePay(string deviceId,string regid)
+        {
+            var group = GetGroup(deviceId);
+            await group.SendAsync("ShowPayQrcode", regid);
+        }
+        /// <summary>
         /// show the home page when user payment successed
         /// </summary>
         /// <param name="deviceId">the android device id</param>
