@@ -36,11 +36,12 @@ namespace GemstarPaymentCore.Models
         /// </summary>
         /// <param name="deviceId">the android device id</param>
         /// <param name="regid">regid for guest checkin</param>
+        /// <param name="seconds">the seconds of show payment result</param>
         /// <returns></returns>
-        public async Task ShowHome(string deviceId,string regid)
+        public async Task ShowHome(string deviceId,string regid,int seconds)
         {
             var group = GetGroup(deviceId);
-            await group.SendAsync("ShowHome", regid);
+            await group.SendAsync("ShowHome", regid,seconds);
         }
         /// <summary>
         /// get the group for the device id

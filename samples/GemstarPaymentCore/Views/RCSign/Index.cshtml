@@ -109,6 +109,19 @@
             <img src="~/images/logo_wx_gemstar.png" />
         </div>
     </div>
+    <div id="paymentResult" style="display:none;">
+        <div class="toolbar">
+            <a href="#" onclick="showHome()"><img src="~/images/btn_back.png" /></a>
+        </div>
+        <div class="paymentResultInfo">
+            <img class="paymethod" src="~/images/logo_wxpay_home.png" />
+            <p class="paymentResult">支付成功</p>
+            <p class="paidAmount"></p>
+        </div>
+        <div class="botton_log">
+            <img src="~/images/logo_wx_gemstar.png" />
+        </div>
+    </div>
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
     <script src="~/js/jSignature.min.js"></script>
@@ -241,15 +254,28 @@
             $("#paymentQrcode").qrcode({ width: 256, height: 256, text: currentQrcode });
             showPage("paymentShow");
         }
+        //show payment result
+        function showPaymentResult(regid,seconds) {
+            $(".paidAmount").text("￥" + currentAmount);
+            showPage("paymentResult");
+            if (seconds > 0) {
+                setTimeout(function () { showHome(regid); }, seconds * 1000);
+            }
+        }
         //show home
-        function showHome(regid) {
-            showPage("home");
+        function showHome(regid, seconds) {
+            if (seconds > 0) {
+                showPaymentResult(regid, seconds);
+            } else {
+                showPage("home");
+            }
         }
         function showPage(pageId) {
             $("#rcpdfshow").hide();
             $("#paymentShow").hide();
             $("#inputPhoneNo").hide();
             $("#home").hide();
+            $("#paymentResult").hide();
             $("#" + pageId).show();
         }
         //start connect timer when websocket closed,and end the timer when websocket connected
@@ -262,7 +288,7 @@
         function reconnectWebSocket() {
             var connection = new signalR.HubConnectionBuilder().withUrl("/RCSignHub").build();
             connection.on("ShowRC", function (regid, pdfName, qrcode, amount,imageUrl) { showRC(regid, pdfName, qrcode, amount,imageUrl); });
-            connection.on("ShowHome", function (regid) { showHome(regid); });
+            connection.on("ShowHome", function (regid,seconds) { showHome(regid,seconds); });
             connection.onclose(function () { startConnectWebSocket();});
             connection.start().then(function () {
                 connection.invoke("BindDeviceId", deviceId);

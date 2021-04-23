@@ -396,11 +396,41 @@
         display: block;
         clear: both;
     }
-/**common toolbar**/
-.toolbar {
-    padding-top: 0.30rem;
-    margin-left: 0.30rem;
+/**payment result**/
+#paymentResult{
+    width:100%;
+    height:100%;
+    position:relative;
 }
+.paymentResultInfo{
+    margin-top:1.55rem;
+    text-align:center;
+}
+    .paymentResultInfo .paymethod {
+        width: 1.70rem;
+        height: 1.70rem;
+    }
+    .paymentResultInfo .paymentResult {
+        margin-top: 0.36rem;
+        height: 0.48rem;
+        font-size: 0.50rem;
+        font-family: PingFang SC;
+        font-weight: bold;
+        color: #09BB07;
+    }
+    .paymentResultInfo .paidAmount {
+        margin-top: 0.99rem;
+        height: 0.75rem;
+        font-size: 1.00rem;
+        font-family: PingFang SC;
+        font-weight: bold;
+        color: #0A0E10;
+    }
+    /**common toolbar**/
+    .toolbar {
+        padding-top: 0.30rem;
+        margin-left: 0.30rem;
+    }
     .toolbar img{
         width:0.52rem;
         height:0.52rem;

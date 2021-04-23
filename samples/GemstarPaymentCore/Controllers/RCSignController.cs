@@ -182,9 +182,11 @@ namespace GemstarPaymentCore.Controllers
         /// </summary>
         /// <param name="regid">regid for guest checkin</param>
         /// <param name="deviceId">the android device id from ini config file</param>
-        public async Task<IActionResult> GoBackHome(string regid,string deviceId)
+        /// <param name="successShowSeconds">the seconds of show payment result</param>
+        public async Task<IActionResult> GoBackHome(string regid,string deviceId,int? successShowSeconds)
         {
-            await _rcSignHub.ShowHome(deviceId, regid);
+            int seconds = successShowSeconds ?? 3;
+            await _rcSignHub.ShowHome(deviceId, regid,seconds);
             return Json(JsonResultData.Successed());
         }
     }
