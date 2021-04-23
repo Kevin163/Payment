@@ -142,12 +142,14 @@
         });
         //show the rc pdf,then customer can sign over the pdf
         //and remember the regid and qrcode,when customer has finished sign,save the sign and show payment qrcode
-        var currentRegId, currentQrcode,currentPdfName,currentAmount;
-        function showRC(regid, pdfName, qrcode,amount,imageUrl) {
+        var currentRegId, currentQrcode,currentPdfName,currentAmount,needInputPhoneNo,defaultPhoneNo;
+        function showRC(regid, pdfName, qrcode,amount,imageUrl,inputPhoneNo,phoneNo) {
             currentRegId = regid;
             currentQrcode = qrcode;
             currentPdfName = pdfName;
             currentAmount = amount;
+            needInputPhoneNo = inputPhoneNo;
+            defaultPhoneNo = phoneNo;
 
             $("#signedimage").remove();
             $("#rcpdf").attr("src", imageUrl);
@@ -213,7 +215,11 @@
             $.post("@Url.Action("SaveSignImageToPdf")", { imageBase64Data: imageBase64Data, regid: currentRegId, pdfName: currentPdfName }, function (data) {
                 console.log("save signed image result:", data);
                 if (data.success) {
-                    showPhoneNoInput();
+                    if (needInputPhoneNo == "1") {
+                        showPhoneNoInput();
+                    } else {
+                        showPaymentQrcode();
+                    }
                 } else {
                     alert(data.data);
                 }
@@ -221,31 +227,56 @@
         }
         //show phone no input
         function showPhoneNoInput() {
-            $(".phoneNoInput").text("");
+            setPhoneNoFormated(defaultPhoneNo);
             showPage("inputPhoneNo");
         }
         function inputPhoneNo(btn) {
             var text = $(btn).text();
-            $(".phoneNoInput").text($(".phoneNoInput").text() + text);
+            setPhoneNoFormated($(".phoneNoInput").text() + text);
             $(".phoneNoInput").css("border", "none");
         }
         function inputPhontNoBack() {
-            var text = $(".phoneNoInput").text();
+            var text = $(".phoneNoInput").text().replaceAll(' ', '');
             var len = text.length;
             if (len > 1) {
-                $(".phoneNoInput").text(text.substr(0, len - 1));
+                setPhoneNoFormated(text.substr(0, len - 1));
             } else {
                 $(".phoneNoInput").text("")
             }
         }
+        function setPhoneNoFormated(phoneNo) {
+            if (!phoneNo) {
+                phoneNo = "";
+            }
+            phoneNo = phoneNo.replaceAll(' ', '');
+            var formatedPhoneNo = "";
+            var len = phoneNo.length;
+            var index = Math.min(3, len);
+            formatedPhoneNo = phoneNo.substr(0, index);
+            if (len > 3) {
+                index = Math.min(7, len);
+                formatedPhoneNo += ' ' + phoneNo.substr(3, index-3);
+                if (len > 7) {
+                    index = Math.min(11, len);
+                    formatedPhoneNo += ' ' + phoneNo.substr(7, index - 7);
+                }
+            }
+            $(".phoneNoInput").text(formatedPhoneNo);
+        }
         //save phone no
         function confirmPhoneNo() {
-            var text = $(".phoneNoInput").text();
+            var text = $(".phoneNoInput").text().replaceAll(' ', '');
             if (!text) {
                 $(".phoneNoInput").css("border", "1px solid red");
                 return;
             }
-            showPaymentQrcode();
+            $.post("@Url.Action("SavePhoneNo")", { regid: currentRegId, phoneNo: text }, function (data) {
+                if (data.success) {
+                    showPaymentQrcode();
+                } else {
+                    $(".phoneNoInput").css("border", "1px solid red");
+                }
+            }, "json");
         }
         //show payment qrcode
         function showPaymentQrcode() {
@@ -287,7 +318,7 @@
         }
         function reconnectWebSocket() {
             var connection = new signalR.HubConnectionBuilder().withUrl("/RCSignHub").build();
-            connection.on("ShowRC", function (regid, pdfName, qrcode, amount,imageUrl) { showRC(regid, pdfName, qrcode, amount,imageUrl); });
+            connection.on("ShowRC", function (regid, pdfName, qrcode, amount,imageUrl,inputPhoneNo,defaultPhoneNo) { showRC(regid, pdfName, qrcode, amount,imageUrl,inputPhoneNo,defaultPhoneNo); });
             connection.on("ShowHome", function (regid, seconds) { showHome(regid, seconds); });
             connection.on("ShowPayQrcode", function (regid) { showPaymentQrcode(); });
             connection.onclose(function () { startConnectWebSocket();});

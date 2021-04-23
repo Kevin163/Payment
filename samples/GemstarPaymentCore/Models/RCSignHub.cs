@@ -26,10 +26,10 @@ namespace GemstarPaymentCore.Models
         /// <param name="amount">the payment amount</param>
         /// <param name="imageUrl">the pdf file first page's image url</param>
         /// <returns></returns>
-        public async Task ShowRC(string deviceId, string pdfFileName, string qrcode, string regid, string amount,string imageUrl)
+        public async Task ShowRC(string deviceId, string pdfFileName, string qrcode, string regid, string amount,string imageUrl,int needInputPhoneNo,string defaultPhoneNo)
         {
             var group = GetGroup(deviceId);
-            await group.SendAsync("ShowRC", regid, pdfFileName, qrcode, amount,imageUrl);
+            await group.SendAsync("ShowRC", regid, pdfFileName, qrcode, amount,imageUrl,needInputPhoneNo.ToString(),defaultPhoneNo);
         }
         /// <summary>
         /// show the payment qrcode again

@@ -63,8 +63,11 @@ namespace GemstarPaymentCore.Controllers
         /// <param name="regid">the id for guest checkin</param>
         /// <param name="qrcode">the payment qrcode content</param>
         /// <param name="deviceId">the android device id associated to the cs pms workstation</param>
+        /// <param name="amount">the amount should pay</param>
+        /// <param name="inputPhoneNo">whether need the user to input phone no,when it's value equal to 1,then user must input phone no,else the user will see the payment qrcode when sign successed</param>
+        /// <param name="phoneNo">the default phone no</param>
         /// <returns>notify result</returns>
-        public async Task<IActionResult> ShowRC(IFormFile pdf, string regid, string qrcode, string deviceId, string amount)
+        public async Task<IActionResult> ShowRC(IFormFile pdf, string regid, string qrcode, string deviceId, string amount,int? inputPhoneNo,string phoneNo)
         {
             try
             {
@@ -98,7 +101,7 @@ namespace GemstarPaymentCore.Controllers
                 }
                     var pdfUri = Url.Content($"rcpdfs/{fileName}");
                 var imageUri = Url.Content($"rcpdfs/{imageName}");
-                await _rcSignHub.ShowRC(deviceId, pdfUri, qrcode, regid, amount,imageUri);
+                await _rcSignHub.ShowRC(deviceId, pdfUri, qrcode, regid, amount,imageUri,inputPhoneNo??1,phoneNo);
                 return Json(JsonResultData.Successed("notify android device to show rc pdf successed"));
             }
             catch(Exception ex)
@@ -175,6 +178,54 @@ namespace GemstarPaymentCore.Controllers
 
                 conn.Open();
                 cmd.ExecuteNonQuery();
+            }
+        }
+        public IActionResult SavePhoneNo(string regid, string phoneNo)
+        {
+            if (string.IsNullOrEmpty(regid))
+            {
+                return Json(JsonResultData.Failure("regid must have a valid value"));
+            }
+            if (string.IsNullOrEmpty(phoneNo))
+            {
+                return Json(JsonResultData.Failure("phone no must have a valid value"));
+            }
+            try
+            {
+                var connStr = _businessOption.Systems.Where(w => w.Name == "KF").FirstOrDefault()?.ConnStr;
+                if (string.IsNullOrEmpty(connStr))
+                {
+                    throw new ApplicationException("使用rc电子签名功能时，必须正确配置客房数据库连接信息，请检查配置文件");
+                }
+                using (var conn = new SqlConnection(connStr))
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "up_gsSaveRCSignPhoneNo_Regid";
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+                    var pRegId = cmd.CreateParameter();
+                    pRegId.ParameterName = "regid";
+                    pRegId.Value = regid;
+                    cmd.Parameters.Add(pRegId);
+
+                    var pCreator = cmd.CreateParameter();
+                    pCreator.ParameterName = "creator";
+                    pCreator.Value = "rcSign";
+                    cmd.Parameters.Add(pCreator);
+
+                    var pPhoneNo = cmd.CreateParameter();
+                    pPhoneNo.ParameterName = "PhoneNo";
+                    pPhoneNo.Value = phoneNo;
+                    cmd.Parameters.Add(pPhoneNo);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return Json(JsonResultData.Successed());
+            }
+            catch (Exception ex)
+            {
+                return Json(JsonResultData.Failure(ex));
             }
         }
         /// <summary>
