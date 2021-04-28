@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -92,14 +93,8 @@ namespace GemstarPaymentCore.Controllers
                     stream.Close();
                 }
 
-                var imageData = Freeware.Pdf2Png.Convert(pdf.OpenReadStream(), 1);
-                var imageName = $"{regid}_{DateTime.Now.ToString("yyyyMMddHHmmssfff")}.png";
-                using (var img = System.IO.File.Create(Path.Combine(path, imageName)))
-                {
-                    img.Write(imageData);
-                    img.Close();
-                }
-                    var pdfUri = Url.Content($"rcpdfs/{fileName}");
+                var imageName = ConvertPdf2Png(path, fileName);
+                var pdfUri = Url.Content($"rcpdfs/{fileName}");
                 var imageUri = Url.Content($"rcpdfs/{imageName}");
                 await _rcSignHub.ShowRC(deviceId, pdfUri, qrcode, regid, amount,imageUri,inputPhoneNo??1,phoneNo);
                 return Json(JsonResultData.Successed("notify android device to show rc pdf successed"));
@@ -108,6 +103,24 @@ namespace GemstarPaymentCore.Controllers
             {
                 return Json(JsonResultData.Failure(ex));
             }
+        }
+        private string ConvertPdf2Png(string path,string pdfFileName)
+        {
+            var imageNamePrefix = Path.GetFileNameWithoutExtension(pdfFileName);
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "PdfRenderer", "pdftopng.exe"),
+                Arguments = $"-f 1 -l 1 {Path.Combine(path,pdfFileName)} {Path.Combine(path,imageNamePrefix)}"
+            };
+            var process = Process.Start(processInfo);
+            process.WaitForExit();
+            var imageFileNames = Directory.GetFiles(path,$"{imageNamePrefix}*.png");
+            if(imageFileNames == null || imageFileNames.Length == 0)
+            {
+                throw new ApplicationException("pdf转换为图片失败，请检查wwwroot目录下的PdfRenderer目录是否存在");
+            }
+            return Path.GetFileName(imageFileNames[0]);
+
         }
         /// <summary>
         /// save the signed image to rc pdf

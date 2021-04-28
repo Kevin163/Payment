@@ -20,7 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Freeware.Pdf2Png" Version="1.0.1" />
     <PackageReference Include="Gemstar.Extensions.Logging.AliyunLogService" Version="1.0.2" />
     <PackageReference Include="itext7" Version="7.1.15" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
@@ -30,7 +29,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.10" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.8.2" />
-    <PackageReference Include="PdfiumViewer" Version="2.13.0" />
     <PackageReference Include="Quartz" Version="3.0.7" />
     <PackageReference Include="System.Text.Encodings.Web" Version="4.5.0" />
   </ItemGroup>
