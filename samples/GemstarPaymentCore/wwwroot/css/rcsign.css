@@ -11,26 +11,36 @@
     position: relative;
     width: 100%;
     height: 100%;
+    background-image:url(../images/background_home.jpg);
+    background-size:100% 100%;
+
 }
 
 #home_logo {
     padding-top: 3.2rem;
-    width: 5.6rem;
+    width: 7.2rem;
     margin-left: auto;
     margin-right: auto;
 }
 
 #logo_wxpay {
     float: left;
+    width: 3.08rem;
+    height: 3.08rem;
+    background: rgba(255,255,255,0.7);
+    border-radius: 0.80rem;
+    text-align:center;
 }
     #logo_wxpay img{
         width:1.52rem;
         height:1.52rem;
+        margin-top:0.53rem;
     }
     #logo_wxpay p {
-        width: 1.52rem;
-        height: 0.34rem;
-        font-size: 0.36rem;
+        width: 100%;
+        height: 0.38rem;
+        margin-top:-0.1rem;
+        font-size: 0.40rem;
         font-family: PingFang SC;
         font-weight: bold;
         color: #0A0E10;
@@ -40,24 +50,30 @@
 #logo_split {
     float: left;
     width: 0.04rem;
-    height: 0.87rem;
+    height: 1.27rem;
     background: #C7C9CC;
-    margin-left: 1.22rem;
-    margin-top: 0.32rem;
+    margin-left: 0.46rem;
+    margin-top: 0.82rem;
 }
 
 #logo_gemstar {
     float: left;
-    margin-left: 1.22rem;
+    margin-left: 0.46rem;
+    width: 3.08rem;
+    height: 3.08rem;
+    background: rgba(255,255,255,0.7);
+    border-radius: 0.80rem;
+    text-align:center;
 }
     #logo_gemstar img{
-        width:1.50rem;
-        height:1.50rem;
+        width:2.78rem;
+        height:0.650rem;
+        margin-top:0.89rem;
     }
     #logo_gemstar p {
-        width: 1.50rem;
-        height: 0.34rem;
-        font-size: 0.36rem;
+        width: 100%;
+        height: 0.38rem;
+        font-size: 0.40rem;
         font-family: PingFang SC;
         font-weight: bold;
         color: #0A0E10;

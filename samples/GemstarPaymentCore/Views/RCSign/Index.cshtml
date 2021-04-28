@@ -22,9 +22,6 @@
             </div>
             <div style="clear:both;"></div>
         </div>
-        <div id="home_bottom">
-            <img src="~/images/bottom_image_home.png" />
-        </div>
     </div>
     <div id="rcpdfshow" style="display:none;overflow:auto">
         <div class="toolbar">
@@ -153,6 +150,7 @@
 
             $("#signedimage").remove();
             $("#rcpdf").attr("src", imageUrl);
+            $("#rcpdfsignbox").hide();
             $(".btn-startsign").show();
             showPage("rcpdfshow");
             calcSignButtonWidth();
@@ -167,6 +165,7 @@
             $("#signedimage").remove();
             $(".btn-startsign").hide();
             $("#rcpdfsignbox").show();
+            $("#rcpdfsign").empty();
             var signCanva = $("#rcpdfsign");
             var param = {
                 width: '' + signCanva.width() + 'px',
@@ -213,7 +212,6 @@
                 return;
             }
             $.post("@Url.Action("SaveSignImageToPdf")", { imageBase64Data: imageBase64Data, regid: currentRegId, pdfName: currentPdfName }, function (data) {
-                console.log("save signed image result:", data);
                 if (data.success) {
                     if (needInputPhoneNo == "1") {
                         showPhoneNoInput();
@@ -236,7 +234,7 @@
             $(".phoneNoInput").css("border", "none");
         }
         function inputPhontNoBack() {
-            var text = $(".phoneNoInput").text().replaceAll(' ', '');
+            var text = getPhoneNo($(".phoneNoInput").text());
             var len = text.length;
             if (len > 1) {
                 setPhoneNoFormated(text.substr(0, len - 1));
@@ -245,10 +243,7 @@
             }
         }
         function setPhoneNoFormated(phoneNo) {
-            if (!phoneNo) {
-                phoneNo = "";
-            }
-            phoneNo = phoneNo.replaceAll(' ', '');
+            phoneNo = getPhoneNo(phoneNo);
             var formatedPhoneNo = "";
             var len = phoneNo.length;
             var index = Math.min(3, len);
@@ -263,9 +258,17 @@
             }
             $(".phoneNoInput").text(formatedPhoneNo);
         }
+        function getPhoneNo(phoneNo){
+			if (phoneNo == null || phoneNo == undefined || phoneNo == "null") {
+			    phoneNo = "";
+			}
+			phoneNo = ""+phoneNo;
+			phoneNo = phoneNo.split(' ').join('');
+			return phoneNo;
+        }
         //save phone no
         function confirmPhoneNo() {
-            var text = $(".phoneNoInput").text().replaceAll(' ', '');
+            var text = getPhoneNo($(".phoneNoInput").text());
             if (!text) {
                 $(".phoneNoInput").css("border", "1px solid red");
                 return;
