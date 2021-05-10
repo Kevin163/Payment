@@ -25,11 +25,12 @@ namespace GemstarPaymentCore.Models
         /// <param name="regid">the guest checkin id </param>
         /// <param name="amount">the payment amount</param>
         /// <param name="imageUrl">the pdf file first page's image url</param>
+        /// <param name="alipayQrcode">the payment qrcode for alipay</param>
         /// <returns></returns>
-        public async Task ShowRC(string deviceId, string pdfFileName, string qrcode, string regid, string amount,string imageUrl,int needInputPhoneNo,string defaultPhoneNo)
+        public async Task ShowRC(string deviceId, string rcInfoJsonStr)
         {
             var group = GetGroup(deviceId);
-            await group.SendAsync("ShowRC", regid, pdfFileName, qrcode, amount,imageUrl,needInputPhoneNo.ToString(),defaultPhoneNo);
+            await group.SendAsync("ShowRC", rcInfoJsonStr);
         }
         /// <summary>
         /// show the payment qrcode again

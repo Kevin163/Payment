@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1,target-densitydpi=device-dpi">
-    <link href="~/css/rcsign.css" rel="stylesheet" />
+    <link href="~/css/rcsign.css?version=20210508" rel="stylesheet" />
 </head>
 <body>
     <div id="home">
@@ -28,11 +28,11 @@
             <a href="#" onclick="showHome()"><img src="~/images/btn_back.png" /></a>
         </div>
         <div class="pdfbackground">
-            <img id="rcpdf"/>
+            <img id="rcpdf" />
         </div>
         <div id="rcpdfsignbox" class="sign-background" style="display:none;">
             <div class="sign-box">
-                <div id="rcpdfsign"></div>               
+                <div id="rcpdfsign"></div>
             </div>
             <div class="sign-tip">
                 <img src="~/images/sign_tip.png" />
@@ -43,12 +43,12 @@
             </div>
         </div>
 
-            <button class="btn-startsign" onclick="beginSign()">签名并确认</button>
+        <button class="btn-startsign" onclick="beginSign()">签名并确认</button>
 
-            <div class="botton_log">
-                <img src="~/images/logo_wx_gemstar.png" />
-            </div>
+        <div class="botton_log">
+            <img src="~/images/logo_wx_gemstar.png" />
         </div>
+    </div>
     <div id="inputPhoneNo" style="display:none;">
         <div class="toolbar">
             <a href="#" onclick="showPaymentQrcode()"><img src="~/images/btn_back.png" /></a>
@@ -76,13 +76,43 @@
             </div>
         </div>
     </div>
-    <div id="paymentShow" style="display:none;">
+    <div id="paymentSelect" style="display:none;">
         <div class="toolbar">
             <a href="#" onclick="showHome()"><img src="~/images/btn_back.png" /></a>
         </div>
-        <div class="payment-box">
+        <div class="payment-box  payment-box-wx">
             <div class="payment-title">
-                <img src="~/images/payment_status.png" />
+                <img src="~/images/payment_status2.png" />
+                <p>待支付</p>
+            </div>
+            <div class="payment-amount">
+                <p id="paymentAmountSelect">￥666.66</p>
+            </div>
+            <div class="paymentSelectTitle">
+                <div></div>
+                <p>请选择支付方式</p>
+            </div>
+            <div class="paymentSelectButtons">
+                <button class="paymentSelectWxpay" onclick="showPaymentQrcodeWeixin()"><img src="~/images/logo_wxpay_revert.png" />微信支付</button>
+                <button class="paymentSelectAlipay" onclick="showPaymentQrcodeAlipay()"><img src="~/images/logo_alipay_revert.png" />支付宝支付</button>
+            </div>
+        </div>
+        <div style="height:0;clear:both"></div>
+        <div class="payment-tip">
+            <p>若使用信用卡或现金，请联系前台</p>
+        </div>
+
+        <div class="botton_log">
+            <img src="~/images/logo_wx_gemstar.png" />
+        </div>
+    </div>
+    <div id="paymentShow" style="display:none;">
+        <div class="toolbar">
+            <a href="#" onclick="goback('paymentShow')"><img src="~/images/btn_back.png" /></a>
+        </div>
+        <div class="payment-box payment-box-wx">
+            <div class="payment-title">
+                <img src="~/images/payment_status2.png" />
                 <p>待支付</p>
             </div>
             <div class="payment-amount">
@@ -91,15 +121,14 @@
             <div class="payment-qrcode">
                 <div id="paymentQrcode"></div>
                 <div>
-                    <img src="~/images/logo_wxpay_home.png" />
-                    <p>使用微信扫码支付</p>
+                    <img id="paymentTypeIcon" src="~/images/logo_wxpay_home.png" />
+                    <p id="paymentTypePrompt">使用微信扫码支付</p>
                 </div>
             </div>
         </div>
         <div style="height:0;clear:both"></div>
         <div class="payment-tip">
-            <img src="~/images/icon_alert.png" />
-            <p>注意：若使用信用卡或现金请联系前台</p>
+            <p>若使用信用卡或现金，请联系前台</p>
         </div>
 
         <div class="botton_log">
@@ -139,14 +168,17 @@
         });
         //show the rc pdf,then customer can sign over the pdf
         //and remember the regid and qrcode,when customer has finished sign,save the sign and show payment qrcode
-        var currentRegId, currentQrcode,currentPdfName,currentAmount,needInputPhoneNo,defaultPhoneNo;
-        function showRC(regid, pdfName, qrcode,amount,imageUrl,inputPhoneNo,phoneNo) {
-            currentRegId = regid;
-            currentQrcode = qrcode;
-            currentPdfName = pdfName;
-            currentAmount = amount;
-            needInputPhoneNo = inputPhoneNo;
-            defaultPhoneNo = phoneNo;
+        var currentRegId, currentQrcode,currentPdfName,currentAmount,needInputPhoneNo,defaultPhoneNo,currentAlipayQrcode;
+        function showRC(showRCInfo) {
+            showRCInfo = JSON.parse(showRCInfo);
+            currentRegId = showRCInfo.regid;
+            currentQrcode = showRCInfo.qrcode;
+            currentPdfName = showRCInfo.pdfFileName;
+            currentAmount = showRCInfo.amount;
+            needInputPhoneNo = showRCInfo.needInputPhoneNo;
+            defaultPhoneNo = showRCInfo.defaultPhoneNo;
+            currentAlipayQrcode = showRCInfo.alipayQrcode;
+            var imageUrl = showRCInfo.imageUrl;
 
             $("#signedimage").remove();
             $("#rcpdf").attr("src", imageUrl);
@@ -283,9 +315,38 @@
         }
         //show payment qrcode
         function showPaymentQrcode() {
+            if (currentAlipayQrcode != null && currentAlipayQrcode != undefined && currentAlipayQrcode != "null" && currentAlipayQrcode.length > 0) {
+                showPaymentSelect();
+            }
+            else {
+                showPaymentQrcodeWeixin();
+            }
+        }
+        //show payment select
+        function showPaymentSelect() {
+            $("#paymentAmountSelect").text("￥" + currentAmount);
+            showPage("paymentSelect");
+        }
+        //show payment weixin qrcode
+        function showPaymentQrcodeWeixin() {
+            $(".payment-box").removeClass("payment-box-alipay");
+            $(".payment-box").addClass("payment-box-wx");
+            $("#paymentTypeIcon").attr("src", "images/logo_wxpay_home.png");
+            $("#paymentTypePrompt").text("使用微信扫码支付");
             $("#paymentQrcode").children().remove();
             $("#paymentAmount").text("￥" + currentAmount);
             $("#paymentQrcode").qrcode({ width: 256, height: 256, text: currentQrcode });
+            showPage("paymentShow");
+        }
+        //show payment alipay qrcode
+        function showPaymentQrcodeAlipay() {
+            $(".payment-box").removeClass("payment-box-wx");
+            $(".payment-box").addClass("payment-box-alipay");
+            $("#paymentTypeIcon").attr("src", "images/logo_alipay_home.png");
+            $("#paymentTypePrompt").text("使用支付宝扫码支付");
+            $("#paymentQrcode").children().remove();
+            $("#paymentAmount").text("￥" + currentAmount);
+            $("#paymentQrcode").qrcode({ width: 256, height: 256, text: currentAlipayQrcode });
             showPage("paymentShow");
         }
         //show payment result
@@ -294,6 +355,18 @@
             showPage("paymentResult");
             if (seconds > 0) {
                 setTimeout(function () { showHome(regid); }, seconds * 1000);
+            }
+        }
+        //goback
+        function goback(currentPage) {
+            switch (currentPage) {
+                case 'paymentShow':
+                    if (currentAlipayQrcode != null && currentAlipayQrcode != undefined && currentAlipayQrcode != "null" && currentAlipayQrcode.length > 0) {
+                        showPaymentSelect();
+                    }
+                    else {
+                        showHome();
+                    }
             }
         }
         //show home
@@ -309,6 +382,7 @@
             $("#paymentShow").hide();
             $("#inputPhoneNo").hide();
             $("#home").hide();
+            $("#paymentSelect").hide();
             $("#paymentResult").hide();
             $("#" + pageId).show();
         }
@@ -321,7 +395,7 @@
         }
         function reconnectWebSocket() {
             var connection = new signalR.HubConnectionBuilder().withUrl("/RCSignHub").build();
-            connection.on("ShowRC", function (regid, pdfName, qrcode, amount,imageUrl,inputPhoneNo,defaultPhoneNo) { showRC(regid, pdfName, qrcode, amount,imageUrl,inputPhoneNo,defaultPhoneNo); });
+            connection.on("ShowRC", function (showRCInfo) { showRC(showRCInfo); });
             connection.on("ShowHome", function (regid, seconds) { showHome(regid, seconds); });
             connection.on("ShowPayQrcode", function (regid) { showPaymentQrcode(); });
             connection.onclose(function () { startConnectWebSocket();});

@@ -7,6 +7,7 @@ using iText.Layout.Element;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -67,8 +68,9 @@ namespace GemstarPaymentCore.Controllers
         /// <param name="amount">the amount should pay</param>
         /// <param name="inputPhoneNo">whether need the user to input phone no,when it's value equal to 1,then user must input phone no,else the user will see the payment qrcode when sign successed</param>
         /// <param name="phoneNo">the default phone no</param>
+        /// <param name="alipayQrcode">the payment qrcode content for alipay</param>
         /// <returns>notify result</returns>
-        public async Task<IActionResult> ShowRC(IFormFile pdf, string regid, string qrcode, string deviceId, string amount,int? inputPhoneNo,string phoneNo)
+        public async Task<IActionResult> ShowRC(IFormFile pdf, string regid, string qrcode, string deviceId, string amount,int? inputPhoneNo,string phoneNo,string alipayQrcode)
         {
             try
             {
@@ -96,7 +98,8 @@ namespace GemstarPaymentCore.Controllers
                 var imageName = ConvertPdf2Png(path, fileName);
                 var pdfUri = Url.Content($"rcpdfs/{fileName}");
                 var imageUri = Url.Content($"rcpdfs/{imageName}");
-                await _rcSignHub.ShowRC(deviceId, pdfUri, qrcode, regid, amount,imageUri,inputPhoneNo??1,phoneNo);
+                var rcInfo = new { regid, pdfFileName=fileName, qrcode, amount, imageUrl=imageUri, needInputPhoneNo = (inputPhoneNo ?? 1).ToString(), defaultPhoneNo= phoneNo ?? "", alipayQrcode= alipayQrcode ?? "" };
+                await _rcSignHub.ShowRC(deviceId, JsonConvert.SerializeObject(rcInfo));
                 return Json(JsonResultData.Successed("notify android device to show rc pdf successed"));
             }
             catch(Exception ex)
