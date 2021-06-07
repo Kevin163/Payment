@@ -13,7 +13,10 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
 
 namespace GemstarPaymentCore.Controllers
 {
@@ -23,13 +26,19 @@ namespace GemstarPaymentCore.Controllers
     /// </summary>
     public class RCSignController : Controller
     {
+        /// <summary>
+        /// bill type of rc
+        /// </summary>
+        private const string BillTypeRC = "RC单";
         private RCSignHub _rcSignHub;
         private BusinessOption _businessOption;
         private float _right, _bottom;
-        public RCSignController(RCSignHub rcSignHub, IOptions<BusinessOption> businessOption)
+        private IServiceProvider _serviceProvider;
+        public RCSignController(RCSignHub rcSignHub, IOptions<BusinessOption> businessOption,IServiceProvider serviceProvider)
         {
             _rcSignHub = rcSignHub;
             _businessOption = businessOption.Value;
+            _serviceProvider = serviceProvider;
             if (float.TryParse(_businessOption.RCSignPositionRight, out float rightValue))
             {
                 _right = rightValue;
@@ -69,11 +78,16 @@ namespace GemstarPaymentCore.Controllers
         /// <param name="inputPhoneNo">whether need the user to input phone no,when it's value equal to 1,then user must input phone no,else the user will see the payment qrcode when sign successed</param>
         /// <param name="phoneNo">the default phone no</param>
         /// <param name="alipayQrcode">the payment qrcode content for alipay</param>
+        /// <param name="billType">bill type</param>
         /// <returns>notify result</returns>
-        public async Task<IActionResult> ShowRC(IFormFile pdf, string regid, string qrcode, string deviceId, string amount,int? inputPhoneNo,string phoneNo,string alipayQrcode)
+        public async Task<IActionResult> ShowRC(IFormFile pdf, string regid, string qrcode, string deviceId, string amount,int? inputPhoneNo,string phoneNo,string alipayQrcode,string billType)
         {
             try
             {
+                if (string.IsNullOrEmpty(billType))
+                {
+                    billType = BillTypeRC;
+                }
                 if (pdf == null || pdf.Length <= 0)
                 {
                     return Json(JsonResultData.Failure("pdf file can not be null or empty"));
@@ -84,7 +98,11 @@ namespace GemstarPaymentCore.Controllers
                 }
                 if (string.IsNullOrEmpty(qrcode))
                 {
-                    return Json(JsonResultData.Failure("qrcode can not be null or empty"));
+                    if (billType == BillTypeRC)
+                    {
+                        return Json(JsonResultData.Failure("qrcode can not be null or empty"));
+                    }
+                    qrcode = "";
                 }
                 var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "rcpdfs");
                 if (!Directory.Exists(path)) { Directory.CreateDirectory(path); }
@@ -98,7 +116,7 @@ namespace GemstarPaymentCore.Controllers
                 var imageName = ConvertPdf2Png(path, fileName);
                 var pdfUri = Url.Content($"rcpdfs/{fileName}");
                 var imageUri = Url.Content($"rcpdfs/{imageName}");
-                var rcInfo = new { regid, pdfFileName=fileName, qrcode, amount, imageUrl=imageUri, needInputPhoneNo = (inputPhoneNo ?? 1).ToString(), defaultPhoneNo= phoneNo ?? "", alipayQrcode= alipayQrcode ?? "" };
+                var rcInfo = new { regid, pdfFileName=fileName, qrcode, amount, imageUrl=imageUri, needInputPhoneNo = (inputPhoneNo ?? 1).ToString(), defaultPhoneNo= phoneNo ?? "", alipayQrcode= alipayQrcode ?? "",billType };
                 await _rcSignHub.ShowRC(deviceId, JsonConvert.SerializeObject(rcInfo));
                 return Json(JsonResultData.Successed("notify android device to show rc pdf successed"));
             }
@@ -132,7 +150,7 @@ namespace GemstarPaymentCore.Controllers
         /// <param name="regid">regid for guest checkin</param>
         /// <param name="pdfName">the origial pdf file name</param>
         /// <returns>save status</returns>
-        public IActionResult SaveSignImageToPdf(string imageBase64Data, string regid, string pdfName)
+        public IActionResult SaveSignImageToPdf(string imageBase64Data, string regid, string pdfName,string billType)
         {
             try
             {
@@ -150,7 +168,14 @@ namespace GemstarPaymentCore.Controllers
                     img.SetFixedPosition(left, _bottom);
                     document.Add(img);
                     document.Close();
-                    SaveSignedPdfToDB(regid, outputPdfStream.ToArray());
+                    if (_businessOption.RCSystemVersion == BusinessOption.SystemBsPms)
+                    {
+                        SaveSignedPdfToBsPms(billType, regid, outputPdfStream.ToArray());
+                    }
+                    else
+                    {
+                        SaveSignedPdfToDB(billType, regid, outputPdfStream.ToArray());
+                    }
                     return Json(JsonResultData.Successed());
                 }
             }
@@ -159,13 +184,49 @@ namespace GemstarPaymentCore.Controllers
                 return Json(JsonResultData.Failure(ex));
             }
         }
+
+        private void SaveSignedPdfToBsPms(string billType, string regid, byte[] pdfBytes)
+        {
+            if (string.IsNullOrEmpty(billType))
+            {
+                billType = BillTypeRC;
+            }
+            if (string.IsNullOrEmpty(_businessOption.RCSignBsPmsApiUrl))
+            {
+                throw new ApplicationException("请先配置bspms对接电子签名的接口地址");
+            }
+            var apiUrl = $"{_businessOption.RCSignBsPmsApiUrl}/SaveSignedPdf";
+            var httpClientFactory = _serviceProvider.GetService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient();
+            var formContent = new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { 
+            new KeyValuePair<string, string>("billType",billType),
+            new KeyValuePair<string, string>("billNo",regid),
+            new KeyValuePair<string, string>("pdfSignData",Convert.ToBase64String(pdfBytes))
+            });
+            var response = httpClient.PostAsync(apiUrl, formContent).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                var resultStr = response.Content.ReadAsStringAsync().Result;
+                var result = JsonConvert.DeserializeObject<JsonResultData>(resultStr);
+                if (!result.Success)
+                {
+                    throw new ApplicationException($"调用bspms 接口{apiUrl}保存签名pdf时失败，原因：{result.Data}");
+                }
+            }
+            throw new ApplicationException($"调用bspms 接口{apiUrl}保存签名pdf时失败，状态码：{response.StatusCode}");
+        }
+
         /// <summary>
         /// save the signed image with origial pdf to db
         /// </summary>
         /// <param name="regid">regid</param>
         /// <param name="pdfBytes"></param>
-        private void SaveSignedPdfToDB(string regid, byte[] pdfBytes)
+        private void SaveSignedPdfToDB(string billType,string regid, byte[] pdfBytes)
         {
+            if (string.IsNullOrEmpty(billType))
+            {
+                billType = BillTypeRC;
+            }
             var connStr = _businessOption.Systems.Where(w => w.Name == "KF").FirstOrDefault()?.ConnStr;
             if (string.IsNullOrEmpty(connStr))
             {
@@ -176,6 +237,11 @@ namespace GemstarPaymentCore.Controllers
             {
                 cmd.CommandText = "up_gsSaveRCSignPdf_Regid";
                 cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+                var pBillType = cmd.CreateParameter();
+                pBillType.ParameterName = "pdfType";
+                pBillType.Value = billType;
+                cmd.Parameters.Add(pBillType);
 
                 var pRegId = cmd.CreateParameter();
                 pRegId.ParameterName = "regid";
@@ -208,34 +274,13 @@ namespace GemstarPaymentCore.Controllers
             }
             try
             {
-                var connStr = _businessOption.Systems.Where(w => w.Name == "KF").FirstOrDefault()?.ConnStr;
-                if (string.IsNullOrEmpty(connStr))
+                if (_businessOption.RCSystemVersion == BusinessOption.SystemBsPms)
                 {
-                    throw new ApplicationException("使用rc电子签名功能时，必须正确配置客房数据库连接信息，请检查配置文件");
+                    SavePhoneNoToBsPms(regid,phoneNo);
                 }
-                using (var conn = new SqlConnection(connStr))
-                using (var cmd = conn.CreateCommand())
+                else
                 {
-                    cmd.CommandText = "up_gsSaveRCSignPhoneNo_Regid";
-                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
-
-                    var pRegId = cmd.CreateParameter();
-                    pRegId.ParameterName = "regid";
-                    pRegId.Value = regid;
-                    cmd.Parameters.Add(pRegId);
-
-                    var pCreator = cmd.CreateParameter();
-                    pCreator.ParameterName = "creator";
-                    pCreator.Value = "rcSign";
-                    cmd.Parameters.Add(pCreator);
-
-                    var pPhoneNo = cmd.CreateParameter();
-                    pPhoneNo.ParameterName = "PhoneNo";
-                    pPhoneNo.Value = phoneNo;
-                    cmd.Parameters.Add(pPhoneNo);
-
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
+                    SavePhoneNoToDb(regid, phoneNo);
                 }
                 return Json(JsonResultData.Successed());
             }
@@ -244,6 +289,70 @@ namespace GemstarPaymentCore.Controllers
                 return Json(JsonResultData.Failure(ex));
             }
         }
+
+        private void SavePhoneNoToBsPms(string regid, string phoneNo)
+        {
+            if (string.IsNullOrEmpty(phoneNo))
+            {
+                throw new ApplicationException("请先输入手机号");
+            }
+            if (string.IsNullOrEmpty(_businessOption.RCSignBsPmsApiUrl))
+            {
+                throw new ApplicationException("请先配置bspms对接电子签名的接口地址");
+            }
+            var apiUrl = $"{_businessOption.RCSignBsPmsApiUrl}/SavePhoneNo";
+            var httpClientFactory = _serviceProvider.GetService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient();
+            var formContent = new FormUrlEncodedContent(new List<KeyValuePair<string, string>> {
+            new KeyValuePair<string, string>("billNo",regid),
+            new KeyValuePair<string, string>("phoneNo",phoneNo)
+            });
+            var response = httpClient.PostAsync(apiUrl, formContent).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                var resultStr = response.Content.ReadAsStringAsync().Result;
+                var result = JsonConvert.DeserializeObject<JsonResultData>(resultStr);
+                if (!result.Success)
+                {
+                    throw new ApplicationException($"调用bspms 接口{apiUrl}保存客人手机时失败，原因：{result.Data}");
+                }
+            }
+            throw new ApplicationException($"调用bspms 接口{apiUrl}保存客人手机时失败，状态码：{response.StatusCode}");
+        }
+
+        private void SavePhoneNoToDb(string regid, string phoneNo)
+        {
+            var connStr = _businessOption.Systems.Where(w => w.Name == "KF").FirstOrDefault()?.ConnStr;
+            if (string.IsNullOrEmpty(connStr))
+            {
+                throw new ApplicationException("使用rc电子签名功能时，必须正确配置客房数据库连接信息，请检查配置文件");
+            }
+            using (var conn = new SqlConnection(connStr))
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "up_gsSaveRCSignPhoneNo_Regid";
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+                var pRegId = cmd.CreateParameter();
+                pRegId.ParameterName = "regid";
+                pRegId.Value = regid;
+                cmd.Parameters.Add(pRegId);
+
+                var pCreator = cmd.CreateParameter();
+                pCreator.ParameterName = "creator";
+                pCreator.Value = "rcSign";
+                cmd.Parameters.Add(pCreator);
+
+                var pPhoneNo = cmd.CreateParameter();
+                pPhoneNo.ParameterName = "PhoneNo";
+                pPhoneNo.Value = phoneNo;
+                cmd.Parameters.Add(pPhoneNo);
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
         /// <summary>
         /// notify the device to show the payment qrcode again
         /// because the use may change the page to home or other pgae,but did not payment success

@@ -7,6 +7,8 @@ namespace GemstarPaymentCore.Business
     /// </summary>
     public class BusinessOption
     {
+        public const string SystemCSGshis = "cs";
+        public const string SystemBsPms = "bs";
         /// <summary>
         /// 条码支付时，如果返回中间结果时，再次进行查询的超时时间，以秒为单位
         /// </summary>
@@ -87,6 +89,14 @@ namespace GemstarPaymentCore.Business
         /// 客人签名图片放置到pdf中时，离右边的距离，需要根据rc单的格式进行调整，默认为100
         /// </summary>
         public string RCSignPositionRight { get; set; } = "100";
+        /// <summary>
+        /// 电子签名功能对接的系统版本，cs:线下cs客房，bs:线上捷云系统
+        /// </summary>
+        public string RCSystemVersion { get; set; } = SystemCSGshis;
+        /// <summary>
+        /// bs pms接口地址,默认为：http://pmsnotify.gshis.com/rcsign
+        /// </summary>
+        public string RCSignBsPmsApiUrl { get; set; } = "http://pmsnotify.gshis.com/rcsign";
     }
     /// <summary>
     /// 业务系统信息

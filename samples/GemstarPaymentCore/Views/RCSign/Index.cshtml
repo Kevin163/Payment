@@ -168,7 +168,7 @@
         });
         //show the rc pdf,then customer can sign over the pdf
         //and remember the regid and qrcode,when customer has finished sign,save the sign and show payment qrcode
-        var currentRegId, currentQrcode,currentPdfName,currentAmount,needInputPhoneNo,defaultPhoneNo,currentAlipayQrcode;
+        var currentRegId, currentQrcode,currentPdfName,currentAmount,needInputPhoneNo,defaultPhoneNo,currentAlipayQrcode,currentBillType;
         function showRC(showRCInfo) {
             showRCInfo = JSON.parse(showRCInfo);
             currentRegId = showRCInfo.regid;
@@ -178,6 +178,7 @@
             needInputPhoneNo = showRCInfo.needInputPhoneNo;
             defaultPhoneNo = showRCInfo.defaultPhoneNo;
             currentAlipayQrcode = showRCInfo.alipayQrcode;
+            currentBillType = showRCInfo.billType;
             var imageUrl = showRCInfo.imageUrl;
 
             $("#signedimage").remove();
@@ -243,7 +244,7 @@
                 alert("请先签名");
                 return;
             }
-            $.post("@Url.Action("SaveSignImageToPdf")", { imageBase64Data: imageBase64Data, regid: currentRegId, pdfName: currentPdfName }, function (data) {
+            $.post("@Url.Action("SaveSignImageToPdf")", { imageBase64Data: imageBase64Data, regid: currentRegId, pdfName: currentPdfName, billType:currentBillType }, function (data) {
                 if (data.success) {
                     if (needInputPhoneNo == "1") {
                         showPhoneNoInput();
@@ -329,6 +330,12 @@
         }
         //show payment weixin qrcode
         function showPaymentQrcodeWeixin() {
+            //if there has no qrcode to pay,then show home. in section that sign for bill,there will not have a qrcode
+            if (currentQrcode == null || currentQrcode == "" || currentQrcode.length == 0) {
+                showPage("home");
+                return;
+            }
+            //if there has qrcode to pay,then show it
             $(".payment-box").removeClass("payment-box-alipay");
             $(".payment-box").addClass("payment-box-wx");
             $("#paymentTypeIcon").attr("src", "images/logo_wxpay_home.png");
