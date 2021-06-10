@@ -69,25 +69,7 @@ namespace GemstarPaymentCore
             .ConfigureLogging(builder =>
             {
                 builder.ClearProviders();
-                //如果是控制台运行的，则添加控制台日志记录
-                if (!isService)
-                {
-                    builder.AddConsole();
-                } else
-                {
-                    //由于此程序可能会部署在用户现场，不想让用户现场的人知道我们阿里云的访问密钥，所以先直接写死在代码里面
-                    var aliyunLoggerOption = new AliyunLogOptions
-                    {
-                        AccessKey = "LTAI0JA2a0keVkuB",
-                        AccessSecret = "tNP2M2jbqdmXPrRM4IZBd5IFVnfSHq",
-                        Endpoint = "cn-shenzhen.log.aliyuncs.com",
-                        ProjectName = "jxd-payment-logs",
-                        LogStoreName = "wechat-payment",
-                        SourceName = "GemstarPayment",
-                        LogLevel = LogLevel.Information
-                    };
-                    builder.AddProvider(new AliyunLoggerProvider(aliyunLoggerOption));
-                }
+                //有些电脑上，向console输出日志的时候，会报存储空间不足，无法处理此命令的错误，所以此处清除后，不再添加任何日志记录，只由最外层的nlog来记录
             })
             .UseKestrel(cfg =>
             {
