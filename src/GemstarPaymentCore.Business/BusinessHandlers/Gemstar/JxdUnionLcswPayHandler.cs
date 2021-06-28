@@ -66,8 +66,9 @@ namespace GemstarPaymentCore.Business.BusinessHandlers.Gemstar
                 //如果是转发来的请求，则取出相同业务单号的原支付记录，进行判断
                 if (_para.IsFromRedirect)
                 {
-                    //如果原来已经有记录，并且金额相同，并且状态不是已取消状态，则直接返回原记录id
-                    var existEntity = _payDb.UnionPayLcsws.FirstOrDefault(w => w.TerminalTrace == terminalTrace && w.Status != WxPayInfoStatus.Cancel && w.TotalFee == amountValue);
+                    //如果原来已经有记录，并且金额相同，并且状态不是已取消状态，并且原记录创建时间还在两个小时内的，则直接返回原记录id
+                    var minCreatedDate = DateTime.Now.AddHours(-2);
+                    var existEntity = _payDb.UnionPayLcsws.FirstOrDefault(w => w.TerminalTrace == terminalTrace && w.Status != WxPayInfoStatus.Cancel && w.TotalFee == amountValue && w.TerminalTime > minCreatedDate);
                     if(existEntity != null)
                     {
                         return SuccessWithPayId(existEntity.Id.ToString("N"));
